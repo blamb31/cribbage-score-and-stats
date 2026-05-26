@@ -1,0 +1,204 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-title class="glow-cyan" style="font-weight: 800; letter-spacing: 0.5px;">Hand Calculator</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="clearAll()" color="medium" fill="clear">
+        <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <div class="animate-fade-in" style="padding: 16px; padding-bottom: 32px;">
+
+    <!-- 1. SELECTED CARDS DISPLAY -->
+    <div style="margin-bottom: 24px;">
+      <div style="font-size: 11px; font-weight: 800; color: var(--ion-color-medium); text-transform: uppercase; margin-bottom: 10px; letter-spacing: 0.5px;">Your Hand & Cut Card</div>
+
+      <ion-row style="justify-content: space-between; align-items: center;">
+        <!-- Hand Card Slots (4) -->
+        @for (index of [0, 1, 2, 3]; track index) {
+          <ion-col size="2.2" style="padding: 0;">
+            <div class="clickable"
+              (click)="activeSlot = index"
+              [style.border-color]="activeSlot === index ? 'var(--player-one-color)' : 'rgba(255,255,255,0.08)'"
+              [style.box-shadow]="activeSlot === index ? '0 0 10px rgba(6, 182, 212, 0.4)' : 'none'"
+              style="height: 76px; border: 2px solid; border-radius: 12px; background: rgba(22, 24, 35, 0.65); display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; overflow: hidden; backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px);">
+              @if (handCards[index]) {
+                <div class="animate-fade-in" style="text-align: center; width: 100%;">
+                  <!-- Delete card trigger -->
+                  <div (click)="removeCard(index); $event.stopPropagation()" style="position: absolute; top: 2px; right: 2px; background: rgba(239, 68, 68, 0.2); border-radius: 50%; width: 14px; height: 14px; display: flex; align-items: center; justify-content: center; color: #ef4444; font-size: 8px; font-weight: bold;">✕</div>
+                  <!-- Card details -->
+                  <div [style.color]="handCards[index].suit === 'H' || handCards[index].suit === 'D' ? 'var(--ion-color-danger)' : 'var(--player-one-color)'"
+                    style="font-size: 18px; font-weight: 800; line-height: 1.1;">
+                    {{ getRankLabel(handCards[index].rank) }}
+                  </div>
+                  <div [style.color]="handCards[index].suit === 'H' || handCards[index].suit === 'D' ? 'var(--ion-color-danger)' : 'var(--player-one-color)'"
+                    style="font-size: 16px; margin-top: 2px;">
+                    {{ getSuitSymbol(handCards[index].suit) }}
+                  </div>
+                </div>
+              }
+              <!-- Empty slot placeholder -->
+              @if (!handCards[index]) {
+                <div style="color: var(--ion-color-medium); font-size: 16px; font-weight: 300;">+</div>
+              }
+            </div>
+          </ion-col>
+        }
+
+        <!-- Spacer Divider -->
+        <ion-col size="0.6" style="text-align: center; color: var(--ion-color-medium); font-size: 16px; font-weight: bold; padding: 0;">|</ion-col>
+
+        <!-- Cut Card Slot (1) -->
+        <ion-col size="2.4" style="padding: 0;">
+          <div class="clickable"
+            (click)="activeSlot = 4"
+            [style.border-color]="activeSlot === 4 ? 'var(--player-two-color)' : 'var(--player-two-color)rgba(217, 70, 239, 0.2)'"
+            [style.box-shadow]="activeSlot === 4 ? '0 0 10px rgba(217, 70, 239, 0.4)' : 'none'"
+            style="height: 76px; border: 2px dashed rgba(217, 70, 239, 0.5); border-radius: 12px; background: rgba(22, 24, 35, 0.65); display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; overflow: hidden; backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px);">
+
+            @if (cutCard) {
+              <div class="animate-fade-in" style="text-align: center; width: 100%;">
+                <div (click)="removeCard(4); $event.stopPropagation()" style="position: absolute; top: 2px; right: 2px; background: rgba(239, 68, 68, 0.2); border-radius: 50%; width: 14px; height: 14px; display: flex; align-items: center; justify-content: center; color: #ef4444; font-size: 8px; font-weight: bold;">✕</div>
+                <div [style.color]="cutCard.suit === 'H' || cutCard.suit === 'D' ? 'var(--ion-color-danger)' : 'var(--player-two-color)'"
+                  style="font-size: 18px; font-weight: 800; line-height: 1.1;">
+                  {{ getRankLabel(cutCard.rank) }}
+                </div>
+                <div [style.color]="cutCard.suit === 'H' || cutCard.suit === 'D' ? 'var(--ion-color-danger)' : 'var(--player-two-color)'"
+                  style="font-size: 16px; margin-top: 2px;">
+                  {{ getSuitSymbol(cutCard.suit) }}
+                </div>
+              </div>
+            }
+
+            @if (!cutCard) {
+              <div style="color: var(--player-two-color); font-size: 10px; font-weight: 700; text-transform: uppercase; text-align: center;">Cut</div>
+            }
+          </div>
+        </ion-col>
+      </ion-row>
+    </div>
+
+    <!-- 2. CARD INPUT KEYBOARD (PICKER) -->
+    <div class="glass-panel" style="padding: 16px; margin-bottom: 24px; border-radius: 20px;">
+
+      <!-- Suit Picker -->
+      <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 16px;">
+        @for (suit of suits; track suit) {
+          <button
+            [style.color]="suit.value === 'H' || suit.value === 'D' ? 'var(--ion-color-danger)' : 'var(--player-one-color)'"
+            [style.background]="'rgba(255, 255, 255, 0.03)'"
+            style="border: 1px solid rgba(255,255,255,0.08); font-size: 20px; font-weight: bold; padding: 8px 0; border-radius: 12px;"
+            class="clickable">
+            {{ suit.symbol }} <span style="font-size: 10px; color: var(--ion-color-medium); display: block; margin-top: 2px;">{{ suit.name }}</span>
+          </button>
+        }
+      </div>
+
+      <!-- Card Picker Grid (Rank & Suit Selection Combined) -->
+      <div style="font-size: 10px; font-weight: 800; color: var(--ion-color-medium); text-transform: uppercase; margin-bottom: 8px; text-align: center;">
+        Select card value (tap suit & rank in grid below)
+      </div>
+
+      <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px;">
+        @for (suit of suits; track suit) {
+          <div style="display: flex; flex-direction: column; gap: 6px;">
+            <!-- Suit Column Header -->
+            <div [style.color]="suit.value === 'H' || suit.value === 'D' ? 'var(--ion-color-danger)' : 'var(--player-one-color)'"
+              style="text-align: center; font-size: 18px; font-weight: bold; padding: 4px 0; background: rgba(255,255,255,0.02); border-radius: 6px;">
+              {{ suit.symbol }}
+            </div>
+            <!-- Rank Buttons for this suit -->
+            @for (rank of ranks; track rank) {
+              <button
+                [disabled]="isCardSelected(rank.value, suit.value)"
+                (click)="selectCard(rank.value, suit.value)"
+                class="clickable"
+                [style.color]="suit.value === 'H' || suit.value === 'D' ? 'var(--ion-color-danger)' : 'var(--player-one-color)'"
+                style="border: 1px solid rgba(255,255,255,0.05); background: rgba(255,255,255,0.02); font-size: 12px; font-weight: 700; padding: 8px 0; border-radius: 8px; display: block; width: 100%;">
+                {{ rank.label }}
+              </button>
+            }
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- 3. SCORE DISPLAY SHEET -->
+    @if (hasHandCards) {
+      <div class="glass-panel animate-fade-in" style="padding: 16px; border-radius: 20px; margin-bottom: 24px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+          <span style="font-size: 11px; font-weight: 800; color: var(--ion-color-medium); text-transform: uppercase; letter-spacing: 0.5px;">Calculated Points</span>
+          <!-- Crib mode toggle -->
+          <div style="display: flex; align-items: center; gap: 8px; border: 1px solid rgba(255,255,255,0.08); padding: 2px 8px; border-radius: 12px; background: rgba(0,0,0,0.15);">
+            <span style="font-size: 11px; color: var(--ion-color-medium);">Crib Hand?</span>
+            <input type="checkbox" [(ngModel)]="isCribMode" (change)="calculateScore()" />
+          </div>
+        </div>
+        <!-- Main Score Badge -->
+        <div style="display: flex; align-items: center; justify-content: center; padding: 12px 0; border-bottom: 1px solid rgba(255,255,255,0.06); margin-bottom: 12px;">
+          <span style="font-size: 16px; color: var(--ion-color-medium); font-weight: 600; margin-right: 8px;">Total:</span>
+          <span class="glow-cyan" style="font-size: 42px; font-weight: 800; color: #fff;">{{ totalScore }}</span>
+          <span style="font-size: 16px; color: var(--ion-color-primary); font-weight: 700; margin-left: 6px;">points</span>
+        </div>
+        <!-- Breakdown logs list -->
+        @if (breakdown.length > 0) {
+          <div style="margin-bottom: 16px;">
+            <div style="font-size: 10px; font-weight: 800; color: var(--ion-color-medium); text-transform: uppercase; margin-bottom: 6px; letter-spacing: 0.5px;">Breakdown</div>
+            @for (item of breakdown; track item) {
+              <div style="display: flex; justify-content: space-between; align-items: center; padding: 5px 0; border-bottom: 1px dashed rgba(255,255,255,0.03); font-size: 12px;">
+                <div style="color: #eee;">
+                  <span style="font-weight: 700; color: var(--player-one-color); margin-right: 6px;">[{{ item.type }}]</span>
+                  {{ item.description }}
+                </div>
+                <div style="font-weight: 700; color: #fff;">+{{ item.points }}</div>
+              </div>
+            }
+          </div>
+        }
+        @if (breakdown.length === 0) {
+          <div style="text-align: center; color: var(--ion-color-medium); font-size: 13px; font-style: italic; padding: 8px 0;">
+            No points scored (19 Hand)
+          </div>
+        }
+        <!-- 4. INTEGRATION PANEL (APPLY POINTS TO GAME) -->
+        @if (totalScore > 0 && gameState.isActive) {
+          <div style="border-top: 1px solid rgba(255,255,255,0.06); padding-top: 16px; margin-top: 8px;">
+            <div style="font-size: 10px; font-weight: 800; color: var(--ion-color-medium); text-transform: uppercase; margin-bottom: 10px; letter-spacing: 0.5px;">Apply to Live Game</div>
+            <ion-row style="align-items: center;">
+              <ion-col [size]="gameState.mode >= 3 ? 12 : 5">
+                <ion-segment [(ngModel)]="applyToPlayer" mode="ios" style="--background: rgba(0,0,0,0.2); margin-bottom: 8px;">
+                  <ion-segment-button [value]="1">
+                    <ion-label style="font-size: 11px; overflow: hidden; text-overflow: ellipsis; max-width: 60px;">{{ getFirstName(gameState.player1.name) }}</ion-label>
+                  </ion-segment-button>
+                  <ion-segment-button [value]="2">
+                    <ion-label style="font-size: 11px; overflow: hidden; text-overflow: ellipsis; max-width: 60px;">{{ getFirstName(gameState.player2.name) }}</ion-label>
+                  </ion-segment-button>
+                  @if (gameState.mode >= 3) {
+                    <ion-segment-button [value]="3">
+                      <ion-label style="font-size: 11px; overflow: hidden; text-overflow: ellipsis; max-width: 60px;">{{ getFirstName(gameState.player3?.name || '') }}</ion-label>
+                    </ion-segment-button>
+                  }
+                  @if (gameState.mode === 4) {
+                    <ion-segment-button [value]="4">
+                      <ion-label style="font-size: 11px; overflow: hidden; text-overflow: ellipsis; max-width: 60px;">{{ getFirstName(gameState.player4?.name || '') }}</ion-label>
+                    </ion-segment-button>
+                  }
+                </ion-segment>
+              </ion-col>
+              <ion-col [size]="gameState.mode >= 3 ? 12 : 7">
+                <ion-button expand="block" shape="round" color="primary" style="font-weight: 700; height: 38px; margin: 0;" (click)="applyPointsToGame()">
+                  <ion-icon slot="start" name="checkmark-circle-outline"></ion-icon>
+                  Apply +{{ totalScore }} pts
+                </ion-button>
+              </ion-col>
+            </ion-row>
+          </div>
+        }
+      </div>
+    }
+
+  </div>
+</ion-content>

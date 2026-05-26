@@ -1,0 +1,122 @@
+/**
+ * Cribbage Score & Stats - Color & Theming System
+ */
+
+:root {
+  --ion-font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Helvetica Neue", "Roboto", sans-serif;
+
+  /* Custom App Palette (Dark Theme by Default) */
+  --app-bg: #090a0f;
+  --app-card-bg: rgba(22, 24, 35, 0.6);
+  --app-card-border: rgba(255, 255, 255, 0.07);
+  --app-glass-blur: blur(12px);
+
+  /* Player Colors */
+  --player-one-color: #06b6d4;      /* Neon Cyan */
+  --player-one-color-rgb: 6, 182, 212;
+  --player-two-color: #d946ef;      /* Neon Fuchsia */
+  --player-two-color-rgb: 217, 70, 239;
+  --player-three-color: #10b981;    /* Neon Emerald */
+  --player-three-color-rgb: 16, 185, 129;
+  --player-four-color: #eab308;     /* Neon Amber */
+  --player-four-color-rgb: 234, 179, 8;
+
+  /* Ionic Core Palette overrides for Dark Obsidian theme */
+  --ion-color-primary: #06b6d4;
+  --ion-color-primary-rgb: 6,182,212;
+  --ion-color-primary-contrast: #ffffff;
+  --ion-color-primary-contrast-rgb: 255,255,255;
+  --ion-color-primary-shade: #05a0bc;
+  --ion-color-primary-tint: #1fc1dc;
+
+  --ion-color-secondary: #a855f7;
+  --ion-color-secondary-rgb: 168,85,247;
+  --ion-color-secondary-contrast: #ffffff;
+  --ion-color-secondary-contrast-rgb: 255,255,255;
+  --ion-color-secondary-shade: #944bd9;
+  --ion-color-secondary-tint: #b166f8;
+
+  --ion-color-tertiary: #10b981;
+  --ion-color-tertiary-rgb: 16,185,129;
+  --ion-color-tertiary-contrast: #ffffff;
+  --ion-color-tertiary-contrast-rgb: 255,255,255;
+  --ion-color-tertiary-shade: #0ea371;
+  --ion-color-tertiary-tint: #28c08e;
+
+  --ion-color-success: #10b981;
+  --ion-color-success-rgb: 16,185,129;
+  --ion-color-success-contrast: #ffffff;
+  --ion-color-success-contrast-rgb: 255,255,255;
+  --ion-color-success-shade: #0ea371;
+  --ion-color-success-tint: #28c08e;
+
+  --ion-color-warning: #f59e0b;
+  --ion-color-warning-rgb: 245,158,11;
+  --ion-color-warning-contrast: #ffffff;
+  --ion-color-warning-contrast-rgb: 255,255,255;
+  --ion-color-warning-shade: #d88b0a;
+  --ion-color-warning-tint: #f6a823;
+
+  --ion-color-danger: #ef4444;
+  --ion-color-danger-rgb: 239,68,68;
+  --ion-color-danger-contrast: #ffffff;
+  --ion-color-danger-contrast-rgb: 255,255,255;
+  --ion-color-danger-shade: #d23c3c;
+  --ion-color-danger-tint: #f15757;
+
+  --ion-color-light: #f3f4f6;
+  --ion-color-light-rgb: 243,244,246;
+  --ion-color-light-contrast: #111827;
+  --ion-color-light-contrast-rgb: 17,24,39;
+  --ion-color-light-shade: #d6d7d9;
+  --ion-color-light-tint: #f4f5f7;
+
+  --ion-color-medium: #6b7280;
+  --ion-color-medium-rgb: 107,114,128;
+  --ion-color-medium-contrast: #ffffff;
+  --ion-color-medium-contrast-rgb: 255,255,255;
+  --ion-color-medium-shade: #5e6470;
+  --ion-color-medium-tint: #7a808d;
+
+  --ion-color-dark: #111218;
+  --ion-color-dark-rgb: 17,18,24;
+  --ion-color-dark-contrast: #f3f4f6;
+  --ion-color-dark-contrast-rgb: 243,244,246;
+  --ion-color-dark-shade: #0f1015;
+  --ion-color-dark-tint: #292a2f;
+
+  /* App Backgrounds and Text colors */
+  --ion-background-color: var(--app-bg);
+  --ion-background-color-rgb: 9,10,15;
+
+  --ion-text-color: #f3f4f6;
+  --ion-text-color-rgb: 243,244,246;
+
+  --ion-toolbar-background: rgba(17, 18, 24, 0.8);
+  --ion-toolbar-border-color: rgba(255, 255, 255, 0.08);
+  --ion-toolbar-color: #f3f4f6;
+
+  --ion-tab-bar-background: rgba(17, 18, 24, 0.85);
+  --ion-tab-bar-border-color: rgba(255, 255, 255, 0.08);
+  --ion-tab-bar-color-activated: var(--ion-color-primary);
+
+  --ion-item-background: transparent;
+  --ion-card-background: var(--app-card-bg);
+}
+
+/* Glassmorphism helpers */
+.glass-panel {
+  background: var(--app-card-bg);
+  backdrop-filter: var(--app-glass-blur);
+  -webkit-backdrop-filter: var(--app-glass-blur);
+  border: 1px solid var(--app-card-border);
+  border-radius: 16px;
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+}
+
+.glass-item {
+  --background: rgba(255, 255, 255, 0.03);
+  --border-color: rgba(255, 255, 255, 0.06);
+  border-radius: 10px;
+  margin-bottom: 8px;
+}

@@ -1,0 +1,589 @@
+<ion-content scroll-y="false">
+  <div class="animate-fade-in" style="height: 100%; width: 100%; position: relative;">
+
+    <!-- 1. PRE-GAME PLAYER SELECTION SCREEN -->
+    @if (!gameState.isActive) {
+      <div style="padding: 12px; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; padding-top: 20px; min-height: 100%;">
+        <div class="glass-panel" style="padding: 20px 16px; text-align: center; width: 100%; max-width: 420px; border-radius: 24px; box-shadow: 0 10px 40px rgba(0,0,0,0.4); overflow: hidden; box-sizing: border-box;">
+          <div style="font-size: 40px; margin-bottom: 8px;">🃏</div>
+          <h2 style="font-weight: 800; font-size: 25px; margin: 0 0 4px 0; background: linear-gradient(135deg, var(--player-one-color) 0%, var(--player-two-color) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Cribbage Pegger</h2>
+          <p style="color: var(--ion-color-medium); font-size: 13px; margin: 0 0 20px 0; line-height: 1.5;">Face-to-face scoring, hand calculator, and player statistics.</p>
+
+          <!-- PLAYER COUNT SELECTOR -->
+          <div style="margin-bottom: 24px; text-align: left;">
+            <div style="font-size: 11px; font-weight: 800; color: var(--ion-color-medium); text-transform: uppercase; margin-bottom: 8px; letter-spacing: 0.5px; text-align: center;">Match Player Count</div>
+            <ion-segment [(ngModel)]="setupMode" mode="ios" style="--background: rgba(255, 255, 255, 0.03); height: 38px;">
+              <ion-segment-button [value]="2">
+                <ion-label style="font-weight: 700; font-size: 12px;">2 Players</ion-label>
+              </ion-segment-button>
+              <ion-segment-button [value]="3">
+                <ion-label style="font-weight: 700; font-size: 12px;">3 Players</ion-label>
+              </ion-segment-button>
+              <ion-segment-button [value]="4">
+                <ion-label style="font-weight: 700; font-size: 12px;">4 Players</ion-label>
+              </ion-segment-button>
+            </ion-segment>
+          </div>
+
+          <!-- SETUP INPUTS FOR 2 OR 3 PLAYERS -->
+          <div *ngIf="setupMode !== 4" style="display: flex; flex-direction: column; gap: 20px;">
+            <!-- PLAYER 1 SELECTION -->
+            <div style="text-align: left;">
+              <div style="font-size: 11px; font-weight: 800; color: var(--player-one-color); text-transform: uppercase; margin-bottom: 6px; letter-spacing: 0.5px;">Player 1 (Cyan)</div>
+              <div *ngIf="!showP1CreateForm" style="display: flex; gap: 8px; align-items: center;">
+                <div style="flex: 1; border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; background: rgba(255,255,255,0.02); height: 48px; display: flex; align-items: center; padding: 0 8px;">
+                  <ion-select [(ngModel)]="selectedP1Id" placeholder="Select Player" interface="popover" style="width: 100%; color: #fff; font-weight: 600; font-size: 14px;">
+                    <ion-select-option *ngFor="let p of playersList" [value]="p.id">{{ p.name }}</ion-select-option>
+                  </ion-select>
+                </div>
+                <button (click)="showP1CreateForm = true" style="background: rgba(6, 182, 212, 0.1); border: 1px solid rgba(6, 182, 212, 0.2); border-radius: 12px; color: var(--player-one-color); width: 48px; height: 48px; display: flex; align-items: center; justify-content: center;" class="clickable">
+                  <ion-icon name="person-add-outline" style="font-size: 20px;"></ion-icon>
+                </button>
+              </div>
+              <div *ngIf="showP1CreateForm" class="glass-panel" style="padding: 12px; border-color: rgba(6, 182, 212, 0.3); background: rgba(0, 0, 0, 0.2);">
+                <div style="display: flex; gap: 8px; align-items: center;">
+                  <input type="text" [(ngModel)]="newP1Name" placeholder="Create new player..." style="flex: 1; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 0 12px; color: #fff; height: 38px; outline: none; font-size: 13px;" />
+                  <button (click)="createPlayerInline(1)" [disabled]="!newP1Name.trim()" style="background: var(--player-one-color); border: none; border-radius: 8px; color: #fff; padding: 0 14px; font-weight: 700; font-size: 12px; height: 38px; cursor: pointer;">Add</button>
+                  <button (click)="showP1CreateForm = false" style="background: transparent; border: none; color: var(--ion-color-medium); font-size: 18px; font-weight: 600; min-width: 32px; height: 38px; display: flex; align-items: center; justify-content: center; cursor: pointer;" class="clickable">✕</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- PLAYER 2 SELECTION -->
+            <div style="text-align: left;">
+              <div style="font-size: 11px; font-weight: 800; color: var(--player-two-color); text-transform: uppercase; margin-bottom: 6px; letter-spacing: 0.5px;">Player 2 (Fuchsia)</div>
+              <div *ngIf="!showP2CreateForm" style="display: flex; gap: 8px; align-items: center;">
+                <div style="flex: 1; border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; background: rgba(255,255,255,0.02); height: 48px; display: flex; align-items: center; padding: 0 8px;">
+                  <ion-select [(ngModel)]="selectedP2Id" placeholder="Select Player" interface="popover" style="width: 100%; color: #fff; font-weight: 600; font-size: 14px;">
+                    <ion-select-option *ngFor="let p of playersList" [value]="p.id">{{ p.name }}</ion-select-option>
+                  </ion-select>
+                </div>
+                <button (click)="showP2CreateForm = true" style="background: rgba(217, 70, 239, 0.1); border: 1px solid rgba(217, 70, 239, 0.2); border-radius: 12px; color: var(--player-two-color); width: 48px; height: 48px; display: flex; align-items: center; justify-content: center;" class="clickable">
+                  <ion-icon name="person-add-outline" style="font-size: 20px;"></ion-icon>
+                </button>
+              </div>
+              <div *ngIf="showP2CreateForm" class="glass-panel" style="padding: 12px; border-color: rgba(217, 70, 239, 0.3); background: rgba(0, 0, 0, 0.2);">
+                <div style="display: flex; gap: 8px; align-items: center;">
+                  <input type="text" [(ngModel)]="newP2Name" placeholder="Create new player..." style="flex: 1; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 0 12px; color: #fff; height: 38px; outline: none; font-size: 13px;" />
+                  <button (click)="createPlayerInline(2)" [disabled]="!newP2Name.trim()" style="background: var(--player-two-color); border: none; border-radius: 8px; color: #fff; padding: 0 14px; font-weight: 700; font-size: 12px; height: 38px; cursor: pointer;">Add</button>
+                  <button (click)="showP2CreateForm = false" style="background: transparent; border: none; color: var(--ion-color-medium); font-size: 18px; font-weight: 600; min-width: 32px; height: 38px; display: flex; align-items: center; justify-content: center; cursor: pointer;" class="clickable">✕</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- PLAYER 3 SELECTION -->
+            <div *ngIf="setupMode === 3" style="text-align: left;">
+              <div style="font-size: 11px; font-weight: 800; color: var(--player-three-color); text-transform: uppercase; margin-bottom: 6px; letter-spacing: 0.5px;">Player 3 (Emerald)</div>
+              <div *ngIf="!showP3CreateForm" style="display: flex; gap: 8px; align-items: center;">
+                <div style="flex: 1; border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; background: rgba(255,255,255,0.02); height: 48px; display: flex; align-items: center; padding: 0 8px;">
+                  <ion-select [(ngModel)]="selectedP3Id" placeholder="Select Player" interface="popover" style="width: 100%; color: #fff; font-weight: 600; font-size: 14px;">
+                    <ion-select-option *ngFor="let p of playersList" [value]="p.id">{{ p.name }}</ion-select-option>
+                  </ion-select>
+                </div>
+                <button (click)="showP3CreateForm = true" style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.2); border-radius: 12px; color: var(--player-three-color); width: 48px; height: 48px; display: flex; align-items: center; justify-content: center;" class="clickable">
+                  <ion-icon name="person-add-outline" style="font-size: 20px;"></ion-icon>
+                </button>
+              </div>
+              <div *ngIf="showP3CreateForm" class="glass-panel" style="padding: 12px; border-color: rgba(16, 185, 129, 0.3); background: rgba(0, 0, 0, 0.2);">
+                <div style="display: flex; gap: 8px; align-items: center;">
+                  <input type="text" [(ngModel)]="newP3Name" placeholder="Create new player..." style="flex: 1; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 0 12px; color: #fff; height: 38px; outline: none; font-size: 13px;" />
+                  <button (click)="createPlayerInline(3)" [disabled]="!newP3Name.trim()" style="background: var(--player-three-color); border: none; border-radius: 8px; color: #fff; padding: 0 14px; font-weight: 700; font-size: 12px; height: 38px; cursor: pointer;">Add</button>
+                  <button (click)="showP3CreateForm = false" style="background: transparent; border: none; color: var(--ion-color-medium); font-size: 18px; font-weight: 600; min-width: 32px; height: 38px; display: flex; align-items: center; justify-content: center; cursor: pointer;" class="clickable">✕</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- SETUP INPUTS FOR 4 PLAYERS (TEAMS) -->
+          <div *ngIf="setupMode === 4" style="display: flex; flex-direction: column; gap: 10px; width: 100%;">
+            <!-- 2x2 Grid of Players -->
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%;">
+              
+              <!-- PLAYER 1 (Team 1) -->
+              <div style="text-align: left; padding: 10px; background: rgba(6, 182, 212, 0.03); border: 1px solid rgba(6, 182, 212, 0.15); border-radius: 14px; box-sizing: border-box;">
+                <div style="font-size: 10px; font-weight: 800; color: var(--player-one-color); text-transform: uppercase; margin-bottom: 6px; letter-spacing: 0.5px;">P1 (Team 1)</div>
+                <div *ngIf="!showP1CreateForm" style="display: flex; gap: 4px; align-items: center;">
+                  <div style="flex: 1; border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; background: rgba(0,0,0,0.2); height: 36px; display: flex; align-items: center; padding: 0 4px; min-width: 0;">
+                    <ion-select [(ngModel)]="selectedP1Id" placeholder="Select" interface="popover" style="width: 100%; color: #fff; font-weight: 600; font-size: 12px; --padding-start: 4px; --padding-end: 4px;">
+                      <ion-select-option *ngFor="let p of playersList" [value]="p.id">{{ p.name }}</ion-select-option>
+                    </ion-select>
+                  </div>
+                  <button (click)="showP1CreateForm = true" style="background: rgba(6, 182, 212, 0.1); border: 1px solid rgba(6, 182, 212, 0.2); border-radius: 8px; color: var(--player-one-color); width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;" class="clickable">
+                    <ion-icon name="person-add-outline" style="font-size: 16px;"></ion-icon>
+                  </button>
+                </div>
+                <div *ngIf="showP1CreateForm" style="background: rgba(0, 0, 0, 0.15); border: 1px solid rgba(6, 182, 212, 0.25); border-radius: 8px; padding: 4px; box-sizing: border-box;">
+                  <div style="display: flex; gap: 4px; align-items: center;">
+                    <input type="text" [(ngModel)]="newP1Name" placeholder="Name" style="flex: 1; min-width: 0; background: rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.08); border-radius: 6px; padding: 0 6px; color: #fff; height: 28px; outline: none; font-size: 11px;" />
+                    <button (click)="createPlayerInline(1)" [disabled]="!newP1Name.trim()" style="background: var(--player-one-color); border: none; border-radius: 6px; color: #fff; padding: 0 6px; font-weight: 700; font-size: 10px; height: 28px; cursor: pointer; flex-shrink: 0;">Add</button>
+                    <button (click)="showP1CreateForm = false" style="background: transparent; border: none; color: var(--ion-color-medium); font-size: 14px; font-weight: 600; width: 18px; height: 28px; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0;">✕</button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- PLAYER 3 (Team 1) -->
+              <div style="text-align: left; padding: 10px; background: rgba(16, 185, 129, 0.03); border: 1px solid rgba(16, 185, 129, 0.15); border-radius: 14px; box-sizing: border-box;">
+                <div style="font-size: 10px; font-weight: 800; color: var(--player-three-color); text-transform: uppercase; margin-bottom: 6px; letter-spacing: 0.5px;">P3 (Team 1)</div>
+                <div *ngIf="!showP3CreateForm" style="display: flex; gap: 4px; align-items: center;">
+                  <div style="flex: 1; border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; background: rgba(0,0,0,0.2); height: 36px; display: flex; align-items: center; padding: 0 4px; min-width: 0;">
+                    <ion-select [(ngModel)]="selectedP3Id" placeholder="Select" interface="popover" style="width: 100%; color: #fff; font-weight: 600; font-size: 12px; --padding-start: 4px; --padding-end: 4px;">
+                      <ion-select-option *ngFor="let p of playersList" [value]="p.id">{{ p.name }}</ion-select-option>
+                    </ion-select>
+                  </div>
+                  <button (click)="showP3CreateForm = true" style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.2); border-radius: 8px; color: var(--player-three-color); width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;" class="clickable">
+                    <ion-icon name="person-add-outline" style="font-size: 16px;"></ion-icon>
+                  </button>
+                </div>
+                <div *ngIf="showP3CreateForm" style="background: rgba(0, 0, 0, 0.15); border: 1px solid rgba(16, 185, 129, 0.25); border-radius: 8px; padding: 4px; box-sizing: border-box;">
+                  <div style="display: flex; gap: 4px; align-items: center;">
+                    <input type="text" [(ngModel)]="newP3Name" placeholder="Name" style="flex: 1; min-width: 0; background: rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.08); border-radius: 6px; padding: 0 6px; color: #fff; height: 28px; outline: none; font-size: 11px;" />
+                    <button (click)="createPlayerInline(3)" [disabled]="!newP3Name.trim()" style="background: var(--player-three-color); border: none; border-radius: 6px; color: #fff; padding: 0 6px; font-weight: 700; font-size: 10px; height: 28px; cursor: pointer; flex-shrink: 0;">Add</button>
+                    <button (click)="showP3CreateForm = false" style="background: transparent; border: none; color: var(--ion-color-medium); font-size: 14px; font-weight: 600; width: 18px; height: 28px; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0;">✕</button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- PLAYER 2 (Team 2) -->
+              <div style="text-align: left; padding: 10px; background: rgba(217, 70, 239, 0.03); border: 1px solid rgba(217, 70, 239, 0.15); border-radius: 14px; box-sizing: border-box;">
+                <div style="font-size: 10px; font-weight: 800; color: var(--player-two-color); text-transform: uppercase; margin-bottom: 6px; letter-spacing: 0.5px;">P2 (Team 2)</div>
+                <div *ngIf="!showP2CreateForm" style="display: flex; gap: 4px; align-items: center;">
+                  <div style="flex: 1; border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; background: rgba(0,0,0,0.2); height: 36px; display: flex; align-items: center; padding: 0 4px; min-width: 0;">
+                    <ion-select [(ngModel)]="selectedP2Id" placeholder="Select" interface="popover" style="width: 100%; color: #fff; font-weight: 600; font-size: 12px; --padding-start: 4px; --padding-end: 4px;">
+                      <ion-select-option *ngFor="let p of playersList" [value]="p.id">{{ p.name }}</ion-select-option>
+                    </ion-select>
+                  </div>
+                  <button (click)="showP2CreateForm = true" style="background: rgba(217, 70, 239, 0.1); border: 1px solid rgba(217, 70, 239, 0.2); border-radius: 8px; color: var(--player-two-color); width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;" class="clickable">
+                    <ion-icon name="person-add-outline" style="font-size: 16px;"></ion-icon>
+                  </button>
+                </div>
+                <div *ngIf="showP2CreateForm" style="background: rgba(0, 0, 0, 0.15); border: 1px solid rgba(217, 70, 239, 0.25); border-radius: 8px; padding: 4px; box-sizing: border-box;">
+                  <div style="display: flex; gap: 4px; align-items: center;">
+                    <input type="text" [(ngModel)]="newP2Name" placeholder="Name" style="flex: 1; min-width: 0; background: rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.08); border-radius: 6px; padding: 0 6px; color: #fff; height: 28px; outline: none; font-size: 11px;" />
+                    <button (click)="createPlayerInline(2)" [disabled]="!newP2Name.trim()" style="background: var(--player-two-color); border: none; border-radius: 6px; color: #fff; padding: 0 6px; font-weight: 700; font-size: 10px; height: 28px; cursor: pointer; flex-shrink: 0;">Add</button>
+                    <button (click)="showP2CreateForm = false" style="background: transparent; border: none; color: var(--ion-color-medium); font-size: 14px; font-weight: 600; width: 18px; height: 28px; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0;">✕</button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- PLAYER 4 (Team 2) -->
+              <div style="text-align: left; padding: 10px; background: rgba(234, 179, 8, 0.03); border: 1px solid rgba(234, 179, 8, 0.15); border-radius: 14px; box-sizing: border-box;">
+                <div style="font-size: 10px; font-weight: 800; color: var(--player-four-color); text-transform: uppercase; margin-bottom: 6px; letter-spacing: 0.5px;">P4 (Team 2)</div>
+                <div *ngIf="!showP4CreateForm" style="display: flex; gap: 4px; align-items: center;">
+                  <div style="flex: 1; border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; background: rgba(0,0,0,0.2); height: 36px; display: flex; align-items: center; padding: 0 4px; min-width: 0;">
+                    <ion-select [(ngModel)]="selectedP4Id" placeholder="Select" interface="popover" style="width: 100%; color: #fff; font-weight: 600; font-size: 12px; --padding-start: 4px; --padding-end: 4px;">
+                      <ion-select-option *ngFor="let p of playersList" [value]="p.id">{{ p.name }}</ion-select-option>
+                    </ion-select>
+                  </div>
+                  <button (click)="showP4CreateForm = true" style="background: rgba(234, 179, 8, 0.1); border: 1px solid rgba(234, 179, 8, 0.2); border-radius: 8px; color: var(--player-four-color); width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;" class="clickable">
+                    <ion-icon name="person-add-outline" style="font-size: 16px;"></ion-icon>
+                  </button>
+                </div>
+                <div *ngIf="showP4CreateForm" style="background: rgba(0, 0, 0, 0.15); border: 1px solid rgba(234, 179, 8, 0.25); border-radius: 8px; padding: 4px; box-sizing: border-box;">
+                  <div style="display: flex; gap: 4px; align-items: center;">
+                    <input type="text" [(ngModel)]="newP4Name" placeholder="Name" style="flex: 1; min-width: 0; background: rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.08); border-radius: 6px; padding: 0 6px; color: #fff; height: 28px; outline: none; font-size: 11px;" />
+                    <button (click)="createPlayerInline(4)" [disabled]="!newP4Name.trim()" style="background: var(--player-four-color); border: none; border-radius: 6px; color: #fff; padding: 0 6px; font-weight: 700; font-size: 10px; height: 28px; cursor: pointer; flex-shrink: 0;">Add</button>
+                    <button (click)="showP4CreateForm = false" style="background: transparent; border: none; color: var(--ion-color-medium); font-size: 14px; font-weight: 600; width: 18px; height: 28px; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0;">✕</button>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <button (click)="startNewGame()" [disabled]="!isValidSetup" style="width: 100%; border: none; border-radius: 24px; height: 50px; font-weight: 800; font-size: 15px; color: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s ease; background: linear-gradient(135deg, var(--player-one-color), var(--player-two-color)); box-shadow: 0 8px 24px rgba(6,182,212,0.25); margin-top: 24px;" class="clickable">
+            <ion-icon name="play-outline" style="font-size: 20px;"></ion-icon>
+            Start Match
+          </button>
+        </div>
+      </div>
+    }
+
+    <!-- 2. ACTIVE GAME SCORING -->
+    @if (gameState.isActive) {
+      
+      <!-- 2A. 3-PLAYER UNIFIED VIEW -->
+      @if (gameState.mode === 3) {
+        <div class="three-player-container">
+          
+          <!-- Player Picker Header -->
+          <div style="font-size: 11px; font-weight: 800; color: var(--ion-color-medium); text-transform: uppercase; margin-bottom: 8px; letter-spacing: 0.5px; text-align: center;">Active Scorer</div>
+          <div class="player-picker-header">
+            <div (click)="activeThreePlayerScorer = 1" class="player-picker-btn" [class.active-p1]="activeThreePlayerScorer === 1">
+              <span class="player-picker-name" [style.color]="activeThreePlayerScorer === 1 ? 'var(--player-one-color)' : 'var(--ion-color-medium)'">{{ getFirstName(gameState.player1.name) }}</span>
+              <span class="player-picker-score">{{ gameState.player1.score }}</span>
+            </div>
+            <div (click)="activeThreePlayerScorer = 2" class="player-picker-btn" [class.active-p2]="activeThreePlayerScorer === 2">
+              <span class="player-picker-name" [style.color]="activeThreePlayerScorer === 2 ? 'var(--player-two-color)' : 'var(--ion-color-medium)'">{{ getFirstName(gameState.player2.name) }}</span>
+              <span class="player-picker-score">{{ gameState.player2.score }}</span>
+            </div>
+            <div (click)="activeThreePlayerScorer = 3" class="player-picker-btn" [class.active-p3]="activeThreePlayerScorer === 3">
+              <span class="player-picker-name" [style.color]="activeThreePlayerScorer === 3 ? 'var(--player-three-color)' : 'var(--ion-color-medium)'">{{ getFirstName(gameState.player3?.name || '') }}</span>
+              <span class="player-picker-score">{{ gameState.player3?.score }}</span>
+            </div>
+          </div>
+
+          <!-- Middle Progress Bars Container (replacing the board display) -->
+          <div style="flex: 1 1 0px; min-height: 0; display: flex; flex-direction: column; justify-content: center; gap: 16px; padding: 20px 16px; margin: 12px 0; background: rgba(22, 24, 35, 0.4); border: 1px solid rgba(255, 255, 255, 0.06); border-radius: 20px; position: relative;">
+            <div *ngFor="let pNum of [1, 2, 3]" style="display: flex; flex-direction: column; gap: 6px;">
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span [style.color]="getPlayerColor(pNum)" style="font-weight: 800; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px;">
+                  {{ getPlayerName(pNum) }}
+                </span>
+                <span style="font-size: 14px; font-weight: 800; color: #fff;">{{ getPlayerScore(pNum) }} / 121</span>
+              </div>
+              <div class="progress-track" style="height: 12px; border-radius: 6px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255, 255, 255, 0.05); overflow: hidden; position: relative;">
+                <div [style.background]="getPlayerColor(pNum)" [style.width.%]="(getPlayerScore(pNum) / 121) * 100" style="height: 100%; border-radius: 6px; transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 0 0 10px rgba(255,255,255,0.1);"></div>
+              </div>
+            </div>
+
+            <!-- Floating Reset Match Button for 3P -->
+            <div (click)="resetGame()" style="position: absolute; top: 12px; right: 12px; padding: 4px 10px; border-radius: 12px; background: rgba(22, 24, 35, 0.9); border: 1px solid rgba(255, 255, 255, 0.15); color: var(--ion-color-danger); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s ease; font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px;" class="clickable">
+              Reset
+            </div>
+          </div>
+
+          <!-- Scoring Panel targeting active player -->
+          <div class="glass-panel" style="flex: 1 1 0px; min-height: 0; display: flex; flex-direction: column; justify-content: space-between; padding: 14px; margin-bottom: 4px; border-color: rgba(255,255,255,0.08); background: rgba(22, 24, 35, 0.5);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+              <span style="font-size: 11px; font-weight: 800; text-transform: uppercase; color: var(--ion-color-medium);">
+                Scoring for: <strong [style.color]="getPlayerColor(activeThreePlayerScorer)">{{ getPlayerName(activeThreePlayerScorer) }}</strong>
+              </span>
+              
+              <div style="position: relative; display: inline-block;" (click)="p1StagedScore > 0 ? clearStagedScore(1) : null" class="clickable">
+                <div class="draft-pill" [class.active]="p1StagedScore > 0">
+                  <span>Staged:</span>
+                  <span [style.color]="getPlayerColor(activeThreePlayerScorer)" style="font-weight: 800;">+{{ p1StagedScore }}</span>
+                </div>
+                @if (p1StagedScore > 0) {
+                  <div style="position: absolute; right: -6px; top: 50%; transform: translateY(-50%); background: #ef4444; border: 1px solid rgba(255,255,255,0.2); border-radius: 50%; width: 15px; height: 15px; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 8px; font-weight: 900; box-shadow: 0 2px 5px rgba(0,0,0,0.3); z-index: 10;">
+                    ✕
+                  </div>
+                }
+              </div>
+            </div>
+
+            <!-- Categories -->
+            <div class="category-pill-container" style="margin: 8px 0;">
+              <button class="category-pill-btn" [class.active-p1]="p1Category === 'Pegging' && activeThreePlayerScorer === 1" [class.active-p2]="p1Category === 'Pegging' && activeThreePlayerScorer === 2" [class.active-p3]="p1Category === 'Pegging' && activeThreePlayerScorer === 3" (click)="p1Category = 'Pegging'">Peg</button>
+              <button class="category-pill-btn" [class.active-p1]="p1Category === 'Hand' && activeThreePlayerScorer === 1" [class.active-p2]="p1Category === 'Hand' && activeThreePlayerScorer === 2" [class.active-p3]="p1Category === 'Hand' && activeThreePlayerScorer === 3" (click)="p1Category = 'Hand'">Hand</button>
+              <button class="category-pill-btn" [class.active-p1]="p1Category === 'Crib' && activeThreePlayerScorer === 1" [class.active-p2]="p1Category === 'Crib' && activeThreePlayerScorer === 2" [class.active-p3]="p1Category === 'Crib' && activeThreePlayerScorer === 3" (click)="p1Category = 'Crib'">Crib</button>
+            </div>
+
+            <!-- Point Grid -->
+            <div class="point-btn-grid" style="margin-top: 8px;">
+              <button class="point-pad-btn" (click)="addStagedScore(1, 1)">+1</button>
+              <button class="point-pad-btn" (click)="addStagedScore(1, 2)">+2</button>
+              <button class="point-pad-btn" (click)="addStagedScore(1, 5)">+5</button>
+              <button class="point-pad-btn" (click)="addStagedScore(1, 10)">+10</button>
+            </div>
+
+            <!-- Submission Row -->
+            <div class="action-btn-grid" style="margin-top: 10px;">
+              <button class="control-icon-btn" [disabled]="!canUndo(activeThreePlayerScorer)" (click)="undo(activeThreePlayerScorer)">
+                <ion-icon name="arrow-undo-outline" style="font-size: 18px;"></ion-icon>
+              </button>
+              <button class="submit-btn" [class.p1]="activeThreePlayerScorer === 1" [class.p2]="activeThreePlayerScorer === 2" [class.p3]="activeThreePlayerScorer === 3" [disabled]="p1StagedScore === 0" (click)="submitScore(1)" style="flex: 1;">
+                Submit (+{{ p1StagedScore }})
+              </button>
+              <button class="control-icon-btn" [disabled]="!canRedo(activeThreePlayerScorer)" (click)="redo(activeThreePlayerScorer)">
+                <ion-icon name="arrow-redo-outline" style="font-size: 18px;"></ion-icon>
+              </button>
+            </div>
+          </div>
+        </div>
+      }
+
+      <!-- 2B. 2-PLAYER OR 4-PLAYER SPLIT-SCREEN VIEW -->
+      @else {
+        <div class="split-container">
+          
+          <!-- PLAYER 1 HALF (TOP - ROTATED 180deg) -->
+          <div class="player-side top">
+            <!-- Own score & Opponent score header -->
+            <div class="score-row">
+              <div class="own-score-box">
+                <div class="prev-score-label">Prev: {{ gameState.player1.prevScore }}</div>
+                <div class="grand-total-text" [class.glow-cyan]="p1ActiveScorer === 1" [class.glow-emerald]="p1ActiveScorer === 3">{{ gameState.player1.score }}</div>
+                <!-- 4P Mode Active Player Selector -->
+                <div *ngIf="gameState.mode === 4" style="display: flex; flex-direction: column; gap: 4px; background: rgba(0, 0, 0, 0.25); padding: 3px; border-radius: 8px; margin-top: 6px; width: 100%; max-width: 84px; box-sizing: border-box;">
+                  <button (click)="p1ActiveScorer = 1" [class.active-p1]="p1ActiveScorer === 1" class="teammate-btn" style="font-size: 9px; padding: 4px 6px; max-width: 100%; width: 100%; text-align: center; display: block; box-sizing: border-box;">
+                    {{ getFirstName(gameState.player1.name) }}
+                  </button>
+                  <button (click)="p1ActiveScorer = 3" [class.active-p3]="p1ActiveScorer === 3" class="teammate-btn" style="font-size: 9px; padding: 4px 6px; max-width: 100%; width: 100%; text-align: center; display: block; box-sizing: border-box;">
+                    {{ getFirstName(gameState.player3?.name || '') }}
+                  </button>
+                </div>
+                <!-- 2P Mode Name Display -->
+                <div *ngIf="gameState.mode !== 4" style="font-size: 12px; font-weight: 800; color: var(--player-one-color); text-transform: uppercase; letter-spacing: 0.5px;">
+                  {{ getFirstName(gameState.player1.name) }}
+                </div>
+              </div>
+              
+              <div style="display: flex; flex-direction: column; align-items: center; gap: 4px;">
+                <div style="position: relative; display: inline-block;" (click)="p1StagedScore > 0 ? clearStagedScore(1) : null" class="clickable">
+                  <div class="draft-pill" [class.active]="p1StagedScore > 0">
+                    <span>Staged:</span>
+                    <span [style.color]="getPlayerColor(p1ActiveScorer)" style="font-weight: 800;">+{{ p1StagedScore }}</span>
+                  </div>
+                  @if (p1StagedScore > 0) {
+                    <div style="position: absolute; right: -6px; top: 50%; transform: translateY(-50%); background: #ef4444; border: 1px solid rgba(255,255,255,0.2); border-radius: 50%; width: 15px; height: 15px; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 8px; font-weight: 900; box-shadow: 0 2px 5px rgba(0,0,0,0.3); z-index: 10;">
+                      ✕
+                    </div>
+                  }
+                </div>
+              </div>
+
+              <div class="opponent-score-box">
+                <div class="prev-score-label">Opponent</div>
+                <div style="font-size: 24px; font-weight: 800; color: var(--player-two-color);">{{ gameState.player2.score }}</div>
+                <div style="font-size: 10px; font-weight: 600; color: var(--ion-color-medium); text-transform: uppercase; letter-spacing: 0.5px;">
+                  {{ gameState.mode === 4 ? (getFirstName(gameState.player2.name) + ' & ' + getFirstName(gameState.player4?.name || '')) : getFirstName(gameState.player2.name) }}
+                </div>
+              </div>
+            </div>
+
+            <!-- Category selectors -->
+            <div class="category-pill-container">
+              <button class="category-pill-btn" 
+                      [class.active-p1]="p1Category === 'Pegging' && p1ActiveScorer === 1" 
+                      [class.active-p3]="p1Category === 'Pegging' && p1ActiveScorer === 3" 
+                      (click)="p1Category = 'Pegging'">Peg</button>
+              <button class="category-pill-btn" 
+                      [class.active-p1]="p1Category === 'Hand' && p1ActiveScorer === 1" 
+                      [class.active-p3]="p1Category === 'Hand' && p1ActiveScorer === 3" 
+                      (click)="p1Category = 'Hand'">Hand</button>
+              <button class="category-pill-btn" 
+                      [class.active-p1]="p1Category === 'Crib' && p1ActiveScorer === 1" 
+                      [class.active-p3]="p1Category === 'Crib' && p1ActiveScorer === 3" 
+                      (click)="p1Category = 'Crib'">Crib</button>
+            </div>
+
+            <!-- Quick + Buttons -->
+            <div class="point-btn-grid">
+              <button class="point-pad-btn" (click)="addStagedScore(1, 1)">+1</button>
+              <button class="point-pad-btn" (click)="addStagedScore(1, 2)">+2</button>
+              <button class="point-pad-btn" (click)="addStagedScore(1, 5)">+5</button>
+              <button class="point-pad-btn" (click)="addStagedScore(1, 10)">+10</button>
+            </div>
+
+            <!-- Action Row (Undo, Submit, Redo) -->
+            <div class="action-btn-grid">
+              <button class="control-icon-btn" [disabled]="!canUndo(1)" (click)="undo(1)">
+                <ion-icon name="arrow-undo-outline" style="font-size: 18px;"></ion-icon>
+              </button>
+              <button class="submit-btn" [class.p1]="p1ActiveScorer === 1" [class.p3]="p1ActiveScorer === 3" [disabled]="p1StagedScore === 0" (click)="submitScore(1)">
+                Submit (+{{ p1StagedScore }})
+              </button>
+              <button class="control-icon-btn" [disabled]="!canRedo(1)" (click)="redo(1)">
+                <ion-icon name="arrow-redo-outline" style="font-size: 18px;"></ion-icon>
+              </button>
+            </div>
+
+            <!-- Custom Local progress bar inside P1 view (rotates to show P1's progress left-to-right) -->
+            <div class="progress-track" style="margin-top: 12px; border-radius: 3px;">
+              <div [class.progress-fill-p1]="p1ActiveScorer === 1" [class.progress-fill-p3]="p1ActiveScorer === 3" [style.width.%]="(gameState.player1.score / 121) * 100"></div>
+            </div>
+          </div>
+
+          <!-- CENTER PROGRESS DIVIDER -->
+          <div class="center-divider-container">
+            <!-- Player 1 Progress Bar (fills right-to-left, which is left-to-right from P1's rotated view) -->
+            <div class="progress-track">
+              <div class="progress-fill-p1" [style.width.%]="(gameState.player1.score / 121) * 100"></div>
+            </div>
+            
+            <!-- Middle reset button -->
+            <div class="center-reset-btn" (click)="resetGame()">
+              Reset
+            </div>
+
+            <!-- Player 2 Progress Bar (fills left-to-right) -->
+            <div class="progress-track">
+              <div class="progress-fill-p2" [style.width.%]="(gameState.player2.score / 121) * 100"></div>
+            </div>
+          </div>
+
+          <!-- PLAYER 2 HALF (BOTTOM - NORMAL) -->
+          <div class="player-side bottom">
+            <!-- Local progress bar inside P2 view -->
+            <div class="progress-track" style="margin-bottom: 12px; border-radius: 3px;">
+              <div class="progress-fill-p2" [style.width.%]="(gameState.player2.score / 121) * 100"></div>
+            </div>
+
+            <!-- Own score & Opponent score header -->
+            <div class="score-row">
+              <div class="own-score-box">
+                <div class="prev-score-label">Prev: {{ gameState.player2.prevScore }}</div>
+                <div class="grand-total-text" [class.glow-fuchsia]="p2ActiveScorer === 2" [class.glow-amber]="p2ActiveScorer === 4">{{ gameState.player2.score }}</div>
+                <!-- 4P Mode Active Player Selector -->
+                <div *ngIf="gameState.mode === 4" style="display: flex; flex-direction: column; gap: 4px; background: rgba(0, 0, 0, 0.25); padding: 3px; border-radius: 8px; margin-top: 6px; width: 100%; max-width: 84px; box-sizing: border-box;">
+                  <button (click)="p2ActiveScorer = 2" [class.active-p2]="p2ActiveScorer === 2" class="teammate-btn" style="font-size: 9px; padding: 4px 6px; max-width: 100%; width: 100%; text-align: center; display: block; box-sizing: border-box;">
+                    {{ getFirstName(gameState.player2.name) }}
+                  </button>
+                  <button (click)="p2ActiveScorer = 4" [class.active-p4]="p2ActiveScorer === 4" class="teammate-btn" style="font-size: 9px; padding: 4px 6px; max-width: 100%; width: 100%; text-align: center; display: block; box-sizing: border-box;">
+                    {{ getFirstName(gameState.player4?.name || '') }}
+                  </button>
+                </div>
+                <!-- 2P Mode Name Display -->
+                <div *ngIf="gameState.mode !== 4" style="font-size: 12px; font-weight: 800; color: var(--player-two-color); text-transform: uppercase; letter-spacing: 0.5px;">
+                  {{ getFirstName(gameState.player2.name) }}
+                </div>
+              </div>
+
+              <div style="display: flex; flex-direction: column; align-items: center; gap: 4px;">
+                <div style="position: relative; display: inline-block;" (click)="p2StagedScore > 0 ? clearStagedScore(2) : null" class="clickable">
+                  <div class="draft-pill" [class.active]="p2StagedScore > 0">
+                    <span>Staged:</span>
+                    <span [style.color]="getPlayerColor(p2ActiveScorer)" style="font-weight: 800;">+{{ p2StagedScore }}</span>
+                  </div>
+                  @if (p2StagedScore > 0) {
+                    <div style="position: absolute; right: -6px; top: 50%; transform: translateY(-50%); background: #ef4444; border: 1px solid rgba(255,255,255,0.2); border-radius: 50%; width: 15px; height: 15px; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 8px; font-weight: 900; box-shadow: 0 2px 5px rgba(0,0,0,0.3); z-index: 10;">
+                      ✕
+                    </div>
+                  }
+                </div>
+              </div>
+
+              <div class="opponent-score-box">
+                <div class="prev-score-label">Opponent</div>
+                <div style="font-size: 24px; font-weight: 800; color: var(--player-one-color);">{{ gameState.player1.score }}</div>
+                <div style="font-size: 10px; font-weight: 600; color: var(--ion-color-medium); text-transform: uppercase; letter-spacing: 0.5px;">
+                  {{ gameState.mode === 4 ? (getFirstName(gameState.player1.name) + ' & ' + getFirstName(gameState.player3?.name || '')) : getFirstName(gameState.player1.name) }}
+                </div>
+              </div>
+            </div>
+
+            <!-- Category selectors -->
+            <div class="category-pill-container">
+              <button class="category-pill-btn" 
+                      [class.active-p2]="p2Category === 'Pegging' && p2ActiveScorer === 2" 
+                      [class.active-p4]="p2Category === 'Pegging' && p2ActiveScorer === 4" 
+                      (click)="p2Category = 'Pegging'">Peg</button>
+              <button class="category-pill-btn" 
+                      [class.active-p2]="p2Category === 'Hand' && p2ActiveScorer === 2" 
+                      [class.active-p4]="p2Category === 'Hand' && p2ActiveScorer === 4" 
+                      (click)="p2Category = 'Hand'">Hand</button>
+              <button class="category-pill-btn" 
+                      [class.active-p2]="p2Category === 'Crib' && p2ActiveScorer === 2" 
+                      [class.active-p4]="p2Category === 'Crib' && p2ActiveScorer === 4" 
+                      (click)="p2Category = 'Crib'">Crib</button>
+            </div>
+
+            <!-- Quick + Buttons -->
+            <div class="point-btn-grid">
+              <button class="point-pad-btn" (click)="addStagedScore(2, 1)">+1</button>
+              <button class="point-pad-btn" (click)="addStagedScore(2, 2)">+2</button>
+              <button class="point-pad-btn" (click)="addStagedScore(2, 5)">+5</button>
+              <button class="point-pad-btn" (click)="addStagedScore(2, 10)">+10</button>
+            </div>
+
+            <!-- Action Row (Undo, Submit, Redo) -->
+            <div class="action-btn-grid">
+              <button class="control-icon-btn" [disabled]="!canUndo(2)" (click)="undo(2)">
+                <ion-icon name="arrow-undo-outline" style="font-size: 18px;"></ion-icon>
+              </button>
+              <button class="submit-btn" [class.p2]="p2ActiveScorer === 2" [class.p4]="p2ActiveScorer === 4" [disabled]="p2StagedScore === 0" (click)="submitScore(2)">
+                Submit (+{{ p2StagedScore }})
+              </button>
+              <button class="control-icon-btn" [disabled]="!canRedo(2)" (click)="redo(2)">
+                <ion-icon name="arrow-redo-outline" style="font-size: 18px;"></ion-icon>
+              </button>
+            </div>
+          </div>
+
+        </div>
+      }
+    }
+
+    <!-- 3. CELEBRATION OVERLAY (GAME WON) -->
+    @if (gameState.isActive && gameState.winner !== null) {
+      <div style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(9, 10, 15, 0.94); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); display: flex; align-items: center; justify-content: center; z-index: 9999; padding: 24px;">
+        <div class="glass-panel animate-fade-in" style="width: 100%; max-width: 380px; padding: 32px 20px; text-align: center; border-color: rgba(255,255,255,0.15);">
+          <div style="font-size: 50px; animation: bounce 1.5s infinite; margin-bottom: 12px;">🏆</div>
+          <h1 style="font-weight: 800; font-size: 28px; margin: 0 0 4px 0; background: linear-gradient(135deg, var(--player-one-color) 0%, var(--player-two-color) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Winner!</h1>
+          
+          <div style="margin: 16px 0;">
+            <h2 [class.glow-cyan]="gameState.winner === 1" [class.glow-fuchsia]="gameState.winner === 2"
+              [style.color]="gameState.winner === 1 ? 'var(--player-one-color)' : (gameState.winner === 2 ? 'var(--player-two-color)' : 'var(--player-three-color)')"
+              style="font-size: 24px; font-weight: 800; margin: 0 0 8px 0; text-transform: uppercase;">
+              @if (gameState.mode === 4) {
+                {{ gameState.winner === 1 ? (getFirstName(gameState.player1.name) + ' & ' + getFirstName(gameState.player3?.name || '')) : (getFirstName(gameState.player2.name) + ' & ' + getFirstName(gameState.player4?.name || '')) }}
+              } @else {
+                {{ gameState.winner === 1 ? getFirstName(gameState.player1.name) : (gameState.winner === 2 ? getFirstName(gameState.player2.name) : getFirstName(gameState.player3?.name || '')) }}
+              }
+            </h2>
+            <p style="color: var(--ion-color-medium); font-size: 13px; margin: 0 0 20px 0;">
+              Defeated opponents to reach 121.
+            </p>
+
+            <!-- Detailed Breakdown table -->
+            <div class="glass-panel" style="padding: 12px; background: rgba(0,0,0,0.25); margin-top: 16px; border-radius: 12px;">
+              <div style="font-size: 11px; font-weight: 800; color: var(--ion-color-medium); text-transform: uppercase; margin-bottom: 8px; letter-spacing: 0.5px; text-align: center;">Match Point Breakdown</div>
+              <table style="width: 100%; border-collapse: collapse; font-size: 12px; text-align: left;">
+                <thead>
+                  <tr style="border-bottom: 1px solid rgba(255,255,255,0.08); color: var(--ion-color-medium);">
+                    <th style="padding: 6px 0; font-weight: 700;">Category</th>
+                    <th style="padding: 6px 0; font-weight: 700; color: var(--player-one-color); text-align: center;">{{ getFirstName(gameState.player1.name) }}</th>
+                    <th style="padding: 6px 0; font-weight: 700; color: var(--player-two-color); text-align: center;">{{ getFirstName(gameState.player2.name) }}</th>
+                    <th *ngIf="gameState.mode >= 3" style="padding: 6px 0; font-weight: 700; color: var(--player-three-color); text-align: center;">{{ getFirstName(gameState.player3?.name || '') }}</th>
+                    <th *ngIf="gameState.mode === 4" style="padding: 6px 0; font-weight: 700; color: var(--player-four-color); text-align: center;">{{ getFirstName(gameState.player4?.name || '') }}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr style="border-bottom: 1px dashed rgba(255,255,255,0.03);">
+                    <td style="padding: 8px 0; color: #fff; font-weight: 500;">Pegging</td>
+                    <td style="padding: 8px 0; text-align: center; color: var(--player-one-color); font-weight: 700;">{{ getGameCategoryPoints(1, 'Pegging') }}</td>
+                    <td style="padding: 8px 0; text-align: center; color: var(--player-two-color); font-weight: 700;">{{ getGameCategoryPoints(2, 'Pegging') }}</td>
+                    <td *ngIf="gameState.mode >= 3" style="padding: 8px 0; text-align: center; color: var(--player-three-color); font-weight: 700;">{{ getGameCategoryPoints(3, 'Pegging') }}</td>
+                    <td *ngIf="gameState.mode === 4" style="padding: 8px 0; text-align: center; color: var(--player-four-color); font-weight: 700;">{{ getGameCategoryPoints(4, 'Pegging') }}</td>
+                  </tr>
+                  <tr style="border-bottom: 1px dashed rgba(255,255,255,0.03);">
+                    <td style="padding: 8px 0; color: #fff; font-weight: 500;">Hand</td>
+                    <td style="padding: 8px 0; text-align: center; color: var(--player-one-color); font-weight: 700;">{{ getGameCategoryPoints(1, 'Hand') }}</td>
+                    <td style="padding: 8px 0; text-align: center; color: var(--player-two-color); font-weight: 700;">{{ getGameCategoryPoints(2, 'Hand') }}</td>
+                    <td *ngIf="gameState.mode >= 3" style="padding: 8px 0; text-align: center; color: var(--player-three-color); font-weight: 700;">{{ getGameCategoryPoints(3, 'Hand') }}</td>
+                    <td *ngIf="gameState.mode === 4" style="padding: 8px 0; text-align: center; color: var(--player-four-color); font-weight: 700;">{{ getGameCategoryPoints(4, 'Hand') }}</td>
+                  </tr>
+                  <tr style="border-bottom: 1px dashed rgba(255,255,255,0.03);">
+                    <td style="padding: 8px 0; color: #fff; font-weight: 500;">Crib</td>
+                    <td style="padding: 8px 0; text-align: center; color: var(--player-one-color); font-weight: 700;">{{ getGameCategoryPoints(1, 'Crib') }}</td>
+                    <td style="padding: 8px 0; text-align: center; color: var(--player-two-color); font-weight: 700;">{{ getGameCategoryPoints(2, 'Crib') }}</td>
+                    <td *ngIf="gameState.mode >= 3" style="padding: 8px 0; text-align: center; color: var(--player-three-color); font-weight: 700;">{{ getGameCategoryPoints(3, 'Crib') }}</td>
+                    <td *ngIf="gameState.mode === 4" style="padding: 8px 0; text-align: center; color: var(--player-four-color); font-weight: 700;">{{ getGameCategoryPoints(4, 'Crib') }}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+          </div>
+          
+          <button (click)="resetGame()" style="width: 100%; border: none; border-radius: 20px; height: 48px; background: linear-gradient(135deg, var(--player-one-color), var(--player-two-color)); color: #fff; font-weight: 800; font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px; cursor: pointer; margin-top: 16px;" class="clickable">
+            Play Again
+          </button>
+        </div>
+      </div>
+    }
+
+    <!-- 4. RESET GAME CONFIRMATION MODAL -->
+    <ion-modal [isOpen]="showResetConfirm" (didDismiss)="showResetConfirm = false" style="--height: auto; --border-radius: 20px; --width: 90%; --max-width: 340px; --background: var(--app-bg); border: 1px solid rgba(255,255,255,0.15);">
+      <ng-template>
+        <div class="glass-panel" style="padding: 24px; border: none; border-radius: 0; text-align: center;">
+          <div style="font-size: 32px; margin-bottom: 8px;">⚠️</div>
+          <h3 style="font-weight: 800; font-size: 18px; margin: 0 0 8px 0; color: #fff;">Reset Match?</h3>
+          <p style="color: var(--ion-color-medium); font-size: 13px; margin: 0 0 24px 0; line-height: 1.4;">
+            Are you sure you want to clear current match progress? All points staged and logged will be permanently lost.
+          </p>
+          <div style="display: flex; flex-direction: column; gap: 8px;">
+            <button (click)="confirmReset()" style="background: var(--ion-color-danger); border: none; border-radius: 12px; color: #fff; height: 44px; font-weight: 700; font-size: 14px; cursor: pointer;" class="clickable">
+              Yes, Reset Game
+            </button>
+            <button (click)="showResetConfirm = false" style="background: transparent; border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; color: var(--ion-color-medium); height: 44px; font-weight: 600; font-size: 14px; cursor: pointer;" class="clickable">
+              Cancel
+            </button>
+          </div>
+        </div>
+      </ng-template>
+    </ion-modal>
+
+  </div>
+</ion-content>

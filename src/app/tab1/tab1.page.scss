@@ -1,0 +1,525 @@
+/* Split-Screen Face-to-Face Layout */
+.split-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+  background: var(--app-bg);
+  overflow: hidden;
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+}
+
+.player-side {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 16px;
+  position: relative;
+  box-sizing: border-box;
+}
+
+/* Rotate Top Player 180 degrees */
+.player-side.top {
+  transform: rotate(180deg);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.player-side.bottom {
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  padding-bottom: 32px; /* Ensure submit button clears the floating menu toggle arrow */
+}
+
+/* Center Progress Divider */
+.center-divider-container {
+  height: 24px;
+  background: rgba(9, 10, 15, 0.95);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 2px 0;
+  z-index: 100;
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+}
+
+.progress-track {
+  height: 6px;
+  width: 100%;
+  background: rgba(255, 255, 255, 0.03);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Player 1 progress fills right-to-left in normal orientation (left-to-right from P1's rotated view) */
+.progress-fill-p1 {
+  height: 100%;
+  background: linear-gradient(to left, var(--player-one-color), #0891b2);
+  box-shadow: 0 0 8px var(--player-one-color);
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  float: right;
+}
+
+.progress-fill-p3 {
+  height: 100%;
+  background: linear-gradient(to left, var(--player-three-color), #059669);
+  box-shadow: 0 0 8px var(--player-three-color);
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  float: right;
+}
+
+/* Player 2 progress fills left-to-right */
+.progress-fill-p2 {
+  height: 100%;
+  background: linear-gradient(to right, var(--player-two-color), #c084fc);
+  box-shadow: 0 0 8px var(--player-two-color);
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.progress-fill-p4 {
+  height: 100%;
+  background: linear-gradient(to right, var(--player-four-color), #d97706);
+  box-shadow: 0 0 8px var(--player-four-color);
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.center-reset-btn {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  padding: 4px 10px;
+  border-radius: 12px;
+  background: rgba(22, 24, 35, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: var(--ion-color-danger);
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.6);
+  z-index: 110;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.center-reset-btn:active {
+  transform: translate(-50%, -50%) scale(0.95);
+  background: rgba(239, 68, 68, 0.15);
+  border-color: var(--ion-color-danger);
+}
+
+/* Scores & Panel Elements */
+.score-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.own-score-box {
+  text-align: left;
+  flex: 1 1 0px;
+  min-width: 0;
+}
+
+.opponent-score-box {
+  text-align: right;
+  opacity: 0.8;
+  flex: 1 1 0px;
+  min-width: 0;
+}
+
+.prev-score-label {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--ion-color-medium);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.grand-total-text {
+  font-size: 36px;
+  font-weight: 800;
+  line-height: 1.1;
+  color: #fff;
+}
+
+.draft-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.draft-pill.active {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+/* Point Buttons */
+.point-btn-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.action-btn-grid {
+  display: grid;
+  grid-template-columns: 1fr 2fr 1fr;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.point-pad-btn {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 12px;
+  color: #fff;
+  font-weight: 800;
+  font-size: 15px;
+  padding: 10px 0;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.point-pad-btn:active {
+  background: rgba(255, 255, 255, 0.1);
+  transform: scale(0.95);
+}
+
+/* Category Pill Selectors */
+.category-pill-container {
+  display: flex;
+  justify-content: space-between;
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 14px;
+  padding: 3px;
+  margin: 10px 0;
+}
+
+.category-pill-btn {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: var(--ion-color-medium);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 6px 0;
+  border-radius: 11px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+/* Active Categories */
+.category-pill-btn.active-p1 {
+  background: rgba(6, 182, 212, 0.15);
+  color: var(--player-one-color);
+  border: 1px solid rgba(6, 182, 212, 0.25);
+  text-shadow: 0 0 8px rgba(6, 182, 212, 0.4);
+}
+
+.category-pill-btn.active-p2 {
+  background: rgba(217, 70, 239, 0.15);
+  color: var(--player-two-color);
+  border: 1px solid rgba(217, 70, 239, 0.25);
+  text-shadow: 0 0 8px rgba(217, 70, 239, 0.4);
+}
+
+/* Submit & Utility Buttons */
+.submit-btn {
+  border: none;
+  font-weight: 800;
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-radius: 12px;
+  color: #fff;
+  height: 40px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.submit-btn.p1 {
+  background: var(--player-one-color);
+  box-shadow: 0 4px 12px rgba(6, 182, 212, 0.3);
+}
+
+.submit-btn.p2 {
+  background: var(--player-two-color);
+  box-shadow: 0 4px 12px rgba(217, 70, 239, 0.3);
+}
+
+.submit-btn:disabled {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--ion-color-medium);
+  box-shadow: none;
+  cursor: not-allowed;
+}
+
+.control-icon-btn {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 12px;
+  color: var(--ion-color-medium);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 40px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.control-icon-btn:not(:disabled):active {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+
+.control-icon-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+/* Animations */
+@keyframes bounce {
+  0%, 100% {
+    transform: translateY(0) scale(1);
+  }
+  50% {
+    transform: translateY(-10px) scale(1.05);
+  }
+}
+
+.bounce-animation {
+  animation: bounce 1.5s infinite ease-in-out;
+}
+
+/* 3-Player Unified View Styles */
+.three-player-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 12px 16px 32px 16px; /* Ensure bottom scoring panel clears the toggle arrow */
+  background: var(--app-bg);
+  box-sizing: border-box;
+  overflow-y: auto;
+}
+
+.player-picker-header {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.player-picker-btn {
+  flex: 1;
+  background: rgba(22, 24, 35, 0.65);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  padding: 8px 6px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.player-picker-btn.active-p1 {
+  border-color: var(--player-one-color);
+  background: rgba(6, 182, 212, 0.08);
+  box-shadow: 0 0 10px rgba(6, 182, 212, 0.15);
+}
+
+.player-picker-btn.active-p2 {
+  border-color: var(--player-two-color);
+  background: rgba(217, 70, 239, 0.08);
+  box-shadow: 0 0 10px rgba(217, 70, 239, 0.15);
+}
+
+.player-picker-btn.active-p3 {
+  border-color: var(--player-three-color);
+  background: rgba(16, 185, 129, 0.08);
+  box-shadow: 0 0 10px rgba(16, 185, 129, 0.15);
+}
+
+.player-picker-name {
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: var(--ion-color-medium);
+  letter-spacing: 0.5px;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+  width: 90%;
+  text-align: center;
+}
+
+.player-picker-score {
+  font-size: 18px;
+  font-weight: 800;
+  color: #fff;
+}
+
+.category-pill-btn.active-p3 {
+  background: rgba(16, 185, 129, 0.15);
+  color: var(--player-three-color);
+  border: 1px solid rgba(16, 185, 129, 0.25);
+  text-shadow: 0 0 8px rgba(16, 185, 129, 0.4);
+}
+
+.category-pill-btn.active-p4 {
+  background: rgba(234, 179, 8, 0.15);
+  color: var(--player-four-color);
+  border: 1px solid rgba(234, 179, 8, 0.25);
+  text-shadow: 0 0 8px rgba(234, 179, 8, 0.4);
+}
+
+.submit-btn.p3 {
+  background: var(--player-three-color);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+.submit-btn.p4 {
+  background: var(--player-four-color);
+  box-shadow: 0 4px 12px rgba(234, 179, 8, 0.3);
+}
+
+.stacked-progress-container {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 16px;
+  padding: 10px 12px;
+}
+
+/* 4-Player Teammate Picker Styles */
+.teammate-btn {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 6px;
+  padding: 4px 8px;
+  font-size: 9px;
+  font-weight: 800;
+  color: var(--ion-color-medium);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-transform: uppercase;
+  max-width: 70px;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.teammate-btn.active-p1 {
+  background: rgba(6, 182, 212, 0.18);
+  color: var(--player-one-color);
+  border-color: rgba(6, 182, 212, 0.35);
+  box-shadow: 0 0 6px rgba(6, 182, 212, 0.1);
+}
+
+.teammate-btn.active-p2 {
+  background: rgba(217, 70, 239, 0.18);
+  color: var(--player-two-color);
+  border-color: rgba(217, 70, 239, 0.35);
+  box-shadow: 0 0 6px rgba(217, 70, 239, 0.1);
+}
+
+.teammate-btn.active-p3 {
+  background: rgba(16, 185, 129, 0.18);
+  color: var(--player-three-color);
+  border-color: rgba(16, 185, 129, 0.35);
+  box-shadow: 0 0 6px rgba(16, 185, 129, 0.1);
+}
+
+.teammate-btn.active-p4 {
+  background: rgba(234, 179, 8, 0.18);
+  color: var(--player-four-color);
+  border-color: rgba(234, 179, 8, 0.35);
+  box-shadow: 0 0 6px rgba(234, 179, 8, 0.1);
+}
+
+/* Responsive adjustments for smaller screens */
+@media (max-height: 680px) {
+  .player-side {
+    padding: 8px 12px;
+  }
+  .score-row {
+    margin-bottom: 2px;
+  }
+  .category-pill-container {
+    margin: 6px 0;
+    padding: 2px;
+  }
+  .category-pill-btn {
+    padding: 4px 0;
+    font-size: 10px;
+  }
+  .point-btn-grid {
+    margin-top: 6px;
+    gap: 6px;
+  }
+  .point-pad-btn {
+    padding: 6px 0;
+    font-size: 13px;
+    border-radius: 8px;
+  }
+  .action-btn-grid {
+    margin-top: 6px;
+    gap: 6px;
+  }
+  .submit-btn, .control-icon-btn {
+    height: 34px;
+    font-size: 12px;
+    border-radius: 8px;
+  }
+  .grand-total-text {
+    font-size: 28px;
+  }
+  .draft-pill {
+    padding: 4px 10px;
+    font-size: 12px;
+  }
+  .teammate-btn {
+    padding: 2px 6px;
+    font-size: 8px;
+  }
+  .player-side.bottom {
+    padding-bottom: 28px; /* Slightly tighter on small screens but still clears the 24px toggle arrow */
+  }
+  .three-player-container {
+    padding: 8px 12px 28px 12px; /* bottom padding 28px to clear arrow */
+  }
+  .player-picker-header {
+    margin-bottom: 8px;
+    gap: 6px;
+  }
+  .player-picker-btn {
+    padding: 6px 4px;
+  }
+  .player-picker-score {
+    font-size: 16px;
+  }
+}
+
