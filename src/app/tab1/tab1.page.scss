@@ -420,13 +420,13 @@
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 6px;
   padding: 4px 8px;
-  font-size: 9px;
+  font-size: 12px;
   font-weight: 800;
   color: var(--ion-color-medium);
   cursor: pointer;
   transition: all 0.2s ease;
   text-transform: uppercase;
-  max-width: 70px;
+  max-width: 100%;
   text-overflow: ellipsis;
   overflow: hidden;
   white-space: nowrap;
@@ -503,7 +503,7 @@
   }
   .teammate-btn {
     padding: 2px 6px;
-    font-size: 8px;
+    font-size: 10px;
   }
   .player-side.bottom {
     padding-bottom: 28px; /* Slightly tighter on small screens but still clears the 24px toggle arrow */
