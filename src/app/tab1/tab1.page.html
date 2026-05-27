@@ -3,8 +3,8 @@
 
     <!-- 1. PRE-GAME PLAYER SELECTION SCREEN -->
     @if (!gameState.isActive) {
-      <div style="padding: 12px; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; padding-top: 20px; min-height: 100%;">
-        <div class="glass-panel" style="padding: 20px 16px; text-align: center; width: 100%; max-width: 420px; border-radius: 24px; box-shadow: 0 10px 40px rgba(0,0,0,0.4); overflow: hidden; box-sizing: border-box;">
+      <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; padding: 20px 12px 12px 12px; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; box-sizing: border-box; overflow-y: auto;">
+        <div class="glass-panel" style="padding: 20px 16px; text-align: center; width: 100%; max-width: 420px; border-radius: 24px; box-shadow: 0 10px 40px rgba(0,0,0,0.4); overflow: hidden; box-sizing: border-box; flex-shrink: 0;">
           <div style="font-size: 40px; margin-bottom: 8px;">🃏</div>
           <h2 style="font-weight: 800; font-size: 25px; margin: 0 0 4px 0; background: linear-gradient(135deg, var(--player-one-color) 0%, var(--player-two-color) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Cribbage Pegger</h2>
           <p style="color: var(--ion-color-medium); font-size: 13px; margin: 0 0 20px 0; line-height: 1.5;">Face-to-face scoring, hand calculator, and player statistics.</p>
@@ -95,99 +95,108 @@
           </div>
 
           <!-- SETUP INPUTS FOR 4 PLAYERS (TEAMS) -->
-          <div *ngIf="setupMode === 4" style="display: flex; flex-direction: column; gap: 10px; width: 100%;">
-            <!-- 2x2 Grid of Players -->
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%;">
-              
-              <!-- PLAYER 1 (Team 1) -->
-              <div style="text-align: left; padding: 10px; background: rgba(6, 182, 212, 0.03); border: 1px solid rgba(6, 182, 212, 0.15); border-radius: 14px; box-sizing: border-box;">
-                <div style="font-size: 10px; font-weight: 800; color: var(--player-one-color); text-transform: uppercase; margin-bottom: 6px; letter-spacing: 0.5px;">P1 (Team 1)</div>
-                <div *ngIf="!showP1CreateForm" style="display: flex; gap: 4px; align-items: center;">
-                  <div style="flex: 1; border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; background: rgba(0,0,0,0.2); height: 36px; display: flex; align-items: center; padding: 0 4px; min-width: 0;">
-                    <ion-select [(ngModel)]="selectedP1Id" placeholder="Select" interface="popover" style="width: 100%; color: #fff; font-weight: 600; font-size: 12px; --padding-start: 4px; --padding-end: 4px;">
+          <div *ngIf="setupMode === 4" style="display: flex; flex-direction: column; gap: 8px; width: 100%;">
+            
+            <!-- PLAYER 1 (Team 1) -->
+            <div style="display: flex; align-items: center; justify-content: space-between; padding: 4px 10px; background: rgba(6, 182, 212, 0.03); border: 1px solid rgba(6, 182, 212, 0.12); border-radius: 12px; min-height: 44px; box-sizing: border-box; width: 100%;">
+              <ng-container *ngIf="!showP1CreateForm">
+                <div style="font-size: 11px; font-weight: 800; color: var(--player-one-color); text-transform: uppercase; letter-spacing: 0.5px; flex-shrink: 0; min-width: 85px; text-align: left;">P1 (Team 1)</div>
+                <div style="flex: 1; display: flex; gap: 6px; align-items: center; min-width: 0;">
+                  <div style="flex: 1; border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; background: rgba(0,0,0,0.2); height: 32px; display: flex; align-items: center; padding: 0 6px; min-width: 0;">
+                    <ion-select [(ngModel)]="selectedP1Id" placeholder="Select" interface="popover" style="width: 100%; color: #fff; font-weight: 600; font-size: 12px; --padding-start: 2px; --padding-end: 2px;">
                       <ion-select-option *ngFor="let p of playersList" [value]="p.id">{{ p.name }}</ion-select-option>
                     </ion-select>
                   </div>
-                  <button (click)="showP1CreateForm = true" style="background: rgba(6, 182, 212, 0.1); border: 1px solid rgba(6, 182, 212, 0.2); border-radius: 8px; color: var(--player-one-color); width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;" class="clickable">
-                    <ion-icon name="person-add-outline" style="font-size: 16px;"></ion-icon>
+                  <button (click)="showP1CreateForm = true" style="background: rgba(6, 182, 212, 0.1); border: 1px solid rgba(6, 182, 212, 0.2); border-radius: 8px; color: var(--player-one-color); width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;" class="clickable">
+                    <ion-icon name="person-add-outline" style="font-size: 14px;"></ion-icon>
                   </button>
                 </div>
-                <div *ngIf="showP1CreateForm" style="background: rgba(0, 0, 0, 0.15); border: 1px solid rgba(6, 182, 212, 0.25); border-radius: 8px; padding: 4px; box-sizing: border-box;">
-                  <div style="display: flex; gap: 4px; align-items: center;">
-                    <input type="text" [(ngModel)]="newP1Name" placeholder="Name" style="flex: 1; min-width: 0; background: rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.08); border-radius: 6px; padding: 0 6px; color: #fff; height: 28px; outline: none; font-size: 11px;" />
-                    <button (click)="createPlayerInline(1)" [disabled]="!newP1Name.trim()" style="background: var(--player-one-color); border: none; border-radius: 6px; color: #fff; padding: 0 6px; font-weight: 700; font-size: 10px; height: 28px; cursor: pointer; flex-shrink: 0;">Add</button>
-                    <button (click)="showP1CreateForm = false" style="background: transparent; border: none; color: var(--ion-color-medium); font-size: 14px; font-weight: 600; width: 18px; height: 28px; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0;">✕</button>
-                  </div>
+              </ng-container>
+              <ng-container *ngIf="showP1CreateForm">
+                <div style="flex: 1; display: flex; gap: 6px; align-items: center; width: 100%;">
+                  <div style="font-size: 10px; font-weight: 800; color: var(--player-one-color); text-transform: uppercase; flex-shrink: 0; min-width: 45px;">New P1:</div>
+                  <input type="text" [(ngModel)]="newP1Name" placeholder="Name..." style="flex: 1; min-width: 0; background: rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 0 8px; color: #fff; height: 32px; outline: none; font-size: 12px;" />
+                  <button (click)="createPlayerInline(1)" [disabled]="!newP1Name.trim()" style="background: var(--player-one-color); border: none; border-radius: 8px; color: #fff; padding: 0 10px; font-weight: 700; font-size: 11px; height: 32px; cursor: pointer; flex-shrink: 0;">Add</button>
+                  <button (click)="showP1CreateForm = false" style="background: transparent; border: none; color: var(--ion-color-medium); font-size: 16px; font-weight: 600; width: 24px; height: 32px; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0;">✕</button>
                 </div>
-              </div>
-
-              <!-- PLAYER 3 (Team 1) -->
-              <div style="text-align: left; padding: 10px; background: rgba(16, 185, 129, 0.03); border: 1px solid rgba(16, 185, 129, 0.15); border-radius: 14px; box-sizing: border-box;">
-                <div style="font-size: 10px; font-weight: 800; color: var(--player-three-color); text-transform: uppercase; margin-bottom: 6px; letter-spacing: 0.5px;">P3 (Team 1)</div>
-                <div *ngIf="!showP3CreateForm" style="display: flex; gap: 4px; align-items: center;">
-                  <div style="flex: 1; border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; background: rgba(0,0,0,0.2); height: 36px; display: flex; align-items: center; padding: 0 4px; min-width: 0;">
-                    <ion-select [(ngModel)]="selectedP3Id" placeholder="Select" interface="popover" style="width: 100%; color: #fff; font-weight: 600; font-size: 12px; --padding-start: 4px; --padding-end: 4px;">
-                      <ion-select-option *ngFor="let p of playersList" [value]="p.id">{{ p.name }}</ion-select-option>
-                    </ion-select>
-                  </div>
-                  <button (click)="showP3CreateForm = true" style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.2); border-radius: 8px; color: var(--player-three-color); width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;" class="clickable">
-                    <ion-icon name="person-add-outline" style="font-size: 16px;"></ion-icon>
-                  </button>
-                </div>
-                <div *ngIf="showP3CreateForm" style="background: rgba(0, 0, 0, 0.15); border: 1px solid rgba(16, 185, 129, 0.25); border-radius: 8px; padding: 4px; box-sizing: border-box;">
-                  <div style="display: flex; gap: 4px; align-items: center;">
-                    <input type="text" [(ngModel)]="newP3Name" placeholder="Name" style="flex: 1; min-width: 0; background: rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.08); border-radius: 6px; padding: 0 6px; color: #fff; height: 28px; outline: none; font-size: 11px;" />
-                    <button (click)="createPlayerInline(3)" [disabled]="!newP3Name.trim()" style="background: var(--player-three-color); border: none; border-radius: 6px; color: #fff; padding: 0 6px; font-weight: 700; font-size: 10px; height: 28px; cursor: pointer; flex-shrink: 0;">Add</button>
-                    <button (click)="showP3CreateForm = false" style="background: transparent; border: none; color: var(--ion-color-medium); font-size: 14px; font-weight: 600; width: 18px; height: 28px; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0;">✕</button>
-                  </div>
-                </div>
-              </div>
-
-              <!-- PLAYER 2 (Team 2) -->
-              <div style="text-align: left; padding: 10px; background: rgba(217, 70, 239, 0.03); border: 1px solid rgba(217, 70, 239, 0.15); border-radius: 14px; box-sizing: border-box;">
-                <div style="font-size: 10px; font-weight: 800; color: var(--player-two-color); text-transform: uppercase; margin-bottom: 6px; letter-spacing: 0.5px;">P2 (Team 2)</div>
-                <div *ngIf="!showP2CreateForm" style="display: flex; gap: 4px; align-items: center;">
-                  <div style="flex: 1; border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; background: rgba(0,0,0,0.2); height: 36px; display: flex; align-items: center; padding: 0 4px; min-width: 0;">
-                    <ion-select [(ngModel)]="selectedP2Id" placeholder="Select" interface="popover" style="width: 100%; color: #fff; font-weight: 600; font-size: 12px; --padding-start: 4px; --padding-end: 4px;">
-                      <ion-select-option *ngFor="let p of playersList" [value]="p.id">{{ p.name }}</ion-select-option>
-                    </ion-select>
-                  </div>
-                  <button (click)="showP2CreateForm = true" style="background: rgba(217, 70, 239, 0.1); border: 1px solid rgba(217, 70, 239, 0.2); border-radius: 8px; color: var(--player-two-color); width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;" class="clickable">
-                    <ion-icon name="person-add-outline" style="font-size: 16px;"></ion-icon>
-                  </button>
-                </div>
-                <div *ngIf="showP2CreateForm" style="background: rgba(0, 0, 0, 0.15); border: 1px solid rgba(217, 70, 239, 0.25); border-radius: 8px; padding: 4px; box-sizing: border-box;">
-                  <div style="display: flex; gap: 4px; align-items: center;">
-                    <input type="text" [(ngModel)]="newP2Name" placeholder="Name" style="flex: 1; min-width: 0; background: rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.08); border-radius: 6px; padding: 0 6px; color: #fff; height: 28px; outline: none; font-size: 11px;" />
-                    <button (click)="createPlayerInline(2)" [disabled]="!newP2Name.trim()" style="background: var(--player-two-color); border: none; border-radius: 6px; color: #fff; padding: 0 6px; font-weight: 700; font-size: 10px; height: 28px; cursor: pointer; flex-shrink: 0;">Add</button>
-                    <button (click)="showP2CreateForm = false" style="background: transparent; border: none; color: var(--ion-color-medium); font-size: 14px; font-weight: 600; width: 18px; height: 28px; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0;">✕</button>
-                  </div>
-                </div>
-              </div>
-
-              <!-- PLAYER 4 (Team 2) -->
-              <div style="text-align: left; padding: 10px; background: rgba(234, 179, 8, 0.03); border: 1px solid rgba(234, 179, 8, 0.15); border-radius: 14px; box-sizing: border-box;">
-                <div style="font-size: 10px; font-weight: 800; color: var(--player-four-color); text-transform: uppercase; margin-bottom: 6px; letter-spacing: 0.5px;">P4 (Team 2)</div>
-                <div *ngIf="!showP4CreateForm" style="display: flex; gap: 4px; align-items: center;">
-                  <div style="flex: 1; border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; background: rgba(0,0,0,0.2); height: 36px; display: flex; align-items: center; padding: 0 4px; min-width: 0;">
-                    <ion-select [(ngModel)]="selectedP4Id" placeholder="Select" interface="popover" style="width: 100%; color: #fff; font-weight: 600; font-size: 12px; --padding-start: 4px; --padding-end: 4px;">
-                      <ion-select-option *ngFor="let p of playersList" [value]="p.id">{{ p.name }}</ion-select-option>
-                    </ion-select>
-                  </div>
-                  <button (click)="showP4CreateForm = true" style="background: rgba(234, 179, 8, 0.1); border: 1px solid rgba(234, 179, 8, 0.2); border-radius: 8px; color: var(--player-four-color); width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;" class="clickable">
-                    <ion-icon name="person-add-outline" style="font-size: 16px;"></ion-icon>
-                  </button>
-                </div>
-                <div *ngIf="showP4CreateForm" style="background: rgba(0, 0, 0, 0.15); border: 1px solid rgba(234, 179, 8, 0.25); border-radius: 8px; padding: 4px; box-sizing: border-box;">
-                  <div style="display: flex; gap: 4px; align-items: center;">
-                    <input type="text" [(ngModel)]="newP4Name" placeholder="Name" style="flex: 1; min-width: 0; background: rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.08); border-radius: 6px; padding: 0 6px; color: #fff; height: 28px; outline: none; font-size: 11px;" />
-                    <button (click)="createPlayerInline(4)" [disabled]="!newP4Name.trim()" style="background: var(--player-four-color); border: none; border-radius: 6px; color: #fff; padding: 0 6px; font-weight: 700; font-size: 10px; height: 28px; cursor: pointer; flex-shrink: 0;">Add</button>
-                    <button (click)="showP4CreateForm = false" style="background: transparent; border: none; color: var(--ion-color-medium); font-size: 14px; font-weight: 600; width: 18px; height: 28px; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0;">✕</button>
-                  </div>
-                </div>
-              </div>
-
+              </ng-container>
             </div>
+
+            <!-- PLAYER 3 (Team 1) -->
+            <div style="display: flex; align-items: center; justify-content: space-between; padding: 4px 10px; background: rgba(16, 185, 129, 0.03); border: 1px solid rgba(16, 185, 129, 0.12); border-radius: 12px; min-height: 44px; box-sizing: border-box; width: 100%;">
+              <ng-container *ngIf="!showP3CreateForm">
+                <div style="font-size: 11px; font-weight: 800; color: var(--player-three-color); text-transform: uppercase; letter-spacing: 0.5px; flex-shrink: 0; min-width: 85px; text-align: left;">P3 (Team 1)</div>
+                <div style="flex: 1; display: flex; gap: 6px; align-items: center; min-width: 0;">
+                  <div style="flex: 1; border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; background: rgba(0,0,0,0.2); height: 32px; display: flex; align-items: center; padding: 0 6px; min-width: 0;">
+                    <ion-select [(ngModel)]="selectedP3Id" placeholder="Select" interface="popover" style="width: 100%; color: #fff; font-weight: 600; font-size: 12px; --padding-start: 2px; --padding-end: 2px;">
+                      <ion-select-option *ngFor="let p of playersList" [value]="p.id">{{ p.name }}</ion-select-option>
+                    </ion-select>
+                  </div>
+                  <button (click)="showP3CreateForm = true" style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.2); border-radius: 8px; color: var(--player-three-color); width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;" class="clickable">
+                    <ion-icon name="person-add-outline" style="font-size: 14px;"></ion-icon>
+                  </button>
+                </div>
+              </ng-container>
+              <ng-container *ngIf="showP3CreateForm">
+                <div style="flex: 1; display: flex; gap: 6px; align-items: center; width: 100%;">
+                  <div style="font-size: 10px; font-weight: 800; color: var(--player-three-color); text-transform: uppercase; flex-shrink: 0; min-width: 45px;">New P3:</div>
+                  <input type="text" [(ngModel)]="newP3Name" placeholder="Name..." style="flex: 1; min-width: 0; background: rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 0 8px; color: #fff; height: 32px; outline: none; font-size: 12px;" />
+                  <button (click)="createPlayerInline(3)" [disabled]="!newP3Name.trim()" style="background: var(--player-three-color); border: none; border-radius: 8px; color: #fff; padding: 0 10px; font-weight: 700; font-size: 11px; height: 32px; cursor: pointer; flex-shrink: 0;">Add</button>
+                  <button (click)="showP3CreateForm = false" style="background: transparent; border: none; color: var(--ion-color-medium); font-size: 16px; font-weight: 600; width: 24px; height: 32px; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0;">✕</button>
+                </div>
+              </ng-container>
+            </div>
+
+            <!-- PLAYER 2 (Team 2) -->
+            <div style="display: flex; align-items: center; justify-content: space-between; padding: 4px 10px; background: rgba(217, 70, 239, 0.03); border: 1px solid rgba(217, 70, 239, 0.12); border-radius: 12px; min-height: 44px; box-sizing: border-box; width: 100%;">
+              <ng-container *ngIf="!showP2CreateForm">
+                <div style="font-size: 11px; font-weight: 800; color: var(--player-two-color); text-transform: uppercase; letter-spacing: 0.5px; flex-shrink: 0; min-width: 85px; text-align: left;">P2 (Team 2)</div>
+                <div style="flex: 1; display: flex; gap: 6px; align-items: center; min-width: 0;">
+                  <div style="flex: 1; border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; background: rgba(0,0,0,0.2); height: 32px; display: flex; align-items: center; padding: 0 6px; min-width: 0;">
+                    <ion-select [(ngModel)]="selectedP2Id" placeholder="Select" interface="popover" style="width: 100%; color: #fff; font-weight: 600; font-size: 12px; --padding-start: 2px; --padding-end: 2px;">
+                      <ion-select-option *ngFor="let p of playersList" [value]="p.id">{{ p.name }}</ion-select-option>
+                    </ion-select>
+                  </div>
+                  <button (click)="showP2CreateForm = true" style="background: rgba(217, 70, 239, 0.1); border: 1px solid rgba(217, 70, 239, 0.2); border-radius: 8px; color: var(--player-two-color); width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;" class="clickable">
+                    <ion-icon name="person-add-outline" style="font-size: 14px;"></ion-icon>
+                  </button>
+                </div>
+              </ng-container>
+              <ng-container *ngIf="showP2CreateForm">
+                <div style="flex: 1; display: flex; gap: 6px; align-items: center; width: 100%;">
+                  <div style="font-size: 10px; font-weight: 800; color: var(--player-two-color); text-transform: uppercase; flex-shrink: 0; min-width: 45px;">New P2:</div>
+                  <input type="text" [(ngModel)]="newP2Name" placeholder="Name..." style="flex: 1; min-width: 0; background: rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 0 8px; color: #fff; height: 32px; outline: none; font-size: 12px;" />
+                  <button (click)="createPlayerInline(2)" [disabled]="!newP2Name.trim()" style="background: var(--player-two-color); border: none; border-radius: 8px; color: #fff; padding: 0 10px; font-weight: 700; font-size: 11px; height: 32px; cursor: pointer; flex-shrink: 0;">Add</button>
+                  <button (click)="showP2CreateForm = false" style="background: transparent; border: none; color: var(--ion-color-medium); font-size: 16px; font-weight: 600; width: 24px; height: 32px; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0;">✕</button>
+                </div>
+              </ng-container>
+            </div>
+
+            <!-- PLAYER 4 (Team 2) -->
+            <div style="display: flex; align-items: center; justify-content: space-between; padding: 4px 10px; background: rgba(234, 179, 8, 0.03); border: 1px solid rgba(234, 179, 8, 0.12); border-radius: 12px; min-height: 44px; box-sizing: border-box; width: 100%;">
+              <ng-container *ngIf="!showP4CreateForm">
+                <div style="font-size: 11px; font-weight: 800; color: var(--player-four-color); text-transform: uppercase; letter-spacing: 0.5px; flex-shrink: 0; min-width: 85px; text-align: left;">P4 (Team 2)</div>
+                <div style="flex: 1; display: flex; gap: 6px; align-items: center; min-width: 0;">
+                  <div style="flex: 1; border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; background: rgba(0,0,0,0.2); height: 32px; display: flex; align-items: center; padding: 0 6px; min-width: 0;">
+                    <ion-select [(ngModel)]="selectedP4Id" placeholder="Select" interface="popover" style="width: 100%; color: #fff; font-weight: 600; font-size: 12px; --padding-start: 2px; --padding-end: 2px;">
+                      <ion-select-option *ngFor="let p of playersList" [value]="p.id">{{ p.name }}</ion-select-option>
+                    </ion-select>
+                  </div>
+                  <button (click)="showP4CreateForm = true" style="background: rgba(234, 179, 8, 0.1); border: 1px solid rgba(234, 179, 8, 0.2); border-radius: 8px; color: var(--player-four-color); width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;" class="clickable">
+                    <ion-icon name="person-add-outline" style="font-size: 14px;"></ion-icon>
+                  </button>
+                </div>
+              </ng-container>
+              <ng-container *ngIf="showP4CreateForm">
+                <div style="flex: 1; display: flex; gap: 6px; align-items: center; width: 100%;">
+                  <div style="font-size: 10px; font-weight: 800; color: var(--player-four-color); text-transform: uppercase; flex-shrink: 0; min-width: 45px;">New P4:</div>
+                  <input type="text" [(ngModel)]="newP4Name" placeholder="Name..." style="flex: 1; min-width: 0; background: rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 0 8px; color: #fff; height: 32px; outline: none; font-size: 12px;" />
+                  <button (click)="createPlayerInline(4)" [disabled]="!newP4Name.trim()" style="background: var(--player-four-color); border: none; border-radius: 8px; color: #fff; padding: 0 10px; font-weight: 700; font-size: 11px; height: 32px; cursor: pointer; flex-shrink: 0;">Add</button>
+                  <button (click)="showP4CreateForm = false" style="background: transparent; border: none; color: var(--ion-color-medium); font-size: 16px; font-weight: 600; width: 24px; height: 32px; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0;">✕</button>
+                </div>
+              </ng-container>
+            </div>
+
           </div>
 
           <button (click)="startNewGame()" [disabled]="!isValidSetup" style="width: 100%; border: none; border-radius: 24px; height: 50px; font-weight: 800; font-size: 15px; color: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s ease; background: linear-gradient(135deg, var(--player-one-color), var(--player-two-color)); box-shadow: 0 8px 24px rgba(6,182,212,0.25); margin-top: 24px;" class="clickable">
@@ -306,10 +315,10 @@
                 <div class="grand-total-text" [class.glow-cyan]="p1ActiveScorer === 1" [class.glow-emerald]="p1ActiveScorer === 3">{{ gameState.player1.score }}</div>
                 <!-- 4P Mode Active Player Selector -->
                 <div *ngIf="gameState.mode === 4" style="display: flex; flex-direction: column; gap: 4px; background: rgba(0, 0, 0, 0.25); padding: 3px; border-radius: 8px; margin-top: 6px; width: 100%; max-width: 84px; box-sizing: border-box;">
-                  <button (click)="p1ActiveScorer = 1" [class.active-p1]="p1ActiveScorer === 1" class="teammate-btn" style="font-size: 9px; padding: 4px 6px; max-width: 100%; width: 100%; text-align: center; display: block; box-sizing: border-box;">
+                  <button (click)="p1ActiveScorer = 1" [class.active-p1]="p1ActiveScorer === 1" [style.border-color]="p1ActiveScorer !== 1 ? 'rgba(6, 182, 212, 0.25)' : null" class="teammate-btn" style="font-size: 9px; padding: 4px 6px; max-width: 100%; width: 100%; text-align: center; display: block; box-sizing: border-box;">
                     {{ getFirstName(gameState.player1.name) }}
                   </button>
-                  <button (click)="p1ActiveScorer = 3" [class.active-p3]="p1ActiveScorer === 3" class="teammate-btn" style="font-size: 9px; padding: 4px 6px; max-width: 100%; width: 100%; text-align: center; display: block; box-sizing: border-box;">
+                  <button (click)="p1ActiveScorer = 3" [class.active-p3]="p1ActiveScorer === 3" [style.border-color]="p1ActiveScorer !== 3 ? 'rgba(16, 185, 129, 0.25)' : null" class="teammate-btn" style="font-size: 9px; padding: 4px 6px; max-width: 100%; width: 100%; text-align: center; display: block; box-sizing: border-box;">
                     {{ getFirstName(gameState.player3?.name || '') }}
                   </button>
                 </div>
@@ -335,7 +344,7 @@
 
               <div class="opponent-score-box">
                 <div class="prev-score-label">Opponent</div>
-                <div style="font-size: 24px; font-weight: 800; color: var(--player-two-color);">{{ gameState.player2.score }}</div>
+                <div style="font-size: 24px; font-weight: 800; transition: color 0.2s ease;" [style.color]="gameState.mode === 4 ? getPlayerColor(p2ActiveScorer) : 'var(--player-two-color)'">{{ gameState.player2.score }}</div>
                 <div style="font-size: 10px; font-weight: 600; color: var(--ion-color-medium); text-transform: uppercase; letter-spacing: 0.5px;">
                   {{ gameState.mode === 4 ? (getFirstName(gameState.player2.name) + ' & ' + getFirstName(gameState.player4?.name || '')) : getFirstName(gameState.player2.name) }}
                 </div>
@@ -407,7 +416,7 @@
           <div class="player-side bottom">
             <!-- Local progress bar inside P2 view -->
             <div class="progress-track" style="margin-bottom: 12px; border-radius: 3px;">
-              <div class="progress-fill-p2" [style.width.%]="(gameState.player2.score / 121) * 100"></div>
+              <div [class.progress-fill-p2]="p2ActiveScorer === 2" [class.progress-fill-p4]="p2ActiveScorer === 4" [style.width.%]="(gameState.player2.score / 121) * 100"></div>
             </div>
 
             <!-- Own score & Opponent score header -->
@@ -417,10 +426,10 @@
                 <div class="grand-total-text" [class.glow-fuchsia]="p2ActiveScorer === 2" [class.glow-amber]="p2ActiveScorer === 4">{{ gameState.player2.score }}</div>
                 <!-- 4P Mode Active Player Selector -->
                 <div *ngIf="gameState.mode === 4" style="display: flex; flex-direction: column; gap: 4px; background: rgba(0, 0, 0, 0.25); padding: 3px; border-radius: 8px; margin-top: 6px; width: 100%; max-width: 84px; box-sizing: border-box;">
-                  <button (click)="p2ActiveScorer = 2" [class.active-p2]="p2ActiveScorer === 2" class="teammate-btn" style="font-size: 9px; padding: 4px 6px; max-width: 100%; width: 100%; text-align: center; display: block; box-sizing: border-box;">
+                  <button (click)="p2ActiveScorer = 2" [class.active-p2]="p2ActiveScorer === 2" [style.border-color]="p2ActiveScorer !== 2 ? 'rgba(217, 70, 239, 0.25)' : null" class="teammate-btn" style="font-size: 9px; padding: 4px 6px; max-width: 100%; width: 100%; text-align: center; display: block; box-sizing: border-box;">
                     {{ getFirstName(gameState.player2.name) }}
                   </button>
-                  <button (click)="p2ActiveScorer = 4" [class.active-p4]="p2ActiveScorer === 4" class="teammate-btn" style="font-size: 9px; padding: 4px 6px; max-width: 100%; width: 100%; text-align: center; display: block; box-sizing: border-box;">
+                  <button (click)="p2ActiveScorer = 4" [class.active-p4]="p2ActiveScorer === 4" [style.border-color]="p2ActiveScorer !== 4 ? 'rgba(234, 179, 8, 0.25)' : null" class="teammate-btn" style="font-size: 9px; padding: 4px 6px; max-width: 100%; width: 100%; text-align: center; display: block; box-sizing: border-box;">
                     {{ getFirstName(gameState.player4?.name || '') }}
                   </button>
                 </div>
@@ -446,7 +455,7 @@
 
               <div class="opponent-score-box">
                 <div class="prev-score-label">Opponent</div>
-                <div style="font-size: 24px; font-weight: 800; color: var(--player-one-color);">{{ gameState.player1.score }}</div>
+                <div style="font-size: 24px; font-weight: 800; transition: color 0.2s ease;" [style.color]="gameState.mode === 4 ? getPlayerColor(p1ActiveScorer) : 'var(--player-one-color)'">{{ gameState.player1.score }}</div>
                 <div style="font-size: 10px; font-weight: 600; color: var(--ion-color-medium); text-transform: uppercase; letter-spacing: 0.5px;">
                   {{ gameState.mode === 4 ? (getFirstName(gameState.player1.name) + ' & ' + getFirstName(gameState.player3?.name || '')) : getFirstName(gameState.player1.name) }}
                 </div>
