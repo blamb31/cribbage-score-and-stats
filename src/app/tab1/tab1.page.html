@@ -314,11 +314,11 @@
                 <div class="prev-score-label">Prev: {{ gameState.player1.prevScore }}</div>
                 <div class="grand-total-text" [class.glow-cyan]="p1ActiveScorer === 1" [class.glow-emerald]="p1ActiveScorer === 3">{{ gameState.player1.score }}</div>
                 <!-- 4P Mode Active Player Selector -->
-                <div *ngIf="gameState.mode === 4" style="display: flex; flex-direction: column; gap: 4px; background: rgba(0, 0, 0, 0.25); padding: 3px; border-radius: 8px; margin-top: 6px; width: 100%; max-width: 84px; box-sizing: border-box;">
-                  <button (click)="p1ActiveScorer = 1" [class.active-p1]="p1ActiveScorer === 1" [style.border-color]="p1ActiveScorer !== 1 ? 'rgba(6, 182, 212, 0.25)' : null" class="teammate-btn" style="padding: 4px 6px; max-width: 100%; width: 100%; text-align: center; display: block; box-sizing: border-box;">
+                <div *ngIf="gameState.mode === 4" style="display: flex; flex-direction: column; gap: 4px; background: rgba(0, 0, 0, 0.25); padding: 3px; border-radius: 8px; margin-top: 6px; width: fit-content; min-width: 80px; box-sizing: border-box;">
+                  <button (click)="p1ActiveScorer = 1" [class.active-p1]="p1ActiveScorer === 1" [style.border-color]="p1ActiveScorer !== 1 ? 'rgba(6, 182, 212, 0.25)' : null" class="teammate-btn" style="padding: 4px 6px; width: 100%; text-align: center; display: block; box-sizing: border-box;">
                     {{ getFirstName(gameState.player1.name) }}
                   </button>
-                  <button (click)="p1ActiveScorer = 3" [class.active-p3]="p1ActiveScorer === 3" [style.border-color]="p1ActiveScorer !== 3 ? 'rgba(16, 185, 129, 0.25)' : null" class="teammate-btn" style="padding: 4px 6px; max-width: 100%; width: 100%; text-align: center; display: block; box-sizing: border-box;">
+                  <button (click)="p1ActiveScorer = 3" [class.active-p3]="p1ActiveScorer === 3" [style.border-color]="p1ActiveScorer !== 3 ? 'rgba(16, 185, 129, 0.25)' : null" class="teammate-btn" style="padding: 4px 6px; width: 100%; text-align: center; display: block; box-sizing: border-box;">
                     {{ getFirstName(gameState.player3?.name || '') }}
                   </button>
                 </div>
@@ -417,11 +417,11 @@
                 <div class="prev-score-label">Prev: {{ gameState.player2.prevScore }}</div>
                 <div class="grand-total-text" [class.glow-fuchsia]="p2ActiveScorer === 2" [class.glow-amber]="p2ActiveScorer === 4">{{ gameState.player2.score }}</div>
                 <!-- 4P Mode Active Player Selector -->
-                <div *ngIf="gameState.mode === 4" style="display: flex; flex-direction: column; gap: 4px; background: rgba(0, 0, 0, 0.25); padding: 3px; border-radius: 8px; margin-top: 6px; width: 100%; max-width: 84px; box-sizing: border-box;">
-                  <button (click)="p2ActiveScorer = 2" [class.active-p2]="p2ActiveScorer === 2" [style.border-color]="p2ActiveScorer !== 2 ? 'rgba(217, 70, 239, 0.25)' : null" class="teammate-btn" style="padding: 4px 6px; max-width: 100%; width: 100%; text-align: center; display: block; box-sizing: border-box;">
+                <div *ngIf="gameState.mode === 4" style="display: flex; flex-direction: column; gap: 4px; background: rgba(0, 0, 0, 0.25); padding: 3px; border-radius: 8px; margin-top: 6px; width: fit-content; min-width: 80px; box-sizing: border-box;">
+                  <button (click)="p2ActiveScorer = 2" [class.active-p2]="p2ActiveScorer === 2" [style.border-color]="p2ActiveScorer !== 2 ? 'rgba(217, 70, 239, 0.25)' : null" class="teammate-btn" style="padding: 4px 6px; width: 100%; text-align: center; display: block; box-sizing: border-box;">
                     {{ getFirstName(gameState.player2.name) }}
                   </button>
-                  <button (click)="p2ActiveScorer = 4" [class.active-p4]="p2ActiveScorer === 4" [style.border-color]="p2ActiveScorer !== 4 ? 'rgba(234, 179, 8, 0.25)' : null" class="teammate-btn" style="padding: 4px 6px; max-width: 100%; width: 100%; text-align: center; display: block; box-sizing: border-box;">
+                  <button (click)="p2ActiveScorer = 4" [class.active-p4]="p2ActiveScorer === 4" [style.border-color]="p2ActiveScorer !== 4 ? 'rgba(234, 179, 8, 0.25)' : null" class="teammate-btn" style="padding: 4px 6px; width: 100%; text-align: center; display: block; box-sizing: border-box;">
                     {{ getFirstName(gameState.player4?.name || '') }}
                   </button>
                 </div>
