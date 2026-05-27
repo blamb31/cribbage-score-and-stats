@@ -1,10 +1,5 @@
-<ion-tabs>
-  <!-- Floating Menu Collapse Trigger Button -->
-  <div class="menu-toggle-btn" (click)="toggleMenu()" [style.bottom]="menuOpen ? '50px' : '10px'">
-    <ion-icon [name]="menuOpen ? 'chevron-down-outline' : 'chevron-up-outline'"></ion-icon>
-  </div>
-
-  <ion-tab-bar slot="bottom" [style.transform]="menuOpen ? 'translateY(0)' : 'translateY(100%)'">
+<ion-tabs [class.score-tab-active]="currentTab === 'tab1'">
+  <ion-tab-bar slot="bottom" [style.transform]="(currentTab !== 'tab1' || gameService.showTabBar) ? 'translateY(0)' : 'translateY(100%)'">
     <ion-tab-button tab="tab1" href="/tabs/tab1">
       <ion-icon aria-hidden="true" name="game-controller-outline"></ion-icon>
       <ion-label>Play</ion-label>
@@ -19,5 +14,11 @@
       <ion-icon aria-hidden="true" name="analytics-outline"></ion-icon>
       <ion-label>Stats & History</ion-label>
     </ion-tab-button>
+
   </ion-tab-bar>
+
+  <!-- Absolute floating close button halfway over the top-right edge of the navbar (positioned outside the tab bar to prevent cropping) -->
+  <div *ngIf="currentTab === 'tab1'" (click)="gameService.toggleTabBar()" style="position: absolute; bottom: 36px; right: 16px; width: 28px; height: 28px; border-radius: 50%; background: rgba(22, 24, 35, 0.95); border: 1px solid rgba(255, 255, 255, 0.2); display: flex; align-items: center; justify-content: center; color: var(--ion-color-danger); box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4); z-index: 1010; cursor: pointer; transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;" [style.transform]="gameService.showTabBar ? 'translateY(0)' : 'translateY(80px)'" [style.opacity]="gameService.showTabBar ? '1' : '0'" [style.pointer-events]="gameService.showTabBar ? 'auto' : 'none'" class="clickable" title="Hide menu">
+    <ion-icon name="close-outline" style="font-size: 16px; font-weight: 800;"></ion-icon>
+  </div>
 </ion-tabs>

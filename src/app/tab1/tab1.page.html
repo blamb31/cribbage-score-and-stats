@@ -245,9 +245,14 @@
               </div>
             </div>
 
-            <!-- Floating Reset Match Button for 3P -->
-            <div (click)="resetGame()" style="position: absolute; top: 12px; right: 12px; padding: 4px 10px; border-radius: 12px; background: rgba(22, 24, 35, 0.9); border: 1px solid rgba(255, 255, 255, 0.15); color: var(--ion-color-danger); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s ease; font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px;" class="clickable">
-              Reset
+            <!-- Floating Buttons for 3P (Settings and Reset) -->
+            <div style="position: absolute; top: 12px; right: 12px; display: flex; gap: 6px; align-items: center; z-index: 10;">
+              <div (click)="gameService.toggleTabBar()" style="padding: 4px 8px; border-radius: 12px; background: rgba(22, 24, 35, 0.9); border: 1px solid rgba(255, 255, 255, 0.15); color: rgba(255,255,255,0.8); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s ease; font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; height: 23px; box-sizing: border-box;" class="clickable" title="Toggle navigation menu">
+                <ion-icon name="settings-outline" style="font-size: 13px;"></ion-icon>
+              </div>
+              <div (click)="resetGame()" style="padding: 4px 10px; border-radius: 12px; background: rgba(22, 24, 35, 0.9); border: 1px solid rgba(255, 255, 255, 0.15); color: var(--ion-color-danger); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s ease; font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; height: 23px; box-sizing: border-box;" class="clickable">
+                Reset
+              </div>
             </div>
           </div>
 
@@ -397,9 +402,14 @@
               <div class="progress-fill-p1" [style.width.%]="(gameState.player1.score / 121) * 100"></div>
             </div>
             
-            <!-- Middle reset button -->
-            <div class="center-reset-btn" (click)="resetGame()">
-              Reset
+            <!-- Center action buttons wrapper (Settings and Reset) -->
+            <div class="center-action-buttons">
+              <div class="center-settings-btn" (click)="gameService.toggleTabBar()" title="Toggle navigation menu">
+                <ion-icon name="settings-outline"></ion-icon>
+              </div>
+              <div class="center-reset-btn" (click)="resetGame()">
+                Reset
+              </div>
             </div>
 
             <!-- Player 2 Progress Bar (fills left-to-right) -->

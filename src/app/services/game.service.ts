@@ -69,11 +69,21 @@ export class GameService {
   private gameStateSub = new BehaviorSubject<GameState>(this.getDefaultState());
   public gameState$: Observable<GameState> = this.gameStateSub.asObservable();
 
+  public get currentGameState(): GameState {
+    return this.gameStateSub.value;
+  }
+
   private historySub = new BehaviorSubject<CompletedGame[]>(this.loadHistoryFromStorage());
   public history$: Observable<CompletedGame[]> = this.historySub.asObservable();
 
   private playersSub = new BehaviorSubject<PlayerProfile[]>(this.loadPlayersFromStorage());
   public players$: Observable<PlayerProfile[]> = this.playersSub.asObservable();
+
+  public showTabBar = true;
+
+  public toggleTabBar() {
+    this.showTabBar = !this.showTabBar;
+  }
 
   constructor() {
     this.restoreGameState();
@@ -231,6 +241,7 @@ export class GameService {
       state.player4 = { name: (p4Name || '').trim() || 'Player 4', score: 0, prevScore: 0, color: 'var(--player-four-color)' };
     }
 
+    this.showTabBar = false;
     this.updateState(state);
     this.triggerHaptic(ImpactStyle.Medium);
   }
@@ -412,6 +423,7 @@ export class GameService {
   }
 
   public resetGame() {
+    this.showTabBar = true;
     const state = this.getDefaultState();
     this.updateState(state);
     localStorage.removeItem(this.STATE_STORAGE_KEY);
@@ -471,6 +483,9 @@ export class GameService {
       if (stored) {
         const state = JSON.parse(stored);
         this.gameStateSub.next(state);
+        if (state.isActive) {
+          this.showTabBar = false;
+        }
       }
     } catch (e) {
       console.error('Failed to restore active game state', e);

@@ -1,3 +1,8 @@
+ion-content {
+  --padding-bottom: 0px !important;
+  --keyboard-offset: 0px !important;
+}
+
 /* Split-Screen Face-to-Face Layout */
 .split-container {
   display: flex;
@@ -31,7 +36,7 @@
 
 .player-side.bottom {
   border-top: 1px solid rgba(255, 255, 255, 0.05);
-  padding-bottom: 32px; /* Ensure submit button clears the floating menu toggle arrow */
+  padding-bottom: calc(28px + env(safe-area-inset-bottom));
 }
 
 /* Center Progress Divider */
@@ -89,11 +94,44 @@
   transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.center-reset-btn {
+.center-action-buttons {
   position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  z-index: 110;
+}
+
+.center-settings-btn {
+  padding: 4px 8px;
+  border-radius: 12px;
+  background: rgba(22, 24, 35, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: rgba(255, 255, 255, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.6);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  height: 23px;
+  box-sizing: border-box;
+}
+
+.center-settings-btn:active {
+  transform: scale(0.95);
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.center-settings-btn ion-icon {
+  font-size: 13px;
+}
+
+.center-reset-btn {
   padding: 4px 10px;
   border-radius: 12px;
   background: rgba(22, 24, 35, 0.9);
@@ -107,14 +145,15 @@
   align-items: center;
   justify-content: center;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.6);
-  z-index: 110;
   cursor: pointer;
   transition: all 0.2s ease;
   white-space: nowrap;
+  height: 23px;
+  box-sizing: border-box;
 }
 
 .center-reset-btn:active {
-  transform: translate(-50%, -50%) scale(0.95);
+  transform: scale(0.95);
   background: rgba(239, 68, 68, 0.15);
   border-color: var(--ion-color-danger);
 }
@@ -174,7 +213,7 @@
 /* Point Buttons */
 .point-btn-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(2, 1fr);
   gap: 8px;
   margin-top: 10px;
 }
@@ -269,8 +308,8 @@
 }
 
 .submit-btn:disabled {
-  background: rgba(255, 255, 255, 0.05);
-  color: var(--ion-color-medium);
+  opacity: 0.35;
+  color: rgba(255, 255, 255, 0.7);
   box-shadow: none;
   cursor: not-allowed;
 }
@@ -317,7 +356,7 @@
   display: flex;
   flex-direction: column;
   height: 100%;
-  padding: 12px 16px 32px 16px; /* Ensure bottom scoring panel clears the toggle arrow */
+  padding: 12px 16px calc(28px + env(safe-area-inset-bottom)) 16px;
   background: var(--app-bg);
   box-sizing: border-box;
   overflow-y: auto;
@@ -503,10 +542,10 @@
     font-size: 10px;
   }
   .player-side.bottom {
-    padding-bottom: 28px; /* Slightly tighter on small screens but still clears the 24px toggle arrow */
+    padding-bottom: calc(20px + env(safe-area-inset-bottom));
   }
   .three-player-container {
-    padding: 8px 12px 28px 12px; /* bottom padding 28px to clear arrow */
+    padding: 8px 12px calc(20px + env(safe-area-inset-bottom)) 12px;
   }
   .player-picker-header {
     margin-bottom: 8px;

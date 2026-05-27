@@ -13,7 +13,8 @@ import { addIcons } from 'ionicons';
 import { 
   playOutline, refreshOutline, arrowUndoOutline, arrowRedoOutline, 
   personOutline, trophyOutline, textOutline, bookmarkOutline, addOutline,
-  closeOutline, personAddOutline, checkmarkCircleOutline, trashOutline
+  closeOutline, personAddOutline, checkmarkCircleOutline, trashOutline,
+  settingsOutline
 } from 'ionicons/icons';
 
 @Component({
@@ -108,7 +109,8 @@ export class Tab1Page implements OnInit, AfterViewInit, OnDestroy {
     addIcons({
       playOutline, refreshOutline, arrowUndoOutline, arrowRedoOutline,
       personOutline, trophyOutline, textOutline, bookmarkOutline, addOutline,
-      closeOutline, personAddOutline, checkmarkCircleOutline, trashOutline
+      closeOutline, personAddOutline, checkmarkCircleOutline, trashOutline,
+      settingsOutline
     });
   }
 
