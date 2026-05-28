@@ -6,12 +6,13 @@ import { Subscription } from 'rxjs';
 import { 
   IonHeader, IonToolbar, IonTitle, IonContent, IonGrid, IonRow, IonCol, 
   IonButton, IonIcon, IonCard, IonCardContent, IonCardHeader, IonCardTitle,
-  IonItem, IonLabel, IonSegment, IonSegmentButton, IonList, IonNote, IonButtons
+  IonItem, IonLabel, IonSegment, IonSegmentButton, IonList, IonNote, IonButtons,
+  IonModal
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import { 
   calculatorOutline, trashOutline, checkmarkCircleOutline, addOutline, 
-  helpCircleOutline, sparklesOutline
+  helpCircleOutline, sparklesOutline, informationCircleOutline
 } from 'ionicons/icons';
 
 export interface Card {
@@ -50,7 +51,8 @@ export interface ScoreBreakdown {
     IonSegmentButton,
     IonList,
     IonNote,
-    IonButtons
+    IonButtons,
+    IonModal
 ]
 })
 export class Tab2Page implements OnInit, OnDestroy {
@@ -103,10 +105,14 @@ export class Tab2Page implements OnInit, OnDestroy {
   // Who to apply points to (defaults to current scoring player)
   public applyToPlayer: number = 1;
 
+  // Rules modal state
+  public isRulesModalOpen = false;
+  public activeRulesTab = 'general';
+
   constructor(public gameService: GameService) {
     addIcons({
       calculatorOutline, trashOutline, checkmarkCircleOutline, addOutline, 
-      helpCircleOutline, sparklesOutline
+      helpCircleOutline, sparklesOutline, informationCircleOutline
     });
   }
 
