@@ -6,7 +6,7 @@
 
 <ion-content [fullscreen]="true">
   <!-- Segment Selector Header -->
-  <div style="padding: 12px 16px 0 16px;">
+  <div id="stats-logs-list" style="padding: 12px 16px 0 16px;">
     <ion-segment [(ngModel)]="activeSegment" mode="ios" style="--background: rgba(255, 255, 255, 0.03); height: 40px;">
       <ion-segment-button value="stats">
         <ion-label style="font-weight: 700; font-size: 13px;">Player Stats</ion-label>
@@ -24,7 +24,7 @@
       <!-- Player Profile Selector -->
       <div style="margin-bottom: 20px;">
         <div style="font-size: 11px; font-weight: 800; color: var(--ion-color-medium); text-transform: uppercase; margin-bottom: 8px; letter-spacing: 0.5px;">Select Player Profile</div>
-        <div style="display: flex; gap: 8px; align-items: center;">
+        <div id="stats-player-select" style="display: flex; gap: 8px; align-items: center;">
           <div style="flex: 1; border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; background: rgba(22, 24, 35, 0.65); height: 48px; display: flex; align-items: center; padding: 0 8px;">
             <ion-select [(ngModel)]="selectedPlayerId" (ionChange)="onPlayerChange()" placeholder="Choose Player" interface="popover" style="width: 100%; color: #fff; font-weight: 600; font-size: 14px;">
               <ion-select-option *ngFor="let p of playersList" [value]="p.id">{{ p.name }}</ion-select-option>
@@ -41,7 +41,7 @@
         </div>
 
         <!-- Game Mode Stats Filter -->
-        <ion-segment [(ngModel)]="statsModeFilter" (ionChange)="updateSelectedPlayerStats()" mode="ios" style="--background: rgba(255, 255, 255, 0.02); height: 34px; margin-top: 12px;">
+        <ion-segment id="stats-player-count" [(ngModel)]="statsModeFilter" (ionChange)="updateSelectedPlayerStats()" mode="ios" style="--background: rgba(255, 255, 255, 0.02); height: 34px; margin-top: 12px;">
           <ion-segment-button value="all">
             <ion-label style="font-size: 11px; font-weight: 700;">All Modes</ion-label>
           </ion-segment-button>
@@ -69,7 +69,7 @@
         </div>
       } @else if (activeStats) {
         <!-- Overall Record Card -->
-        <div class="glass-panel" style="padding: 16px; margin-bottom: 16px; text-align: center;">
+        <div id="stats-records-card" class="glass-panel" style="padding: 16px; margin-bottom: 16px; text-align: center;">
           <div class="stat-label">Win / Loss Record</div>
           
           <div class="record-circle-container">
@@ -113,7 +113,7 @@
         </div>
 
         <!-- Average Scored Points Card -->
-        <div class="glass-panel" style="padding: 16px; margin-bottom: 16px;">
+        <div id="stats-averages-table" class="glass-panel" style="padding: 16px; margin-bottom: 16px;">
           <div class="stat-label" style="margin-bottom: 10px; display: flex; align-items: center; gap: 6px;">
             <ion-icon name="bar-chart-outline" style="color: var(--player-one-color); font-size: 16px;"></ion-icon>
             Average Scoring Breakdown
@@ -390,4 +390,58 @@
       </div>
     </ng-template>
   </ion-modal>
+
+  <!-- WALKTHROUGH OVERLAY -->
+  <ng-container *ngIf="onboardingService.isActive && onboardingService.currentStep">
+    <!-- Highlight overlay cutout mask -->
+    <div class="walkthrough-highlight"
+         [style.top.px]="onboardingService.highlightRect.top"
+         [style.left.px]="onboardingService.highlightRect.left"
+         [style.width.px]="onboardingService.highlightRect.width"
+         [style.height.px]="onboardingService.highlightRect.height">
+    </div>
+
+    <!-- Tooltip box -->
+    <div class="walkthrough-tooltip animate-fade-in"
+         [style.top.px]="onboardingService.tooltipTop"
+         [style.left.px]="onboardingService.tooltipLeft"
+         style="pointer-events: auto;">
+      
+      <!-- Header -->
+      <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
+        <h4 style="margin: 0; font-size: 14px; font-weight: 800; color: #fff;">
+          {{ onboardingService.currentStep.title }}
+        </h4>
+        <span style="font-size: 10px; font-weight: 700; color: var(--ion-color-medium); background: rgba(255,255,255,0.06); padding: 2px 6px; border-radius: 8px; flex-shrink: 0;">
+          {{ onboardingService.currentStepIndex + 1 }}/{{ onboardingService.totalSteps }}
+        </span>
+      </div>
+
+      <!-- Description -->
+      <p style="margin: 0 0 16px 0; font-size: 12px; line-height: 1.5; color: rgba(255,255,255,0.8);">
+        {{ onboardingService.currentStep.description }}
+      </p>
+
+      <!-- Actions -->
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <button (click)="onboardingService.skip()" 
+                style="background: transparent; border: none; color: var(--ion-color-medium); font-size: 12px; font-weight: 600; padding: 6px 0; cursor: pointer;">
+          Skip
+        </button>
+        <div style="display: flex; gap: 8px;">
+          <button (click)="onboardingService.prev()" 
+                  [disabled]="onboardingService.currentStepIndex === 0"
+                  style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: #fff; padding: 6px 12px; font-size: 11px; font-weight: 700; cursor: pointer; transition: all 0.2s;"
+                  [style.opacity]="onboardingService.currentStepIndex === 0 ? '0.4' : '1'">
+            Back
+          </button>
+          <button (click)="onboardingService.next()" 
+                  style="background: var(--player-one-color); border: none; border-radius: 8px; color: #000; padding: 6px 14px; font-size: 11px; font-weight: 800; cursor: pointer; transition: all 0.2s;">
+            {{ onboardingService.currentStepIndex === onboardingService.totalSteps - 1 ? 'Finish' : 'Next' }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </ng-container>
+
 </ion-content>

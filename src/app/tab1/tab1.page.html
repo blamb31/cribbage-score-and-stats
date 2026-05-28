@@ -10,7 +10,7 @@
           <p style="color: var(--ion-color-medium); font-size: 13px; margin: 0 0 20px 0; line-height: 1.5;">Face-to-face scoring, hand calculator, and player statistics.</p>
 
           <!-- PLAYER COUNT SELECTOR -->
-          <div style="margin-bottom: 24px; text-align: left;">
+          <div id="setup-player-count" style="margin-bottom: 24px; text-align: left;">
             <div style="font-size: 11px; font-weight: 800; color: var(--ion-color-medium); text-transform: uppercase; margin-bottom: 8px; letter-spacing: 0.5px; text-align: center;">Match Player Count</div>
             <ion-segment [(ngModel)]="setupMode" mode="ios" style="--background: rgba(255, 255, 255, 0.03); height: 38px;">
               <ion-segment-button [value]="2">
@@ -25,8 +25,10 @@
             </ion-segment>
           </div>
 
-          <!-- SETUP INPUTS FOR 2 OR 3 PLAYERS -->
-          <div *ngIf="setupMode !== 4" style="display: flex; flex-direction: column; gap: 20px;">
+          <!-- PLAYER SELECTIONS -->
+          <div id="setup-player-selections" style="display: flex; flex-direction: column; width: 100%;">
+            <!-- SETUP INPUTS FOR 2 OR 3 PLAYERS -->
+            <div *ngIf="setupMode !== 4" style="display: flex; flex-direction: column; gap: 20px;">
             <!-- PLAYER 1 SELECTION -->
             <div style="text-align: left;">
               <div style="font-size: 11px; font-weight: 800; color: var(--player-one-color); text-transform: uppercase; margin-bottom: 6px; letter-spacing: 0.5px;">Player 1 (Cyan)</div>
@@ -198,8 +200,9 @@
             </div>
 
           </div>
+          </div>
 
-          <button (click)="startNewGame()" [disabled]="!isValidSetup" style="width: 100%; border: none; border-radius: 24px; height: 50px; font-weight: 800; font-size: 15px; color: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s ease; background: linear-gradient(135deg, var(--player-one-color), var(--player-two-color)); box-shadow: 0 8px 24px rgba(6,182,212,0.25); margin-top: 24px;" class="clickable">
+          <button id="setup-start-btn" (click)="startNewGame()" [disabled]="!isValidSetup" style="width: 100%; border: none; border-radius: 24px; height: 50px; font-weight: 800; font-size: 15px; color: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s ease; background: linear-gradient(135deg, var(--player-one-color), var(--player-two-color)); box-shadow: 0 8px 24px rgba(6,182,212,0.25); margin-top: 24px;" class="clickable">
             <ion-icon name="play-outline" style="font-size: 20px;"></ion-icon>
             Start Match
           </button>
@@ -216,11 +219,11 @@
           
           <!-- Player Picker Header -->
           <div style="font-size: 11px; font-weight: 800; color: var(--ion-color-medium); text-transform: uppercase; margin-bottom: 8px; letter-spacing: 0.5px; text-align: center;">Active Scorer</div>
-          <div class="player-picker-header" style="display: flex; align-items: center; justify-content: space-between; gap: 4px;">
+          <div id="game-p1-header" class="player-picker-header" style="display: flex; align-items: center; justify-content: space-between; gap: 4px;">
             
             <div (click)="activeThreePlayerScorer = 1" class="player-picker-btn" [class.active-p1]="activeThreePlayerScorer === 1" style="flex: 1; position: relative;">
               <!-- Crib Selector -->
-              <div (click)="gameService.setActiveCrib(1); $event.stopPropagation()"
+              <div id="game-p1-crib" (click)="gameService.setActiveCrib(1); $event.stopPropagation()"
                    [style.background]="gameState.activeCrib === 1 ? 'var(--player-one-color)' : 'rgba(255,255,255,0.05)'"
                    [style.border-color]="gameState.activeCrib === 1 ? 'var(--player-one-color)' : 'rgba(255,255,255,0.1)'"
                    [style.color]="gameState.activeCrib === 1 ? '#000' : 'rgba(255,255,255,0.4)'"
@@ -282,7 +285,7 @@
           </div>
 
           <!-- 3P Control Row (Options, New Hand, Reset) -->
-          <div class="control-row-3p">
+          <div id="game-center-divider" class="control-row-3p">
             <div class="center-settings-btn" (click)="gameService.toggleTabBar()" title="Toggle navigation menu">
               Options
             </div>
@@ -302,7 +305,7 @@
               </span>
               
               <div style="position: relative; display: inline-block;" (click)="p1StagedScore > 0 ? clearStagedScore(1) : null" class="clickable">
-                <div class="draft-pill" [class.active]="p1StagedScore > 0">
+                <div id="game-staged-pill" class="draft-pill" [class.active]="p1StagedScore > 0">
                   <span>Staged:</span>
                   <span [style.color]="getPlayerColor(activeThreePlayerScorer)" style="font-weight: 800;">+{{ p1StagedScore }}</span>
                 </div>
@@ -315,14 +318,14 @@
             </div>
 
             <!-- Categories -->
-            <div class="category-pill-container" style="margin: 8px 0;">
+            <div id="game-category-select" class="category-pill-container" style="margin: 8px 0;">
               <button class="category-pill-btn" [class.active-p1]="p1Category === 'Pegging' && activeThreePlayerScorer === 1" [class.active-p2]="p1Category === 'Pegging' && activeThreePlayerScorer === 2" [class.active-p3]="p1Category === 'Pegging' && activeThreePlayerScorer === 3" (click)="p1Category = 'Pegging'">Peg</button>
               <button class="category-pill-btn" [class.active-p1]="p1Category === 'Hand' && activeThreePlayerScorer === 1" [class.active-p2]="p1Category === 'Hand' && activeThreePlayerScorer === 2" [class.active-p3]="p1Category === 'Hand' && activeThreePlayerScorer === 3" (click)="p1Category = 'Hand'">Hand</button>
               <button class="category-pill-btn" [class.active-p1]="p1Category === 'Crib' && activeThreePlayerScorer === 1" [class.active-p2]="p1Category === 'Crib' && activeThreePlayerScorer === 2" [class.active-p3]="p1Category === 'Crib' && activeThreePlayerScorer === 3" (click)="p1Category = 'Crib'">Crib</button>
             </div>
 
             <!-- Point Grid -->
-            <div class="point-btn-grid" style="margin-top: 8px;">
+            <div id="game-point-grid" class="point-btn-grid" style="margin-top: 8px;">
               <button class="point-pad-btn" (click)="addStagedScore(1, 1)">+1</button>
               <button class="point-pad-btn" (click)="addStagedScore(1, 2)">+2</button>
               <button class="point-pad-btn" (click)="addStagedScore(1, 5)">+5</button>
@@ -330,7 +333,7 @@
             </div>
 
             <!-- Submission Row -->
-            <div class="action-btn-grid" style="margin-top: 10px;">
+            <div id="game-actions-row" class="action-btn-grid" style="margin-top: 10px;">
               <button class="control-icon-btn" [disabled]="!canUndo(activeThreePlayerScorer)" (click)="undo(activeThreePlayerScorer)">
                 <ion-icon name="arrow-undo-outline" style="font-size: 18px;"></ion-icon>
               </button>
@@ -443,7 +446,7 @@
           </div>
 
           <!-- CENTER PROGRESS DIVIDER -->
-          <div class="center-divider-container">
+          <div id="game-center-divider" class="center-divider-container">
             <!-- Player 1 Progress Bar (fills right-to-left, which is left-to-right from P1's rotated view) -->
             <div class="progress-track">
               <div [class.progress-fill-p1]="gameState.mode !== 4 || p1ActiveScorer === 1"
@@ -476,7 +479,7 @@
           <div class="player-side bottom">
 
             <!-- Own score & Opponent score header -->
-            <div class="score-row">
+            <div id="game-p1-header" class="score-row">
               <div class="own-score-box">
                 <div class="prev-score-label">Prev: {{ gameState.player2.prevScore }}</div>
                 <div class="grand-total-text" [class.glow-fuchsia]="p2ActiveScorer === 2" [class.glow-amber]="p2ActiveScorer === 4">{{ gameState.player2.score }}</div>
@@ -497,7 +500,7 @@
 
               <div style="display: flex; flex-direction: column; align-items: center; gap: 4px;">
                 <div style="position: relative; display: inline-block;" (click)="p2StagedScore > 0 ? clearStagedScore(2) : null" class="clickable">
-                  <div class="draft-pill" [class.active]="p2StagedScore > 0">
+                  <div id="game-staged-pill" class="draft-pill" [class.active]="p2StagedScore > 0">
                     <span>Staged:</span>
                     <span [style.color]="getPlayerColor(p2ActiveScorer)" style="font-weight: 800;">+{{ p2StagedScore }}</span>
                   </div>
@@ -509,7 +512,7 @@
                 </div>
 
                 <!-- P2 Crib Button -->
-                <button (click)="gameService.setActiveCrib(2)"
+                <button id="game-p1-crib" (click)="gameService.setActiveCrib(2)"
                         [style.background]="gameState.activeCrib === 2 ? (p2ActiveScorer === 2 ? 'rgba(217, 70, 239, 0.15)' : 'rgba(234, 179, 8, 0.15)') : 'rgba(255, 255, 255, 0.02)'"
                         [style.border-color]="gameState.activeCrib === 2 ? getPlayerColor(p2ActiveScorer) : 'rgba(255, 255, 255, 0.08)'"
                         [style.color]="gameState.activeCrib === 2 ? getPlayerColor(p2ActiveScorer) : 'rgba(255, 255, 255, 0.4)'"
@@ -528,7 +531,7 @@
             </div>
 
             <!-- Category selectors -->
-            <div class="category-pill-container">
+            <div id="game-category-select" class="category-pill-container">
               <button class="category-pill-btn" 
                       [class.active-p2]="p2Category === 'Pegging' && p2ActiveScorer === 2" 
                       [class.active-p4]="p2Category === 'Pegging' && p2ActiveScorer === 4" 
@@ -544,7 +547,7 @@
             </div>
 
             <!-- Quick + Buttons -->
-            <div class="point-btn-grid">
+            <div id="game-point-grid" class="point-btn-grid">
               <button class="point-pad-btn" (click)="addStagedScore(2, 1)">+1</button>
               <button class="point-pad-btn" (click)="addStagedScore(2, 2)">+2</button>
               <button class="point-pad-btn" (click)="addStagedScore(2, 5)">+5</button>
@@ -552,7 +555,7 @@
             </div>
 
             <!-- Action Row (Undo, Submit, Redo) -->
-            <div class="action-btn-grid">
+            <div id="game-actions-row" class="action-btn-grid">
               <button class="control-icon-btn" [disabled]="!canUndo(2)" (click)="undo(2)">
                 <ion-icon name="arrow-undo-outline" style="font-size: 18px;"></ion-icon>
               </button>
@@ -660,4 +663,58 @@
     </ion-modal>
 
   </div>
+
+  <!-- WALKTHROUGH OVERLAY -->
+  <ng-container *ngIf="onboardingService.isActive && onboardingService.currentStep">
+    <!-- Highlight overlay cutout mask -->
+    <div class="walkthrough-highlight"
+         [style.top.px]="onboardingService.highlightRect.top"
+         [style.left.px]="onboardingService.highlightRect.left"
+         [style.width.px]="onboardingService.highlightRect.width"
+         [style.height.px]="onboardingService.highlightRect.height">
+    </div>
+
+    <!-- Tooltip box -->
+    <div class="walkthrough-tooltip animate-fade-in"
+         [style.top.px]="onboardingService.tooltipTop"
+         [style.left.px]="onboardingService.tooltipLeft"
+         style="pointer-events: auto;">
+      
+      <!-- Header -->
+      <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
+        <h4 style="margin: 0; font-size: 14px; font-weight: 800; color: #fff;">
+          {{ onboardingService.currentStep.title }}
+        </h4>
+        <span style="font-size: 10px; font-weight: 700; color: var(--ion-color-medium); background: rgba(255,255,255,0.06); padding: 2px 6px; border-radius: 8px; flex-shrink: 0;">
+          {{ onboardingService.currentStepIndex + 1 }}/{{ onboardingService.totalSteps }}
+        </span>
+      </div>
+
+      <!-- Description -->
+      <p style="margin: 0 0 16px 0; font-size: 12px; line-height: 1.5; color: rgba(255,255,255,0.8);">
+        {{ onboardingService.currentStep.description }}
+      </p>
+
+      <!-- Actions -->
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <button (click)="onboardingService.skip()" 
+                style="background: transparent; border: none; color: var(--ion-color-medium); font-size: 12px; font-weight: 600; padding: 6px 0; cursor: pointer;">
+          Skip
+        </button>
+        <div style="display: flex; gap: 8px;">
+          <button (click)="onboardingService.prev()" 
+                  [disabled]="onboardingService.currentStepIndex === 0"
+                  style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: #fff; padding: 6px 12px; font-size: 11px; font-weight: 700; cursor: pointer; transition: all 0.2s;"
+                  [style.opacity]="onboardingService.currentStepIndex === 0 ? '0.4' : '1'">
+            Back
+          </button>
+          <button (click)="onboardingService.next()" 
+                  style="background: var(--player-one-color); border: none; border-radius: 8px; color: #000; padding: 6px 14px; font-size: 11px; font-weight: 800; cursor: pointer; transition: all 0.2s;">
+            {{ onboardingService.currentStepIndex === onboardingService.totalSteps - 1 ? 'Finish' : 'Next' }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </ng-container>
+
 </ion-content>

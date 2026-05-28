@@ -2,6 +2,7 @@ import { Component, OnInit, ElementRef, ViewChild, AfterViewInit, OnDestroy } fr
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { GameService, GameState, ScoreLog, PlayerProfile } from '../services/game.service';
+import { OnboardingService } from '../services/onboarding.service';
 import { Subscription } from 'rxjs';
 import { 
   IonHeader, IonToolbar, IonTitle, IonContent, IonGrid, IonRow, IonCol, 
@@ -105,7 +106,10 @@ export class Tab1Page implements OnInit, AfterViewInit, OnDestroy {
   private animScore3 = 0;
   private animationFrameId: number | null = null;
 
-  constructor(public gameService: GameService) {
+  constructor(
+    public gameService: GameService,
+    public onboardingService: OnboardingService
+  ) {
     addIcons({
       playOutline, refreshOutline, arrowUndoOutline, arrowRedoOutline,
       personOutline, trophyOutline, textOutline, bookmarkOutline, addOutline,
@@ -306,6 +310,11 @@ export class Tab1Page implements OnInit, AfterViewInit, OnDestroy {
     this.p1ActiveScorer = 1;
     this.p2ActiveScorer = 2;
     this.showSetupModal = false;
+
+    // Trigger active play onboarding after game becomes active
+    setTimeout(() => {
+      this.checkOnboarding();
+    }, 450);
   }
 
   // --- Staged Scoring Controls ---
@@ -737,5 +746,82 @@ export class Tab1Page implements OnInit, AfterViewInit, OnDestroy {
     ctx.restore();
 
     ctx.restore();
+  }
+
+  // --- Onboarding / Walkthrough logic ---
+  public ionViewDidEnter() {
+    // Small delay to ensure view rendering completes before measuring elements
+    setTimeout(() => {
+      this.checkOnboarding();
+    }, 300);
+  }
+
+  public checkOnboarding() {
+    if (!this.gameState) return;
+    if (!this.gameState.isActive) {
+      this.triggerSetupOnboarding();
+    } else {
+      this.triggerPlayOnboarding();
+    }
+  }
+
+  private triggerSetupOnboarding() {
+    this.onboardingService.start('onboarded_setup', [
+      {
+        targetId: 'setup-player-count',
+        title: 'Player Count Selection',
+        description: 'Choose between 2, 3, or 4 players. The layout adapts dynamically to fit each mode.'
+      },
+      {
+        targetId: 'setup-player-selections',
+        title: 'Player Profiles',
+        description: 'Select existing player profiles, or quickly create new ones inline. Each player has a distinct lane color.'
+      },
+      {
+        targetId: 'setup-start-btn',
+        title: 'Start Match',
+        description: 'Once players are assigned, tap here to launch the interactive face-to-face scoring screen!'
+      }
+    ]);
+  }
+
+  private triggerPlayOnboarding() {
+    this.onboardingService.start('onboarded_play', [
+      {
+        targetId: 'game-p1-header',
+        title: 'Player Score Plaques',
+        description: 'Displays current scores and color assignments. In 3P/4P modes, tap player names to select who is actively scoring.'
+      },
+      {
+        targetId: 'game-p1-crib',
+        title: 'Active Crib Plaque',
+        description: 'Displays who holds the crib for the current hand. Tap the plaque to toggle/assign it manually.'
+      },
+      {
+        targetId: 'game-staged-pill',
+        title: 'Staged Points',
+        description: 'Points you draft appear here. Tap the "✕" or clear indicator to reset points back to zero.'
+      },
+      {
+        targetId: 'game-category-select',
+        title: 'Score Categories',
+        description: 'Assign points to Peg, Hand, or Crib. "New Hand" will reset this automatically to "Peg".'
+      },
+      {
+        targetId: 'game-point-grid',
+        title: 'Point Grid',
+        description: 'Tap these buttons (+1, +2, +5, +10) to draft scores. You can tap multiple buttons to combine points.'
+      },
+      {
+        targetId: 'game-actions-row',
+        title: 'Scoring Actions',
+        description: 'Submit your drafted score to the board, or undo/redo scoring logs as needed.'
+      },
+      {
+        targetId: 'game-center-divider',
+        title: 'Match Controls',
+        description: 'Open the Options menu, start a New Hand (resets categories and swaps the Crib), or reset with New Game.'
+      }
+    ]);
   }
 }

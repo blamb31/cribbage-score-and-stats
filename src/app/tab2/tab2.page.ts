@@ -1,7 +1,8 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-
+import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { GameService, GameState } from '../services/game.service';
+import { OnboardingService } from '../services/onboarding.service';
 import { Subscription } from 'rxjs';
 import { 
   IonHeader, IonToolbar, IonTitle, IonContent, IonGrid, IonRow, IonCol, 
@@ -31,6 +32,7 @@ export interface ScoreBreakdown {
     templateUrl: 'tab2.page.html',
     styleUrls: ['tab2.page.scss'],
     imports: [
+    CommonModule,
     FormsModule,
     IonHeader,
     IonToolbar,
@@ -109,11 +111,55 @@ export class Tab2Page implements OnInit, OnDestroy {
   public isRulesModalOpen = false;
   public activeRulesTab = 'general';
 
-  constructor(public gameService: GameService) {
+  constructor(
+    public gameService: GameService,
+    public onboardingService: OnboardingService
+  ) {
     addIcons({
       calculatorOutline, trashOutline, checkmarkCircleOutline, addOutline, 
       helpCircleOutline, sparklesOutline, informationCircleOutline
     });
+  }
+
+  public ionViewDidEnter() {
+    setTimeout(() => {
+      this.triggerCalculatorOnboarding();
+    }, 300);
+  }
+
+  private triggerCalculatorOnboarding() {
+    this.onboardingService.start('onboarded_calculator', [
+      {
+        targetId: 'calc-hand-slots',
+        title: 'Hand & Cut Card Slots',
+        description: 'Tap on any of the 4 hand slots or the cut card slot. Selecting a slot highlights it and prepares it for card selection.'
+      },
+      {
+        targetId: 'calc-card-picker',
+        title: 'Card Picker Grid',
+        description: 'Choose a suit and rank to assign a card to the active slot. Duplicates are disabled to model a real standard deck.'
+      },
+      {
+        targetId: 'calc-crib-mode',
+        title: 'Crib Mode Toggle',
+        description: 'Toggle this on if the hand you are calculating is a Crib hand. This affects the flush scoring rules.'
+      },
+      {
+        targetId: 'calc-score-box',
+        title: 'Calculated Score Panel',
+        description: 'Displays the total score and a detailed point breakdown of combinations (fifteens, runs, pairs, etc.) in real time.'
+      },
+      {
+        targetId: 'calc-apply-panel',
+        title: 'Apply Score to Match',
+        description: 'If a match is active, select a player and tap "Apply to Board" to directly record this score without typing it!'
+      },
+      {
+        targetId: 'calc-rules-icon',
+        title: 'Interactive Rulebook',
+        description: 'Click this info icon anytime to open a comprehensive guide explaining Cribbage rules for 2, 3, and 4 players.'
+      }
+    ]);
   }
 
   ngOnInit() {

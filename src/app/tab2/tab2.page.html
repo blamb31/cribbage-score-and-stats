@@ -2,7 +2,7 @@
   <ion-toolbar>
     <ion-title class="glow-cyan" style="font-weight: 800; letter-spacing: 0.5px;">Hand Calculator</ion-title>
     <ion-buttons slot="end">
-      <ion-button (click)="isRulesModalOpen = true" color="medium" fill="clear" style="margin-right: 4px;">
+      <ion-button id="calc-rules-icon" (click)="isRulesModalOpen = true" color="medium" fill="clear" style="margin-right: 4px;">
         <ion-icon slot="icon-only" name="information-circle-outline"></ion-icon>
       </ion-button>
       <ion-button (click)="clearAll()" color="medium" fill="clear">
@@ -16,7 +16,7 @@
   <div class="animate-fade-in" style="padding: 16px; padding-bottom: 32px;">
 
     <!-- 1. SELECTED CARDS DISPLAY -->
-    <div style="margin-bottom: 24px;">
+    <div id="calc-hand-slots" style="margin-bottom: 24px;">
       <div style="font-size: 11px; font-weight: 800; color: var(--ion-color-medium); text-transform: uppercase; margin-bottom: 10px; letter-spacing: 0.5px;">Your Hand & Cut Card</div>
 
       <ion-row style="justify-content: space-between; align-items: center;">
@@ -85,7 +85,7 @@
     </div>
 
     <!-- 2. CARD INPUT KEYBOARD (PICKER) -->
-    <div class="glass-panel" style="padding: 16px; margin-bottom: 24px; border-radius: 20px;">
+    <div id="calc-card-picker" class="glass-panel" style="padding: 16px; margin-bottom: 24px; border-radius: 20px;">
 
       <!-- Suit Picker -->
       <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 16px;">
@@ -130,16 +130,17 @@
     </div>
 
     <!-- 3. SCORE DISPLAY SHEET -->
-    @if (hasHandCards) {
-      <div class="glass-panel animate-fade-in" style="padding: 16px; border-radius: 20px; margin-bottom: 24px;">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-          <span style="font-size: 11px; font-weight: 800; color: var(--ion-color-medium); text-transform: uppercase; letter-spacing: 0.5px;">Calculated Points</span>
-          <!-- Crib mode toggle -->
-          <div style="display: flex; align-items: center; gap: 8px; border: 1px solid rgba(255,255,255,0.08); padding: 2px 8px; border-radius: 12px; background: rgba(0,0,0,0.15);">
-            <span style="font-size: 11px; color: var(--ion-color-medium);">Crib Hand?</span>
-            <input type="checkbox" [(ngModel)]="isCribMode" (change)="calculateScore()" />
-          </div>
+    <div id="calc-score-box" class="glass-panel" style="padding: 16px; border-radius: 20px; margin-bottom: 24px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+        <span style="font-size: 11px; font-weight: 800; color: var(--ion-color-medium); text-transform: uppercase; letter-spacing: 0.5px;">Calculated Points</span>
+        <!-- Crib mode toggle -->
+        <div id="calc-crib-mode" style="display: inline-block; border: 1px solid rgba(255,255,255,0.08); padding: 4px 8px; border-radius: 12px; background: rgba(0,0,0,0.15); flex-shrink: 0;">
+          <span style="font-size: 11px; color: var(--ion-color-medium); vertical-align: middle; margin-right: 6px;">Crib Hand?</span>
+          <input type="checkbox" [(ngModel)]="isCribMode" (change)="calculateScore()" style="vertical-align: middle; margin: 0;" />
         </div>
+      </div>
+
+      @if (hasHandCards) {
         <!-- Main Score Badge -->
         <div style="display: flex; align-items: center; justify-content: center; padding: 12px 0; border-bottom: 1px solid rgba(255,255,255,0.06); margin-bottom: 12px;">
           <span style="font-size: 16px; color: var(--ion-color-medium); font-weight: 600; margin-right: 8px;">Total:</span>
@@ -166,42 +167,52 @@
             No points scored (19 Hand)
           </div>
         }
-        <!-- 4. INTEGRATION PANEL (APPLY POINTS TO GAME) -->
-        @if (totalScore > 0 && gameState.isActive) {
-          <div style="border-top: 1px solid rgba(255,255,255,0.06); padding-top: 16px; margin-top: 8px;">
-            <div style="font-size: 10px; font-weight: 800; color: var(--ion-color-medium); text-transform: uppercase; margin-bottom: 10px; letter-spacing: 0.5px;">Apply to Live Game</div>
-            <ion-row style="align-items: center;">
-              <ion-col [size]="gameState.mode >= 3 ? 12 : 5">
-                <ion-segment [(ngModel)]="applyToPlayer" mode="ios" style="--background: rgba(0,0,0,0.2); margin-bottom: 8px;">
-                  <ion-segment-button [value]="1">
-                    <ion-label style="font-size: 11px; overflow: hidden; text-overflow: ellipsis; max-width: 60px;">{{ getFirstName(gameState.player1.name) }}</ion-label>
+      } @else {
+        <!-- Faded placeholder when empty to guide the user visually -->
+        <div style="text-align: center; padding: 24px 12px; color: var(--ion-color-medium); font-size: 13px; font-style: italic;">
+          Select cards above to see point breakdown and total.
+        </div>
+      }
+
+      <!-- 4. INTEGRATION PANEL (APPLY POINTS TO GAME) -->
+      <div id="calc-apply-panel" style="border-top: 1px solid rgba(255,255,255,0.06); padding-top: 16px; margin-top: 8px;">
+        @if (gameState && gameState.isActive) {
+          <div style="font-size: 10px; font-weight: 800; color: var(--ion-color-medium); text-transform: uppercase; margin-bottom: 10px; letter-spacing: 0.5px;">Apply to Live Game</div>
+          <ion-row style="align-items: center;" [style.opacity]="totalScore > 0 ? '1' : '0.5'">
+            <ion-col [size]="gameState.mode >= 3 ? 12 : 5">
+              <ion-segment [(ngModel)]="applyToPlayer" mode="ios" [disabled]="totalScore === 0" style="--background: rgba(0,0,0,0.2); margin-bottom: 8px;">
+                <ion-segment-button [value]="1">
+                  <ion-label style="font-size: 11px; overflow: hidden; text-overflow: ellipsis; max-width: 60px;">{{ getFirstName(gameState.player1.name) }}</ion-label>
+                </ion-segment-button>
+                <ion-segment-button [value]="2">
+                  <ion-label style="font-size: 11px; overflow: hidden; text-overflow: ellipsis; max-width: 60px;">{{ getFirstName(gameState.player2.name) }}</ion-label>
+                </ion-segment-button>
+                @if (gameState.mode >= 3) {
+                  <ion-segment-button [value]="3">
+                    <ion-label style="font-size: 11px; overflow: hidden; text-overflow: ellipsis; max-width: 60px;">{{ getFirstName(gameState.player3?.name || '') }}</ion-label>
                   </ion-segment-button>
-                  <ion-segment-button [value]="2">
-                    <ion-label style="font-size: 11px; overflow: hidden; text-overflow: ellipsis; max-width: 60px;">{{ getFirstName(gameState.player2.name) }}</ion-label>
+                }
+                @if (gameState.mode === 4) {
+                  <ion-segment-button [value]="4">
+                    <ion-label style="font-size: 11px; overflow: hidden; text-overflow: ellipsis; max-width: 60px;">{{ getFirstName(gameState.player4?.name || '') }}</ion-label>
                   </ion-segment-button>
-                  @if (gameState.mode >= 3) {
-                    <ion-segment-button [value]="3">
-                      <ion-label style="font-size: 11px; overflow: hidden; text-overflow: ellipsis; max-width: 60px;">{{ getFirstName(gameState.player3?.name || '') }}</ion-label>
-                    </ion-segment-button>
-                  }
-                  @if (gameState.mode === 4) {
-                    <ion-segment-button [value]="4">
-                      <ion-label style="font-size: 11px; overflow: hidden; text-overflow: ellipsis; max-width: 60px;">{{ getFirstName(gameState.player4?.name || '') }}</ion-label>
-                    </ion-segment-button>
-                  }
-                </ion-segment>
-              </ion-col>
-              <ion-col [size]="gameState.mode >= 3 ? 12 : 7">
-                <ion-button expand="block" shape="round" color="primary" style="font-weight: 700; height: 38px; margin: 0;" (click)="applyPointsToGame()">
-                  <ion-icon slot="start" name="checkmark-circle-outline"></ion-icon>
-                  Apply +{{ totalScore }} pts
-                </ion-button>
-              </ion-col>
-            </ion-row>
+                }
+              </ion-segment>
+            </ion-col>
+            <ion-col [size]="gameState.mode >= 3 ? 12 : 7">
+              <ion-button expand="block" shape="round" color="primary" [disabled]="totalScore === 0" style="font-weight: 700; height: 38px; margin: 0;" (click)="applyPointsToGame()">
+                <ion-icon slot="start" name="checkmark-circle-outline"></ion-icon>
+                Apply +{{ totalScore }} pts
+              </ion-button>
+            </ion-col>
+          </ion-row>
+        } @else {
+          <div style="text-align: center; color: var(--ion-color-medium); font-size: 11px; padding: 4px 0;">
+            Start a match in the Play tab to apply scores directly.
           </div>
         }
       </div>
-    }
+    </div>
 
     <!-- 5. RULES & INFORMATION MODAL -->
     <ion-modal [isOpen]="isRulesModalOpen" (didDismiss)="isRulesModalOpen = false" style="--height: 80vh; --border-radius: 20px; --width: 95%; --max-width: 480px; --background: var(--app-bg); border: 1px solid rgba(255,255,255,0.15);">
@@ -569,5 +580,60 @@
         </div>
       </ng-template>
     </ion-modal>
+
   </div>
+
+  <!-- WALKTHROUGH OVERLAY -->
+  <ng-container *ngIf="onboardingService.isActive && onboardingService.currentStep">
+    <!-- Highlight overlay cutout mask -->
+    <div class="walkthrough-highlight"
+         [style.top.px]="onboardingService.highlightRect.top"
+         [style.left.px]="onboardingService.highlightRect.left"
+         [style.width.px]="onboardingService.highlightRect.width"
+         [style.height.px]="onboardingService.highlightRect.height">
+    </div>
+
+    <!-- Tooltip box -->
+    <div class="walkthrough-tooltip animate-fade-in"
+         [style.top.px]="onboardingService.tooltipTop"
+         [style.left.px]="onboardingService.tooltipLeft"
+         style="pointer-events: auto;">
+      
+      <!-- Header -->
+      <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
+        <h4 style="margin: 0; font-size: 14px; font-weight: 800; color: #fff;">
+          {{ onboardingService.currentStep.title }}
+        </h4>
+        <span style="font-size: 10px; font-weight: 700; color: var(--ion-color-medium); background: rgba(255,255,255,0.06); padding: 2px 6px; border-radius: 8px; flex-shrink: 0;">
+          {{ onboardingService.currentStepIndex + 1 }}/{{ onboardingService.totalSteps }}
+        </span>
+      </div>
+
+      <!-- Description -->
+      <p style="margin: 0 0 16px 0; font-size: 12px; line-height: 1.5; color: rgba(255,255,255,0.8);">
+        {{ onboardingService.currentStep.description }}
+      </p>
+
+      <!-- Actions -->
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <button (click)="onboardingService.skip()" 
+                style="background: transparent; border: none; color: var(--ion-color-medium); font-size: 12px; font-weight: 600; padding: 6px 0; cursor: pointer;">
+          Skip
+        </button>
+        <div style="display: flex; gap: 8px;">
+          <button (click)="onboardingService.prev()" 
+                  [disabled]="onboardingService.currentStepIndex === 0"
+                  style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: #fff; padding: 6px 12px; font-size: 11px; font-weight: 700; cursor: pointer; transition: all 0.2s;"
+                  [style.opacity]="onboardingService.currentStepIndex === 0 ? '0.4' : '1'">
+            Back
+          </button>
+          <button (click)="onboardingService.next()" 
+                  style="background: var(--player-one-color); border: none; border-radius: 8px; color: #000; padding: 6px 14px; font-size: 11px; font-weight: 800; cursor: pointer; transition: all 0.2s;">
+            {{ onboardingService.currentStepIndex === onboardingService.totalSteps - 1 ? 'Finish' : 'Next' }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </ng-container>
+
 </ion-content>

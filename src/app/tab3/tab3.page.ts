@@ -14,6 +14,7 @@ import {
   createOutline, personRemoveOutline
 } from 'ionicons/icons';
 import { GameService, CompletedGame, PlayerProfile } from '../services/game.service';
+import { OnboardingService } from '../services/onboarding.service';
 import { Subscription } from 'rxjs';
 
 export interface PlayerStats {
@@ -71,12 +72,51 @@ export class Tab3Page implements OnInit, OnDestroy {
   private playersSub!: Subscription;
   private historySub!: Subscription;
 
-  constructor(public gameService: GameService) {
+  constructor(
+    public gameService: GameService,
+    public onboardingService: OnboardingService
+  ) {
     addIcons({
       chevronDownOutline, chevronUpOutline, trashOutline, trophyOutline, 
       timeOutline, calendarOutline, barChartOutline, analyticsOutline,
       createOutline, personRemoveOutline
     });
+  }
+
+  public ionViewDidEnter() {
+    setTimeout(() => {
+      this.triggerStatsOnboarding();
+    }, 300);
+  }
+
+  private triggerStatsOnboarding() {
+    this.onboardingService.start('onboarded_stats', [
+      {
+        targetId: 'stats-player-select',
+        title: 'Player Selector',
+        description: 'Choose a player profile to inspect. You can also rename or delete player profiles here.'
+      },
+      {
+        targetId: 'stats-player-count',
+        title: 'Player Count Filter',
+        description: 'Filter stats by 2, 3, or 4 player modes. Cribbage stats differ significantly depending on the player count!'
+      },
+      {
+        targetId: 'stats-records-card',
+        title: 'Win/Loss Records',
+        description: 'View total games played, win rate percentage, and special achievements like Skunks and Double Skunks.'
+      },
+      {
+        targetId: 'stats-averages-table',
+        title: 'Averages Breakdown',
+        description: 'Analyze average points scored in each phase: Pegging, Hand, and Crib, contrasted against opponent averages.'
+      },
+      {
+        targetId: 'stats-logs-list',
+        title: 'Match History Logs',
+        description: 'Switch tabs at the top to view the scrollable match history log, where you can view detail breakdowns or delete logs.'
+      }
+    ]);
   }
 
   ngOnInit() {
