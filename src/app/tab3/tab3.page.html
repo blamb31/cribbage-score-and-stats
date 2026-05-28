@@ -99,8 +99,16 @@
             <div class="stat-value" style="color: var(--player-one-color);">{{ activeStats.skunkWins }}</div>
           </div>
           <div class="stat-card">
-            <div class="stat-label">Double Skunks</div>
-            <div class="stat-value" style="color: var(--player-two-color);">{{ activeStats.doubleSkunkWins }}</div>
+            <div class="stat-label">Double Skunks Won</div>
+            <div class="stat-value" style="color: var(--player-three-color);">{{ activeStats.doubleSkunkWins }}</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Skunks Lost</div>
+            <div class="stat-value" style="color: var(--player-two-color);">{{ activeStats.skunkLosses }}</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Double Skunks Lost</div>
+            <div class="stat-value" style="color: var(--ion-color-danger);">{{ activeStats.doubleSkunkLosses }}</div>
           </div>
         </div>
 
@@ -113,33 +121,69 @@
           
           <table class="stats-table">
             <thead>
-              <tr>
-                <th style="text-align: left;">Point Category</th>
-                <th style="text-align: right; color: var(--player-one-color);">{{ getFirstName(getSelectedPlayerName()) }}</th>
-                <th style="text-align: right; color: var(--player-two-color);">Opponent</th>
-              </tr>
+              @if (statsModeFilter === '4') {
+                <tr>
+                  <th style="text-align: left;">Point Category</th>
+                  <th style="text-align: right; color: var(--player-one-color);">{{ getFirstName(getSelectedPlayerName()) }} (Self)</th>
+                  <th style="text-align: right; color: var(--player-three-color);">Team Score</th>
+                  <th style="text-align: right; color: var(--player-two-color);">Opponent Team</th>
+                </tr>
+              } @else {
+                <tr>
+                  <th style="text-align: left;">Point Category</th>
+                  <th style="text-align: right; color: var(--player-one-color);">{{ getFirstName(getSelectedPlayerName()) }}</th>
+                  <th style="text-align: right; color: var(--player-two-color);">Opponent</th>
+                </tr>
+              }
             </thead>
             <tbody>
-              <tr>
-                <td>Pegging Average</td>
-                <td style="text-align: right; font-weight: 700;">{{ activeStats.avgPegging }} pts</td>
-                <td style="text-align: right; font-weight: 700; opacity: 0.8;">{{ activeStats.avgOpponentPegging }} pts</td>
-              </tr>
-              <tr>
-                <td>Hand Average</td>
-                <td style="text-align: right; font-weight: 700;">{{ activeStats.avgHand }} pts</td>
-                <td style="text-align: right; font-weight: 700; opacity: 0.8;">{{ activeStats.avgOpponentHand }} pts</td>
-              </tr>
-              <tr>
-                <td>Crib Average</td>
-                <td style="text-align: right; font-weight: 700;">{{ activeStats.avgCrib }} pts</td>
-                <td style="text-align: right; font-weight: 700; opacity: 0.8;">{{ activeStats.avgOpponentCrib }} pts</td>
-              </tr>
-              <tr style="border-top: 1px solid rgba(255,255,255,0.08); font-weight: 800;">
-                <td style="color: #fff; padding-top: 12px;">Average Match Score</td>
-                <td style="text-align: right; color: var(--player-one-color); padding-top: 12px;">--</td>
-                <td style="text-align: right; color: var(--player-two-color); padding-top: 12px;">{{ activeStats.avgOpponentScore }} pts</td>
-              </tr>
+              @if (statsModeFilter === '4') {
+                <tr>
+                  <td>Pegging</td>
+                  <td style="text-align: right; font-weight: 700;">{{ activeStats.avgPegging }} pts</td>
+                  <td style="text-align: right; font-weight: 700; color: var(--player-three-color);">{{ activeStats.avgTeamPegging }} pts</td>
+                  <td style="text-align: right; font-weight: 700; opacity: 0.8;">{{ activeStats.avgOpponentPegging }} pts</td>
+                </tr>
+                <tr>
+                  <td>Hand</td>
+                  <td style="text-align: right; font-weight: 700;">{{ activeStats.avgHand }} pts</td>
+                  <td style="text-align: right; font-weight: 700; color: var(--player-three-color);">{{ activeStats.avgTeamHand }} pts</td>
+                  <td style="text-align: right; font-weight: 700; opacity: 0.8;">{{ activeStats.avgOpponentHand }} pts</td>
+                </tr>
+                <tr>
+                  <td>Crib</td>
+                  <td style="text-align: right; font-weight: 700;">{{ activeStats.avgCrib }} pts</td>
+                  <td style="text-align: right; font-weight: 700; color: var(--player-three-color);">{{ activeStats.avgTeamCrib }} pts</td>
+                  <td style="text-align: right; font-weight: 700; opacity: 0.8;">{{ activeStats.avgOpponentCrib }} pts</td>
+                </tr>
+                <tr style="border-top: 1px solid rgba(255,255,255,0.08); font-weight: 800;">
+                  <td style="color: #fff; padding-top: 12px;">Match Score</td>
+                  <td style="text-align: right; color: var(--player-one-color); padding-top: 12px;">{{ activeStats.avgScore }} pts</td>
+                  <td style="text-align: right; color: var(--player-three-color); padding-top: 12px;">{{ activeStats.avgTeamScore }} pts</td>
+                  <td style="text-align: right; color: var(--player-two-color); padding-top: 12px;">{{ activeStats.avgOpponentScore }} pts</td>
+                </tr>
+              } @else {
+                <tr>
+                  <td>Pegging</td>
+                  <td style="text-align: right; font-weight: 700;">{{ activeStats.avgPegging }} pts</td>
+                  <td style="text-align: right; font-weight: 700; opacity: 0.8;">{{ activeStats.avgOpponentPegging }} pts</td>
+                </tr>
+                <tr>
+                  <td>Hand</td>
+                  <td style="text-align: right; font-weight: 700;">{{ activeStats.avgHand }} pts</td>
+                  <td style="text-align: right; font-weight: 700; opacity: 0.8;">{{ activeStats.avgOpponentHand }} pts</td>
+                </tr>
+                <tr>
+                  <td>Crib</td>
+                  <td style="text-align: right; font-weight: 700;">{{ activeStats.avgCrib }} pts</td>
+                  <td style="text-align: right; font-weight: 700; opacity: 0.8;">{{ activeStats.avgOpponentCrib }} pts</td>
+                </tr>
+                <tr style="border-top: 1px solid rgba(255,255,255,0.08); font-weight: 800;">
+                  <td style="color: #fff; padding-top: 12px;">Match Score</td>
+                  <td style="text-align: right; color: var(--player-one-color); padding-top: 12px;">{{ activeStats.avgScore }} pts</td>
+                  <td style="text-align: right; color: var(--player-two-color); padding-top: 12px;">{{ activeStats.avgOpponentScore }} pts</td>
+                </tr>
+              }
             </tbody>
           </table>
         </div>

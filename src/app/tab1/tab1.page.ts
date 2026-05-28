@@ -14,7 +14,7 @@ import {
   playOutline, refreshOutline, arrowUndoOutline, arrowRedoOutline, 
   personOutline, trophyOutline, textOutline, bookmarkOutline, addOutline,
   closeOutline, personAddOutline, checkmarkCircleOutline, trashOutline,
-  settingsOutline
+  settingsOutline, swapHorizontalOutline
 } from 'ionicons/icons';
 
 @Component({
@@ -110,7 +110,7 @@ export class Tab1Page implements OnInit, AfterViewInit, OnDestroy {
       playOutline, refreshOutline, arrowUndoOutline, arrowRedoOutline,
       personOutline, trophyOutline, textOutline, bookmarkOutline, addOutline,
       closeOutline, personAddOutline, checkmarkCircleOutline, trashOutline,
-      settingsOutline
+      settingsOutline, swapHorizontalOutline
     });
   }
 
@@ -390,6 +390,21 @@ export class Tab1Page implements OnInit, AfterViewInit, OnDestroy {
     if (!this.gameState || !this.gameState.playerRedoStacks) return false;
     const stack = this.gameState.playerRedoStacks[playerNum] || [];
     return stack.length > 0;
+  }
+
+  public onNewHand() {
+    this.p1Category = 'Pegging';
+    this.p2Category = 'Pegging';
+    this.gameService.newHand();
+  }
+
+  public swapPlayers3P(idx1: number, idx2: number) {
+    if (this.activeThreePlayerScorer === idx1) {
+      this.activeThreePlayerScorer = idx2 as any;
+    } else if (this.activeThreePlayerScorer === idx2) {
+      this.activeThreePlayerScorer = idx1 as any;
+    }
+    this.gameService.swapPlayers3P(idx1, idx2);
   }
 
   public resetGame() {

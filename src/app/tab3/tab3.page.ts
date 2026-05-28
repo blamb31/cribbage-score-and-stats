@@ -23,9 +23,16 @@ export interface PlayerStats {
   winRate: number;
   skunkWins: number;
   doubleSkunkWins: number;
+  skunkLosses: number;
+  doubleSkunkLosses: number;
+  avgScore: number;
   avgPegging: number;
   avgHand: number;
   avgCrib: number;
+  avgTeamScore?: number;
+  avgTeamPegging?: number;
+  avgTeamHand?: number;
+  avgTeamCrib?: number;
   avgOpponentScore: number;
   avgOpponentPegging: number;
   avgOpponentHand: number;
@@ -212,6 +219,9 @@ export class Tab3Page implements OnInit, OnDestroy {
       winRate: 0,
       skunkWins: 0,
       doubleSkunkWins: 0,
+      skunkLosses: 0,
+      doubleSkunkLosses: 0,
+      avgScore: 0,
       avgPegging: 0,
       avgHand: 0,
       avgCrib: 0,
@@ -237,9 +247,14 @@ export class Tab3Page implements OnInit, OnDestroy {
     if (games.length === 0) return stats;
 
     stats.gamesPlayed = games.length;
+    let totalScore = 0;
+    let totalTeamScore = 0;
     let totalPegging = 0;
+    let totalTeamPegging = 0;
     let totalHand = 0;
+    let totalTeamHand = 0;
     let totalCrib = 0;
+    let totalTeamCrib = 0;
     let totalOpponentScore = 0;
     let totalOpponentPegging = 0;
     let totalOpponentHand = 0;
@@ -256,33 +271,61 @@ export class Tab3Page implements OnInit, OnDestroy {
 
       let isWinner = false;
       let oppScore = 0;
-      
+      let ownScore = 0; // team score in 4p, own score in 2p/3p
+      let ownIndivScore = 0;
+
+      const actualScores: { [playerNum: number]: number } = { 1: 0, 2: 0, 3: 0, 4: 0 };
+      for (const log of game.scoreLogs) {
+        if (log.player >= 1 && log.player <= 4) {
+          actualScores[log.player] += log.delta;
+        }
+      }
+
       if (gameMode === 3) {
         isWinner = game.winner === ownIndex;
-        const scores = [game.player1Score, game.player2Score, game.player3Score || 0];
-        scores.splice(ownIndex - 1, 1);
-        oppScore = Math.max(...scores);
+        ownScore = actualScores[ownIndex];
+        ownIndivScore = ownScore;
+        const otherScores = [1, 2, 3].filter(idx => idx !== ownIndex).map(idx => actualScores[idx]);
+        oppScore = Math.max(...otherScores);
       } else if (gameMode === 4) {
         const ownTeam = (ownIndex === 1 || ownIndex === 3) ? 1 : 2;
         isWinner = game.winner === ownTeam;
-        oppScore = ownTeam === 1 ? game.player2Score : game.player1Score;
+        ownScore = ownTeam === 1 ? (actualScores[1] + actualScores[3]) : (actualScores[2] + actualScores[4]);
+        ownIndivScore = actualScores[ownIndex];
+        oppScore = ownTeam === 1 ? (actualScores[2] + actualScores[4]) : (actualScores[1] + actualScores[3]);
       } else {
         isWinner = game.winner === ownIndex;
-        oppScore = ownIndex === 1 ? game.player2Score : game.player1Score;
+        ownScore = actualScores[ownIndex];
+        ownIndivScore = ownScore;
+        oppScore = actualScores[ownIndex === 1 ? 2 : 1];
       }
+
+      totalScore += ownIndivScore;
+      totalTeamScore += ownScore;
 
       if (isWinner) {
         stats.wins++;
-        if (oppScore < 91) stats.skunkWins++;
-        if (oppScore < 61) stats.doubleSkunkWins++;
+        if (oppScore < 61) {
+          stats.doubleSkunkWins++;
+        } else if (oppScore < 91) {
+          stats.skunkWins++;
+        }
       } else {
         stats.losses++;
+        if (ownScore < 61) {
+          stats.doubleSkunkLosses++;
+        } else if (ownScore < 91) {
+          stats.skunkLosses++;
+        }
       }
 
       totalOpponentScore += oppScore;
 
       let ownPeg = 0, ownHand = 0, ownCrib = 0;
+      let teammatePeg = 0, teammateHand = 0, teammateCrib = 0;
       let oppPeg = 0, oppHand = 0, oppCrib = 0;
+
+      const teammateIndex = ownIndex === 1 ? 3 : (ownIndex === 3 ? 1 : (ownIndex === 2 ? 4 : 2));
 
       for (const log of game.scoreLogs) {
         const reasonLower = log.reason.toLowerCase();
@@ -294,6 +337,10 @@ export class Tab3Page implements OnInit, OnDestroy {
           if (cat === 'pegging') ownPeg += log.delta;
           else if (cat === 'hand') ownHand += log.delta;
           else if (cat === 'crib') ownCrib += log.delta;
+        } else if (gameMode === 4 && log.player === teammateIndex) {
+          if (cat === 'pegging') teammatePeg += log.delta;
+          else if (cat === 'hand') teammateHand += log.delta;
+          else if (cat === 'crib') teammateCrib += log.delta;
         } else {
           if (gameMode === 4) {
             const logTeam = (log.player === 1 || log.player === 3) ? 1 : 2;
@@ -314,7 +361,13 @@ export class Tab3Page implements OnInit, OnDestroy {
       totalPegging += ownPeg;
       totalHand += ownHand;
       totalCrib += ownCrib;
-      
+
+      if (gameMode === 4) {
+        totalTeamPegging += (ownPeg + teammatePeg);
+        totalTeamHand += (ownHand + teammateHand);
+        totalTeamCrib += (ownCrib + teammateCrib);
+      }
+
       if (gameMode === 3) {
         totalOpponentPegging += oppPeg / 2;
         totalOpponentHand += oppHand / 2;
@@ -327,9 +380,18 @@ export class Tab3Page implements OnInit, OnDestroy {
     }
 
     stats.winRate = Math.round((stats.wins / stats.gamesPlayed) * 100);
+    stats.avgScore = Math.round((totalScore / stats.gamesPlayed) * 10) / 10;
     stats.avgPegging = Math.round((totalPegging / stats.gamesPlayed) * 10) / 10;
     stats.avgHand = Math.round((totalHand / stats.gamesPlayed) * 10) / 10;
     stats.avgCrib = Math.round((totalCrib / stats.gamesPlayed) * 10) / 10;
+
+    if (this.statsModeFilter === '4' || (this.statsModeFilter === 'all' && games.some(g => (g.mode || 2) === 4))) {
+      stats.avgTeamScore = Math.round((totalTeamScore / stats.gamesPlayed) * 10) / 10;
+      stats.avgTeamPegging = Math.round((totalTeamPegging / stats.gamesPlayed) * 10) / 10;
+      stats.avgTeamHand = Math.round((totalTeamHand / stats.gamesPlayed) * 10) / 10;
+      stats.avgTeamCrib = Math.round((totalTeamCrib / stats.gamesPlayed) * 10) / 10;
+    }
+
     stats.avgOpponentScore = Math.round((totalOpponentScore / stats.gamesPlayed) * 10) / 10;
     stats.avgOpponentPegging = Math.round((totalOpponentPegging / stats.gamesPlayed) * 10) / 10;
     stats.avgOpponentHand = Math.round((totalOpponentHand / stats.gamesPlayed) * 10) / 10;

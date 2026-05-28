@@ -38,6 +38,7 @@ export interface GameState {
   startDate: number;
   endDate: number | null;
   playerRedoStacks?: { [player: number]: ScoreLog[] };
+  activeCrib: number | null; // 1 | 2 | 3 | null
 }
 
 export interface CompletedGame {
@@ -205,7 +206,8 @@ export class GameService {
       winner: null,
       startDate: Date.now(),
       endDate: null,
-      playerRedoStacks: { 1: [], 2: [], 3: [], 4: [] }
+      playerRedoStacks: { 1: [], 2: [], 3: [], 4: [] },
+      activeCrib: 1
     };
   }
 
@@ -231,7 +233,8 @@ export class GameService {
       winner: null,
       startDate: Date.now(),
       endDate: null,
-      playerRedoStacks: { 1: [], 2: [], 3: [], 4: [] }
+      playerRedoStacks: { 1: [], 2: [], 3: [], 4: [] },
+      activeCrib: 1
     };
 
     if (mode === 3) {
@@ -490,6 +493,105 @@ export class GameService {
     } catch (e) {
       console.error('Failed to restore active game state', e);
     }
+  }
+
+  // --- Active Crib & Reordering Functions ---
+  public setActiveCrib(playerNum: number) {
+    const state = this.gameStateSub.value;
+    if (!state.isActive) return;
+    state.activeCrib = playerNum;
+    this.updateState(state);
+    this.triggerHaptic(ImpactStyle.Light);
+  }
+
+  public newHand() {
+    const state = this.gameStateSub.value;
+    if (!state.isActive) return;
+
+    // Swap/Rotate active crib
+    if (state.mode === 3) {
+      state.activeCrib = (state.activeCrib ? state.activeCrib : 1) % 3 + 1; // 1 -> 2 -> 3 -> 1
+    } else {
+      state.activeCrib = state.activeCrib === 1 ? 2 : 1; // 1 -> 2 -> 1
+    }
+
+    this.updateState(state);
+    this.triggerHaptic(ImpactStyle.Medium);
+  }
+
+  public swapPlayers3P(idx1: number, idx2: number) {
+    const state = this.gameStateSub.value;
+    if (!state.isActive || state.mode !== 3) return;
+
+    let p1: Player | undefined;
+    let p2: Player | undefined;
+
+    if (idx1 === 1) p1 = state.player1;
+    else if (idx1 === 2) p1 = state.player2;
+    else if (idx1 === 3) p1 = state.player3;
+
+    if (idx2 === 1) p2 = state.player1;
+    else if (idx2 === 2) p2 = state.player2;
+    else if (idx2 === 3) p2 = state.player3;
+
+    if (!p1 || !p2) return;
+
+    const p1Temp = { ...p1 };
+    const p2Temp = { ...p2 };
+    const p1Color = p1.color;
+    const p2Color = p2.color;
+
+    // Swap players in state, keeping the color bound to the physical seat/lane
+    if (idx1 === 1) state.player1 = { ...p2Temp, color: p1Color };
+    else if (idx1 === 2) state.player2 = { ...p2Temp, color: p1Color };
+    else if (idx1 === 3) state.player3 = { ...p2Temp, color: p1Color };
+
+    if (idx2 === 1) state.player1 = { ...p1Temp, color: p2Color };
+    else if (idx2 === 2) state.player2 = { ...p1Temp, color: p2Color };
+    else if (idx2 === 3) state.player3 = { ...p1Temp, color: p2Color };
+
+    // Helper to swap player indices in logs
+    const swapLogPlayer = (logs: ScoreLog[]) => {
+      for (const log of logs) {
+        if (log.player === idx1) {
+          log.player = idx2;
+        } else if (log.player === idx2) {
+          log.player = idx1;
+        }
+      }
+    };
+
+    // Swap scoreLogs
+    swapLogPlayer(state.scoreLogs);
+
+    // Swap undoStack
+    for (const stack of state.undoStack) {
+      swapLogPlayer(stack);
+    }
+
+    // Swap redoStack
+    for (const stack of state.redoStack) {
+      swapLogPlayer(stack);
+    }
+
+    // Swap playerRedoStacks and update internal log player properties
+    if (state.playerRedoStacks) {
+      if (state.playerRedoStacks[idx1]) swapLogPlayer(state.playerRedoStacks[idx1]);
+      if (state.playerRedoStacks[idx2]) swapLogPlayer(state.playerRedoStacks[idx2]);
+      const tempStack = state.playerRedoStacks[idx1];
+      state.playerRedoStacks[idx1] = state.playerRedoStacks[idx2];
+      state.playerRedoStacks[idx2] = tempStack;
+    }
+
+    // Swap activeCrib seat index if it was one of the swapped seats
+    if (state.activeCrib === idx1) {
+      state.activeCrib = idx2;
+    } else if (state.activeCrib === idx2) {
+      state.activeCrib = idx1;
+    }
+
+    this.triggerHaptic(ImpactStyle.Light);
+    this.updateState(state);
   }
 
   // --- Game History Management ---
