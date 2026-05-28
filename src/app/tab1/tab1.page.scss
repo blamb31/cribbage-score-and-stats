@@ -41,7 +41,7 @@ ion-content {
 
 /* Center Progress Divider */
 .center-divider-container {
-  height: 24px;
+  height: 44px; /* Stacks progress bar P1, buttons, progress bar P2 */
   background: rgba(9, 10, 15, 0.95);
   border-top: 1px solid rgba(255, 255, 255, 0.08);
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
@@ -52,6 +52,7 @@ ion-content {
   padding: 2px 0;
   z-index: 100;
   box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+  box-sizing: border-box;
 }
 
 .progress-track {
@@ -60,6 +61,16 @@ ion-content {
   background: rgba(255, 255, 255, 0.03);
   position: relative;
   overflow: hidden;
+}
+
+.center-buttons-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  padding: 0 12px;
+  box-sizing: border-box;
+  height: 23px;
 }
 
 /* Player 1 progress fills right-to-left in normal orientation (left-to-right from P1's rotated view) */
@@ -94,19 +105,7 @@ ion-content {
   transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.center-action-buttons {
-  position: absolute;
-  top: 50%;
-  left: 0;
-  right: 0;
-  transform: translateY(-50%);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0 12px;
-  z-index: 110;
-  box-sizing: border-box;
-}
+
 
 .center-new-hand-btn {
   padding: 4px 10px;

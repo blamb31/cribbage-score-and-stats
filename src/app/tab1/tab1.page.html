@@ -446,11 +446,13 @@
           <div class="center-divider-container">
             <!-- Player 1 Progress Bar (fills right-to-left, which is left-to-right from P1's rotated view) -->
             <div class="progress-track">
-              <div class="progress-fill-p1" [style.width.%]="(gameState.player1.score / 121) * 100"></div>
+              <div [class.progress-fill-p1]="gameState.mode !== 4 || p1ActiveScorer === 1"
+                   [class.progress-fill-p3]="gameState.mode === 4 && p1ActiveScorer === 3"
+                   [style.width.%]="(gameState.player1.score / 121) * 100"></div>
             </div>
-            
-            <!-- Center action buttons wrapper (Options, New Hand, Reset) -->
-            <div class="center-action-buttons">
+
+            <!-- Buttons Row -->
+            <div class="center-buttons-row">
               <div class="center-settings-btn" (click)="gameService.toggleTabBar()" title="Toggle navigation menu">
                 Options
               </div>
@@ -464,7 +466,9 @@
 
             <!-- Player 2 Progress Bar (fills left-to-right) -->
             <div class="progress-track">
-              <div class="progress-fill-p2" [style.width.%]="(gameState.player2.score / 121) * 100"></div>
+              <div [class.progress-fill-p2]="gameState.mode !== 4 || p2ActiveScorer === 2"
+                   [class.progress-fill-p4]="gameState.mode === 4 && p2ActiveScorer === 4"
+                   [style.width.%]="(gameState.player2.score / 121) * 100"></div>
             </div>
           </div>
 
