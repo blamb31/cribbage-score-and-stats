@@ -37,12 +37,40 @@
 @import '@ionic/angular/css/palettes/dark.system.css';
 
 /* Global App Styles */
+html {
+  background: #020205 !important;
+}
+
 body {
   font-family: var(--ion-font-family);
-  background: var(--app-bg);
-  /* Smooth subtle radial gradient for rich background depth */
+  margin: 0;
+  padding: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background: #020205 !important;
+  overflow: hidden;
+}
+
+ion-app {
+  position: relative !important;
+  width: 56.25vh !important; /* 9:16 aspect ratio based on height (100vh * 9 / 16) */
+  max-width: 100% !important;
+  height: 100vh !important;
+  margin: 0 auto !important;
+  left: auto !important;
+  right: auto !important;
+  top: auto !important;
+  bottom: auto !important;
+  overflow: hidden;
+  box-shadow: 0 0 60px rgba(0, 0, 0, 0.95), 0 0 0 1px rgba(255, 255, 255, 0.08);
+  transform: translate3d(0, 0, 0) !important; /* Establishes containing block for position: fixed elements */
+  
+  /* Apply core background gradients inside the app viewport */
+  background: var(--app-bg, #090a0f) !important;
   background-image: radial-gradient(circle at 50% -20%, rgba(6, 182, 212, 0.15) 0%, rgba(9, 10, 15, 0) 60%),
-                    radial-gradient(circle at 10% 80%, rgba(217, 70, 239, 0.08) 0%, rgba(9, 10, 15, 0) 50%);
+                    radial-gradient(circle at 10% 80%, rgba(217, 70, 239, 0.08) 0%, rgba(9, 10, 15, 0) 50%) !important;
   background-attachment: fixed;
 }
 

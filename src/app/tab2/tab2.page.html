@@ -27,11 +27,13 @@
               (click)="activeSlot = index"
               [style.border-color]="activeSlot === index ? 'var(--player-one-color)' : 'rgba(255,255,255,0.08)'"
               [style.box-shadow]="activeSlot === index ? '0 0 10px rgba(6, 182, 212, 0.4)' : 'none'"
-              style="height: 76px; border: 2px solid; border-radius: 12px; background: rgba(22, 24, 35, 0.65); display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; overflow: hidden; backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px);">
+              style="height: 76px; border: 2px solid; border-radius: 12px; background: rgba(22, 24, 35, 0.65); display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; overflow: visible; backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px);">
               @if (handCards[index]) {
                 <div class="animate-fade-in" style="text-align: center; width: 100%;">
                   <!-- Delete card trigger -->
-                  <div (click)="removeCard(index); $event.stopPropagation()" style="position: absolute; top: 2px; right: 2px; background: rgba(239, 68, 68, 0.2); border-radius: 50%; width: 14px; height: 14px; display: flex; align-items: center; justify-content: center; color: #ef4444; font-size: 8px; font-weight: bold;">✕</div>
+                  <div (click)="removeCard(index); $event.stopPropagation()" style="position: absolute; top: -10px; right: 4px; background: rgba(239, 68, 68, 0.2); border-radius: 50%; width: 14px; height: 14px; display: flex; align-items: center; justify-content: center; color: #ef4444; cursor: pointer;">
+                    <ion-icon name="close-outline" style="font-size: 10px;"></ion-icon>
+                  </div>
                   <!-- Card details -->
                   <div [style.color]="handCards[index].suit === 'H' || handCards[index].suit === 'D' ? 'var(--ion-color-danger)' : 'var(--player-one-color)'"
                     style="font-size: 18px; font-weight: 800; line-height: 1.1;">
@@ -58,13 +60,16 @@
         <ion-col size="2.4" style="padding: 0;">
           <div class="clickable"
             (click)="activeSlot = 4"
-            [style.border-color]="activeSlot === 4 ? 'var(--player-two-color)' : 'var(--player-two-color)rgba(217, 70, 239, 0.2)'"
+            [style.border-color]="activeSlot === 4 ? 'var(--player-two-color)' : (cutCard ? 'rgba(217, 70, 239, 0.6)' : 'rgba(217, 70, 239, 0.25)')"
+            [style.border-style]="(activeSlot === 4 || cutCard) ? 'solid' : 'dashed'"
             [style.box-shadow]="activeSlot === 4 ? '0 0 10px rgba(217, 70, 239, 0.4)' : 'none'"
-            style="height: 76px; border: 2px dashed rgba(217, 70, 239, 0.5); border-radius: 12px; background: rgba(22, 24, 35, 0.65); display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; overflow: hidden; backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px);">
+            style="height: 76px; border: 2px dashed rgba(217, 70, 239, 0.5); border-radius: 12px; background: rgba(22, 24, 35, 0.65); display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; overflow: visible; backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px);">
 
             @if (cutCard) {
               <div class="animate-fade-in" style="text-align: center; width: 100%;">
-                <div (click)="removeCard(4); $event.stopPropagation()" style="position: absolute; top: 2px; right: 2px; background: rgba(239, 68, 68, 0.2); border-radius: 50%; width: 14px; height: 14px; display: flex; align-items: center; justify-content: center; color: #ef4444; font-size: 8px; font-weight: bold;">✕</div>
+                <div (click)="removeCard(4); $event.stopPropagation()" style="position: absolute; top: -10px; right: 4px; background: rgba(239, 68, 68, 0.2); border-radius: 50%; width: 14px; height: 14px; display: flex; align-items: center; justify-content: center; color: #ef4444; cursor: pointer;">
+                  <ion-icon name="close-outline" style="font-size: 10px;"></ion-icon>
+                </div>
                 <div [style.color]="cutCard.suit === 'H' || cutCard.suit === 'D' ? 'var(--ion-color-danger)' : 'var(--player-two-color)'"
                   style="font-size: 18px; font-weight: 800; line-height: 1.1;">
                   {{ getRankLabel(cutCard.rank) }}

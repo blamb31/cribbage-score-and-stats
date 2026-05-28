@@ -222,33 +222,38 @@ export class OnboardingService {
     const step = this.currentStep;
     if (!step) return;
 
+    const appElement = document.querySelector('ion-app');
+    const appRect = appElement?.getBoundingClientRect() || { top: 0, left: 0, width: window.innerWidth, height: window.innerHeight };
+    const containerWidth = appRect.width;
+    const containerHeight = appRect.height;
+
     const element = document.getElementById(step.targetId);
     if (!element) {
-      // If target element is not found on screen yet (hidden or offscreen), default to a centered highlight box
+      // If target element is not found on screen yet (hidden or offscreen), default to a centered highlight box inside container
       this.highlightRect = {
-        top: window.innerHeight / 2 - 10,
-        left: window.innerWidth / 2 - 10,
+        top: containerHeight / 2 - 10,
+        left: containerWidth / 2 - 10,
         width: 20,
         height: 20
       };
-      this.tooltipTop = window.innerHeight / 2 - 80;
-      this.tooltipLeft = window.innerWidth / 2 - 130;
+      this.tooltipTop = containerHeight / 2 - 80;
+      this.tooltipLeft = containerWidth / 2 - 130;
       return;
     }
 
     const rect = element.getBoundingClientRect();
     
-    // Add small padding around the highlighted cutout
+    // Add small padding around the highlighted cutout, relative to ion-app
     const pad = 6;
     this.highlightRect = {
-      top: Math.max(0, rect.top - pad),
-      left: Math.max(0, rect.left - pad),
+      top: Math.max(0, rect.top - appRect.top - pad),
+      left: Math.max(0, rect.left - appRect.left - pad),
       width: rect.width + (pad * 2),
       height: rect.height + (pad * 2)
     };
 
-    // Calculate vertical alignment for tooltip
-    const spaceBelow = window.innerHeight - (this.highlightRect.top + this.highlightRect.height);
+    // Calculate vertical alignment for tooltip relative to container boundaries
+    const spaceBelow = containerHeight - (this.highlightRect.top + this.highlightRect.height);
     const spaceAbove = this.highlightRect.top;
 
     if (spaceBelow > 190) {
@@ -262,13 +267,13 @@ export class OnboardingService {
       this.tooltipTop = Math.max(20, this.highlightRect.top + (this.highlightRect.height / 2) - 80);
     }
 
-    // Keep tooltip horizontally safe-bounded on screen
+    // Keep tooltip horizontally safe-bounded within container
     const tooltipWidth = 260;
     const centerOfTarget = this.highlightRect.left + (this.highlightRect.width / 2);
     let leftPos = centerOfTarget - (tooltipWidth / 2);
     
-    // Ensure padding from screen edges
-    leftPos = Math.max(12, Math.min(window.innerWidth - tooltipWidth - 12, leftPos));
+    // Ensure padding from container edges
+    leftPos = Math.max(12, Math.min(containerWidth - tooltipWidth - 12, leftPos));
     this.tooltipLeft = leftPos;
   }
 }

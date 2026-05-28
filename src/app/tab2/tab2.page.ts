@@ -13,7 +13,7 @@ import {
 import { addIcons } from 'ionicons';
 import { 
   calculatorOutline, trashOutline, checkmarkCircleOutline, addOutline, 
-  helpCircleOutline, sparklesOutline, informationCircleOutline
+  helpCircleOutline, sparklesOutline, informationCircleOutline, closeOutline
 } from 'ionicons/icons';
 
 export interface Card {
@@ -117,7 +117,7 @@ export class Tab2Page implements OnInit, OnDestroy {
   ) {
     addIcons({
       calculatorOutline, trashOutline, checkmarkCircleOutline, addOutline, 
-      helpCircleOutline, sparklesOutline, informationCircleOutline
+      helpCircleOutline, sparklesOutline, informationCircleOutline, closeOutline
     });
   }
 

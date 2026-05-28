@@ -63,6 +63,12 @@ ion-content {
   overflow: hidden;
 }
 
+.center-divider-container .progress-track {
+  margin: 0 12px;
+  width: auto;
+  border-radius: 3px;
+}
+
 .center-buttons-row {
   display: flex;
   justify-content: space-between;
