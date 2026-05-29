@@ -1,8 +1,9 @@
 import { Component, EnvironmentInjector, inject } from '@angular/core';
 import { IonTabs, IonTabBar, IonTabButton, IonIcon, IonLabel } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
-import { gameControllerOutline, calculatorOutline, analyticsOutline, closeOutline } from 'ionicons/icons';
+import { gameControllerOutline, calculatorOutline, analyticsOutline, closeOutline, swapHorizontalOutline } from 'ionicons/icons';
 import { GameService } from '../services/game.service';
+import { OnboardingService } from '../services/onboarding.service';
 import { Router, NavigationEnd } from '@angular/router';
 import { filter } from 'rxjs/operators';
 import { CommonModule } from '@angular/common';
@@ -18,8 +19,11 @@ export class TabsPage {
   private router = inject(Router);
   public currentTab = 'tab1';
 
-  constructor(public gameService: GameService) {
-    addIcons({ gameControllerOutline, calculatorOutline, analyticsOutline, closeOutline });
+  constructor(
+    public gameService: GameService,
+    public onboardingService: OnboardingService
+  ) {
+    addIcons({ gameControllerOutline, calculatorOutline, analyticsOutline, closeOutline, swapHorizontalOutline });
     this.updateCurrentTab(this.router.url);
 
     this.router.events.pipe(

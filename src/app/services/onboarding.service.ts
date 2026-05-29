@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { GameService } from './game.service';
 
 export interface WalkthroughStep {
   targetId: string;
@@ -34,7 +35,7 @@ export class OnboardingService {
   private scrollElements: HTMLElement[] = [];
   private boundScrollHandler = () => this.updateStepPosition();
 
-  constructor() {
+  constructor(private gameService: GameService) {
     // Listen to window resizing to update positions dynamically
     window.addEventListener('resize', () => {
       if (this.isActive) {
@@ -209,6 +210,13 @@ export class OnboardingService {
     this.cleanupScrollListeners();
     if (this.activeKey) {
       localStorage.setItem(this.activeKey, 'true');
+      if (this.activeKey === 'onboarded_play') {
+        localStorage.setItem('onboarded_play_layout_toggle', 'true');
+      }
+      // Auto-hide tab bar after walkthrough completes
+      if (this.activeKey === 'onboarded_play' || this.activeKey === 'onboarded_play_layout_toggle') {
+        this.gameService.showTabBar = false;
+      }
     }
     this.activeKey = null;
     this.steps = [];
@@ -221,6 +229,11 @@ export class OnboardingService {
   public updateStepPosition() {
     const step = this.currentStep;
     if (!step) return;
+
+    // Auto-reveal tab bar (navbar) when targeting the layout toggle button
+    if (step.targetId === 'game-layout-toggle' && !this.gameService.showTabBar) {
+      this.gameService.showTabBar = true;
+    }
 
     const appElement = document.querySelector('ion-app');
     const appRect = appElement?.getBoundingClientRect() || { top: 0, left: 0, width: window.innerWidth, height: window.innerHeight };

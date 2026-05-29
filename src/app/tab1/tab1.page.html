@@ -213,78 +213,240 @@
     <!-- 2. ACTIVE GAME SCORING -->
     @if (gameState.isActive) {
       
-      <!-- 2A. 3-PLAYER UNIFIED VIEW -->
-      @if (gameState.mode === 3) {
+      <!-- 2A. UNIFIED VIEW (3-PLAYER OR 2P/4P CHOSEN UNIFIED) -->
+      @if (gameState.mode === 3 || gameService.isUnifiedView) {
         <div class="three-player-container">
           
           <!-- Player Picker Header -->
           <div style="font-size: 11px; font-weight: 800; color: var(--ion-color-medium); text-transform: uppercase; margin-bottom: 8px; letter-spacing: 0.5px; text-align: center;">Active Scorer</div>
           <div id="game-p1-header" class="player-picker-header" style="display: flex; align-items: center; justify-content: space-between; gap: 4px;">
             
-            <div (click)="activeThreePlayerScorer = 1" class="player-picker-btn" [class.active-p1]="activeThreePlayerScorer === 1" style="flex: 1; position: relative;">
-              <!-- Crib Selector -->
-              <div id="game-p1-crib" (click)="gameService.setActiveCrib(1); $event.stopPropagation()"
-                   [style.background]="gameState.activeCrib === 1 ? 'var(--player-one-color)' : 'rgba(255,255,255,0.05)'"
-                   [style.border-color]="gameState.activeCrib === 1 ? 'var(--player-one-color)' : 'rgba(255,255,255,0.1)'"
-                   [style.color]="gameState.activeCrib === 1 ? '#000' : 'rgba(255,255,255,0.4)'"
-                   style="position: absolute; top: -6px; right: -6px; width: 18px; height: 18px; border: 1px solid; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 8px; font-weight: 800; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.3);" class="clickable" title="Set Crib">
-                C
-              </div>
-              <span class="player-picker-name" [style.color]="activeThreePlayerScorer === 1 ? 'var(--player-one-color)' : 'var(--ion-color-medium)'">{{ getFirstName(gameState.player1.name) }}</span>
-              <span class="player-picker-score">{{ gameState.player1.score }}</span>
-            </div>
-
-            <button (click)="swapPlayers3P(1, 2)" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); border-radius: 50%; width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; color: var(--ion-color-medium); flex-shrink: 0; cursor: pointer;" class="clickable" title="Swap Position 1 & 2">
-              <ion-icon name="swap-horizontal-outline" style="font-size: 11px;"></ion-icon>
-            </button>
-
-            <div (click)="activeThreePlayerScorer = 2" class="player-picker-btn" [class.active-p2]="activeThreePlayerScorer === 2" style="flex: 1; position: relative;">
-              <!-- Crib Selector -->
-              <div (click)="gameService.setActiveCrib(2); $event.stopPropagation()"
-                   [style.background]="gameState.activeCrib === 2 ? 'var(--player-two-color)' : 'rgba(255,255,255,0.05)'"
-                   [style.border-color]="gameState.activeCrib === 2 ? 'var(--player-two-color)' : 'rgba(255,255,255,0.1)'"
-                   [style.color]="gameState.activeCrib === 2 ? '#000' : 'rgba(255,255,255,0.4)'"
-                   style="position: absolute; top: -6px; right: -6px; width: 18px; height: 18px; border: 1px solid; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 8px; font-weight: 800; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.3);" class="clickable" title="Set Crib">
-                C
-              </div>
-              <span class="player-picker-name" [style.color]="activeThreePlayerScorer === 2 ? 'var(--player-two-color)' : 'var(--ion-color-medium)'">{{ getFirstName(gameState.player2.name) }}</span>
-              <span class="player-picker-score">{{ gameState.player2.score }}</span>
-            </div>
-
-            <button (click)="swapPlayers3P(2, 3)" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); border-radius: 50%; width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; color: var(--ion-color-medium); flex-shrink: 0; cursor: pointer;" class="clickable" title="Swap Position 2 & 3">
-              <ion-icon name="swap-horizontal-outline" style="font-size: 11px;"></ion-icon>
-            </button>
-
-            <div (click)="activeThreePlayerScorer = 3" class="player-picker-btn" [class.active-p3]="activeThreePlayerScorer === 3" style="flex: 1; position: relative;">
-              <!-- Crib Selector -->
-              <div (click)="gameService.setActiveCrib(3); $event.stopPropagation()"
-                   [style.background]="gameState.activeCrib === 3 ? 'var(--player-three-color)' : 'rgba(255,255,255,0.05)'"
-                   [style.border-color]="gameState.activeCrib === 3 ? 'var(--player-three-color)' : 'rgba(255,255,255,0.1)'"
-                   [style.color]="gameState.activeCrib === 3 ? '#000' : 'rgba(255,255,255,0.4)'"
-                   style="position: absolute; top: -6px; right: -6px; width: 18px; height: 18px; border: 1px solid; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 8px; font-weight: 800; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.3);" class="clickable" title="Set Crib">
-                C
-              </div>
-              <span class="player-picker-name" [style.color]="activeThreePlayerScorer === 3 ? 'var(--player-three-color)' : 'var(--ion-color-medium)'">{{ getFirstName(gameState.player3?.name || '') }}</span>
-              <span class="player-picker-score">{{ gameState.player3?.score }}</span>
-            </div>
-          </div>
-
-          <!-- Middle Progress Bars Container (replacing the board display) -->
-          <div style="flex: 1 1 0px; min-height: 0; display: flex; flex-direction: column; justify-content: center; gap: 16px; padding: 20px 16px; margin: 12px 0; background: rgba(22, 24, 35, 0.4); border: 1px solid rgba(255, 255, 255, 0.06); border-radius: 20px; position: relative;">
-            <div *ngFor="let pNum of [1, 2, 3]" style="display: flex; flex-direction: column; gap: 6px;">
-              <div style="display: flex; justify-content: space-between; align-items: center;">
-                <span [style.color]="getPlayerColor(pNum)" style="font-weight: 800; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px;">
-                  {{ getPlayerName(pNum) }}
+            <!-- 2-PLAYER MODE HEADER TABS -->
+            @if (gameState.mode === 2) {
+              <div (click)="activeUnifiedScorer = 1" class="player-picker-btn" [class.active-p1]="activeUnifiedScorer === 1" style="flex: 1; position: relative;">
+                <!-- Crib Selector -->
+                <div id="game-p1-crib" (click)="gameService.setActiveCrib(1); $event.stopPropagation()"
+                     [style.background]="gameState.activeCrib === 1 ? 'var(--player-one-color)' : 'rgba(255,255,255,0.05)'"
+                     [style.border-color]="gameState.activeCrib === 1 ? 'var(--player-one-color)' : 'rgba(255,255,255,0.1)'"
+                     [style.color]="gameState.activeCrib === 1 ? '#000' : 'rgba(255,255,255,0.4)'"
+                     style="position: absolute; top: -6px; right: -6px; width: 18px; height: 18px; border: 1px solid; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 8px; font-weight: 800; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.3);" class="clickable" title="Set Crib">
+                  C
+                </div>
+                <span class="player-picker-name" [style.color]="activeUnifiedScorer === 1 ? 'var(--player-one-color)' : 'var(--ion-color-medium)'">{{ getFirstName(gameState.player1.name) }}</span>
+                <span class="player-picker-score" style="display: flex; align-items: center; justify-content: center; gap: 4px;">
+                  <span style="opacity: 0.55; font-size: 13px; font-weight: 600;">{{ gameState.player1.prevScore }}</span>
+                  <span style="opacity: 0.4; font-size: 12px;">&rarr;</span>
+                  <span>{{ gameState.player1.score }}</span>
                 </span>
-                <span style="font-size: 14px; font-weight: 800; color: #fff;">{{ getPlayerScore(pNum) }} / 121</span>
               </div>
-              <div class="progress-track" style="height: 12px; border-radius: 6px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255, 255, 255, 0.05); overflow: hidden; position: relative;">
-                <div [style.background]="getPlayerColor(pNum)" [style.width.%]="(getPlayerScore(pNum) / 121) * 100" style="height: 100%; border-radius: 6px; transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 0 0 10px rgba(255,255,255,0.1);"></div>
+
+              <div (click)="activeUnifiedScorer = 2" class="player-picker-btn" [class.active-p2]="activeUnifiedScorer === 2" style="flex: 1; position: relative;">
+                <!-- Crib Selector -->
+                <div (click)="gameService.setActiveCrib(2); $event.stopPropagation()"
+                     [style.background]="gameState.activeCrib === 2 ? 'var(--player-two-color)' : 'rgba(255,255,255,0.05)'"
+                     [style.border-color]="gameState.activeCrib === 2 ? 'var(--player-two-color)' : 'rgba(255,255,255,0.1)'"
+                     [style.color]="gameState.activeCrib === 2 ? '#000' : 'rgba(255,255,255,0.4)'"
+                     style="position: absolute; top: -6px; right: -6px; width: 18px; height: 18px; border: 1px solid; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 8px; font-weight: 800; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.3);" class="clickable" title="Set Crib">
+                  C
+                </div>
+                <span class="player-picker-name" [style.color]="activeUnifiedScorer === 2 ? 'var(--player-two-color)' : 'var(--ion-color-medium)'">{{ getFirstName(gameState.player2.name) }}</span>
+                <span class="player-picker-score" style="display: flex; align-items: center; justify-content: center; gap: 4px;">
+                  <span style="opacity: 0.55; font-size: 13px; font-weight: 600;">{{ gameState.player2.prevScore }}</span>
+                  <span style="opacity: 0.4; font-size: 12px;">&rarr;</span>
+                  <span>{{ gameState.player2.score }}</span>
+                </span>
               </div>
-            </div>
+            }
+
+            <!-- 3-PLAYER MODE HEADER TABS -->
+            @if (gameState.mode === 3) {
+              <div (click)="activeUnifiedScorer = 1" class="player-picker-btn" [class.active-p1]="activeUnifiedScorer === 1" style="flex: 1; position: relative;">
+                <!-- Crib Selector -->
+                <div id="game-p1-crib" (click)="gameService.setActiveCrib(1); $event.stopPropagation()"
+                     [style.background]="gameState.activeCrib === 1 ? 'var(--player-one-color)' : 'rgba(255,255,255,0.05)'"
+                     [style.border-color]="gameState.activeCrib === 1 ? 'var(--player-one-color)' : 'rgba(255,255,255,0.1)'"
+                     [style.color]="gameState.activeCrib === 1 ? '#000' : 'rgba(255,255,255,0.4)'"
+                     style="position: absolute; top: -6px; right: -6px; width: 18px; height: 18px; border: 1px solid; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 8px; font-weight: 800; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.3);" class="clickable" title="Set Crib">
+                  C
+                </div>
+                <span class="player-picker-name" [style.color]="activeUnifiedScorer === 1 ? 'var(--player-one-color)' : 'var(--ion-color-medium)'">{{ getFirstName(gameState.player1.name) }}</span>
+                <span class="player-picker-score" style="display: flex; align-items: center; justify-content: center; gap: 4px;">
+                  <span style="opacity: 0.55; font-size: 13px; font-weight: 600;">{{ gameState.player1.prevScore }}</span>
+                  <span style="opacity: 0.4; font-size: 12px;">&rarr;</span>
+                  <span>{{ gameState.player1.score }}</span>
+                </span>
+              </div>
+
+              <button (click)="swapPlayers3P(1, 2)" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); border-radius: 50%; width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; color: var(--ion-color-medium); flex-shrink: 0; cursor: pointer;" class="clickable" title="Swap Position 1 & 2">
+                <ion-icon name="swap-horizontal-outline" style="font-size: 11px;"></ion-icon>
+              </button>
+
+              <div (click)="activeUnifiedScorer = 2" class="player-picker-btn" [class.active-p2]="activeUnifiedScorer === 2" style="flex: 1; position: relative;">
+                <!-- Crib Selector -->
+                <div (click)="gameService.setActiveCrib(2); $event.stopPropagation()"
+                     [style.background]="gameState.activeCrib === 2 ? 'var(--player-two-color)' : 'rgba(255,255,255,0.05)'"
+                     [style.border-color]="gameState.activeCrib === 2 ? 'var(--player-two-color)' : 'rgba(255,255,255,0.1)'"
+                     [style.color]="gameState.activeCrib === 2 ? '#000' : 'rgba(255,255,255,0.4)'"
+                     style="position: absolute; top: -6px; right: -6px; width: 18px; height: 18px; border: 1px solid; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 8px; font-weight: 800; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.3);" class="clickable" title="Set Crib">
+                  C
+                </div>
+                <span class="player-picker-name" [style.color]="activeUnifiedScorer === 2 ? 'var(--player-two-color)' : 'var(--ion-color-medium)'">{{ getFirstName(gameState.player2.name) }}</span>
+                <span class="player-picker-score" style="display: flex; align-items: center; justify-content: center; gap: 4px;">
+                  <span style="opacity: 0.55; font-size: 13px; font-weight: 600;">{{ gameState.player2.prevScore }}</span>
+                  <span style="opacity: 0.4; font-size: 12px;">&rarr;</span>
+                  <span>{{ gameState.player2.score }}</span>
+                </span>
+              </div>
+
+              <button (click)="swapPlayers3P(2, 3)" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); border-radius: 50%; width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; color: var(--ion-color-medium); flex-shrink: 0; cursor: pointer;" class="clickable" title="Swap Position 2 & 3">
+                <ion-icon name="swap-horizontal-outline" style="font-size: 11px;"></ion-icon>
+              </button>
+
+              <div (click)="activeUnifiedScorer = 3" class="player-picker-btn" [class.active-p3]="activeUnifiedScorer === 3" style="flex: 1; position: relative;">
+                <!-- Crib Selector -->
+                <div (click)="gameService.setActiveCrib(3); $event.stopPropagation()"
+                     [style.background]="gameState.activeCrib === 3 ? 'var(--player-three-color)' : 'rgba(255,255,255,0.05)'"
+                     [style.border-color]="gameState.activeCrib === 3 ? 'var(--player-three-color)' : 'rgba(255,255,255,0.1)'"
+                     [style.color]="gameState.activeCrib === 3 ? '#000' : 'rgba(255,255,255,0.4)'"
+                     style="position: absolute; top: -6px; right: -6px; width: 18px; height: 18px; border: 1px solid; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 8px; font-weight: 800; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.3);" class="clickable" title="Set Crib">
+                  C
+                </div>
+                <span class="player-picker-name" [style.color]="activeUnifiedScorer === 3 ? 'var(--player-three-color)' : 'var(--ion-color-medium)'">{{ getFirstName(gameState.player3?.name || '') }}</span>
+                <span class="player-picker-score" style="display: flex; align-items: center; justify-content: center; gap: 4px;">
+                  <span style="opacity: 0.55; font-size: 13px; font-weight: 600;">{{ gameState.player3?.prevScore || 0 }}</span>
+                  <span style="opacity: 0.4; font-size: 12px;">&rarr;</span>
+                  <span>{{ gameState.player3?.score || 0 }}</span>
+                </span>
+              </div>
+            }
+
+            <!-- 4-PLAYER MODE HEADER TABS -->
+            @if (gameState.mode === 4) {
+              <!-- Player 1 (Team 1) -->
+              <div (click)="activeUnifiedScorer = 1" class="player-picker-btn" [class.active-p1]="activeUnifiedScorer === 1" style="flex: 1; position: relative;">
+                <!-- Crib Selector -->
+                <div (click)="gameService.setActiveCrib(1); $event.stopPropagation()"
+                     [style.background]="gameState.activeCrib === 1 ? 'var(--player-one-color)' : 'rgba(255,255,255,0.05)'"
+                     [style.border-color]="gameState.activeCrib === 1 ? 'var(--player-one-color)' : 'rgba(255,255,255,0.1)'"
+                     [style.color]="gameState.activeCrib === 1 ? '#000' : 'rgba(255,255,255,0.4)'"
+                     style="position: absolute; top: -6px; right: -6px; width: 18px; height: 18px; border: 1px solid; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 8px; font-weight: 800; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.3);" class="clickable" title="Set Crib">
+                  C
+                </div>
+                <span class="player-picker-name" [style.color]="activeUnifiedScorer === 1 ? 'var(--player-one-color)' : 'var(--ion-color-medium)'">{{ getFirstName(gameState.player1.name) }}</span>
+                <span class="player-picker-score" style="display: flex; align-items: center; justify-content: center; gap: 4px;">
+                  <span style="opacity: 0.55; font-size: 13px; font-weight: 600;">{{ gameState.player1.prevScore }}</span>
+                  <span style="opacity: 0.4; font-size: 12px;">&rarr;</span>
+                  <span>{{ gameState.player1.score }}</span>
+                </span>
+              </div>
+
+              <!-- Player 3 (Team 1) -->
+              <div (click)="activeUnifiedScorer = 3" class="player-picker-btn" [class.active-p3]="activeUnifiedScorer === 3" style="flex: 1; position: relative;">
+                <!-- Crib Selector -->
+                <div (click)="gameService.setActiveCrib(1); $event.stopPropagation()"
+                     [style.background]="gameState.activeCrib === 1 ? 'var(--player-three-color)' : 'rgba(255,255,255,0.05)'"
+                     [style.border-color]="gameState.activeCrib === 1 ? 'var(--player-three-color)' : 'rgba(255,255,255,0.1)'"
+                     [style.color]="gameState.activeCrib === 1 ? '#000' : 'rgba(255,255,255,0.4)'"
+                     style="position: absolute; top: -6px; right: -6px; width: 18px; height: 18px; border: 1px solid; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 8px; font-weight: 800; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.3);" class="clickable" title="Set Crib">
+                  C
+                </div>
+                <span class="player-picker-name" [style.color]="activeUnifiedScorer === 3 ? 'var(--player-three-color)' : 'var(--ion-color-medium)'">{{ getFirstName(gameState.player3?.name || '') }}</span>
+                <span class="player-picker-score" style="display: flex; align-items: center; justify-content: center; gap: 4px;">
+                  <span style="opacity: 0.55; font-size: 13px; font-weight: 600;">{{ gameState.player3?.prevScore || 0 }}</span>
+                  <span style="opacity: 0.4; font-size: 12px;">&rarr;</span>
+                  <span>{{ gameState.player3?.score || 0 }}</span>
+                </span>
+              </div>
+
+              <!-- Player 2 (Team 2) -->
+              <div (click)="activeUnifiedScorer = 2" class="player-picker-btn" [class.active-p2]="activeUnifiedScorer === 2" style="flex: 1; position: relative;">
+                <!-- Crib Selector -->
+                <div (click)="gameService.setActiveCrib(2); $event.stopPropagation()"
+                     [style.background]="gameState.activeCrib === 2 ? 'var(--player-two-color)' : 'rgba(255,255,255,0.05)'"
+                     [style.border-color]="gameState.activeCrib === 2 ? 'var(--player-two-color)' : 'rgba(255,255,255,0.1)'"
+                     [style.color]="gameState.activeCrib === 2 ? '#000' : 'rgba(255,255,255,0.4)'"
+                     style="position: absolute; top: -6px; right: -6px; width: 18px; height: 18px; border: 1px solid; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 8px; font-weight: 800; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.3);" class="clickable" title="Set Crib">
+                  C
+                </div>
+                <span class="player-picker-name" [style.color]="activeUnifiedScorer === 2 ? 'var(--player-two-color)' : 'var(--ion-color-medium)'">{{ getFirstName(gameState.player2.name) }}</span>
+                <span class="player-picker-score" style="display: flex; align-items: center; justify-content: center; gap: 4px;">
+                  <span style="opacity: 0.55; font-size: 13px; font-weight: 600;">{{ gameState.player2.prevScore }}</span>
+                  <span style="opacity: 0.4; font-size: 12px;">&rarr;</span>
+                  <span>{{ gameState.player2.score }}</span>
+                </span>
+              </div>
+
+              <!-- Player 4 (Team 2) -->
+              <div (click)="activeUnifiedScorer = 4" class="player-picker-btn" [class.active-p4]="activeUnifiedScorer === 4" style="flex: 1; position: relative;">
+                <!-- Crib Selector -->
+                <div (click)="gameService.setActiveCrib(2); $event.stopPropagation()"
+                     [style.background]="gameState.activeCrib === 2 ? 'var(--player-four-color)' : 'rgba(255,255,255,0.05)'"
+                     [style.border-color]="gameState.activeCrib === 2 ? 'var(--player-four-color)' : 'rgba(255,255,255,0.1)'"
+                     [style.color]="gameState.activeCrib === 2 ? '#000' : 'rgba(255,255,255,0.4)'"
+                     style="position: absolute; top: -6px; right: -6px; width: 18px; height: 18px; border: 1px solid; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 8px; font-weight: 800; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.3);" class="clickable" title="Set Crib">
+                  C
+                </div>
+                <span class="player-picker-name" [style.color]="activeUnifiedScorer === 4 ? 'var(--player-four-color)' : 'var(--ion-color-medium)'">{{ getFirstName(gameState.player4?.name || '') }}</span>
+                <span class="player-picker-score" style="display: flex; align-items: center; justify-content: center; gap: 4px;">
+                  <span style="opacity: 0.55; font-size: 13px; font-weight: 600;">{{ gameState.player4?.prevScore || 0 }}</span>
+                  <span style="opacity: 0.4; font-size: 12px;">&rarr;</span>
+                  <span>{{ gameState.player4?.score || 0 }}</span>
+                </span>
+              </div>
+            }
+
           </div>
 
-          <!-- 3P Control Row (Options, New Hand, Reset) -->
+          <!-- Middle Progress Bars Container -->
+          <div style="flex: 1 1 0px; min-height: 0; display: flex; flex-direction: column; justify-content: center; gap: 16px; padding: 20px 16px; margin: 12px 0; background: rgba(22, 24, 35, 0.4); border: 1px solid rgba(255, 255, 255, 0.06); border-radius: 20px; position: relative;">
+            
+            <!-- 2-PLAYER OR 3-PLAYER DYNAMIC TRACKS -->
+            @if (gameState.mode === 2 || gameState.mode === 3) {
+              <div *ngFor="let pNum of (gameState.mode === 2 ? [1, 2] : [1, 2, 3])" style="display: flex; flex-direction: column; gap: 6px;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                  <span [style.color]="getPlayerColor(pNum)" style="font-weight: 800; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px;">
+                    {{ getPlayerName(pNum) }}
+                  </span>
+                  <span style="font-size: 14px; font-weight: 800; color: #fff;">{{ getPlayerScore(pNum) }} / 121</span>
+                </div>
+                <div class="progress-track" style="height: 12px; border-radius: 6px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255, 255, 255, 0.05); overflow: hidden; position: relative;">
+                  <div [style.background]="getPlayerColor(pNum)" [style.width.%]="(getPlayerScore(pNum) / 121) * 100" style="height: 100%; border-radius: 6px; transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 0 0 10px rgba(255,255,255,0.1);"></div>
+                </div>
+              </div>
+            }
+
+            <!-- 4-PLAYER TEAM TRACKS -->
+            @if (gameState.mode === 4) {
+              <!-- Team 1 (P1 & P3) Track -->
+              <div style="display: flex; flex-direction: column; gap: 6px;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                  <span style="color: var(--player-one-color); font-weight: 800; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px;">
+                    {{ getFirstName(gameState.player1.name) }} & {{ getFirstName(gameState.player3?.name || '') }}
+                  </span>
+                  <span style="font-size: 14px; font-weight: 800; color: #fff;">{{ gameState.player1.score }} / 121</span>
+                </div>
+                <div class="progress-track" style="height: 12px; border-radius: 6px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255, 255, 255, 0.05); overflow: hidden; position: relative;">
+                  <div style="background: linear-gradient(to right, var(--player-one-color), var(--player-three-color)); height: 100%; border-radius: 6px; transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 0 0 10px rgba(6, 182, 212, 0.25);"></div>
+                </div>
+              </div>
+
+              <!-- Team 2 (P2 & P4) Track -->
+              <div style="display: flex; flex-direction: column; gap: 6px;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                  <span style="color: var(--player-two-color); font-weight: 800; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px;">
+                    {{ getFirstName(gameState.player2.name) }} & {{ getFirstName(gameState.player4?.name || '') }}
+                  </span>
+                  <span style="font-size: 14px; font-weight: 800; color: #fff;">{{ gameState.player2.score }} / 121</span>
+                </div>
+                <div class="progress-track" style="height: 12px; border-radius: 6px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255, 255, 255, 0.05); overflow: hidden; position: relative;">
+                  <div style="background: linear-gradient(to right, var(--player-two-color), var(--player-four-color)); height: 100%; border-radius: 6px; transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 0 0 10px rgba(217, 70, 239, 0.25);"></div>
+                </div>
+              </div>
+            }
+
+          </div>
+
+          <!-- Control Row (Options, New Hand, Toggle View, Reset) -->
           <div id="game-center-divider" class="control-row-3p">
             <div class="center-settings-btn" (click)="gameService.toggleTabBar()" title="Toggle navigation menu">
               Options
@@ -301,13 +463,13 @@
           <div class="glass-panel" style="flex: 1 1 0px; min-height: 0; display: flex; flex-direction: column; justify-content: space-between; padding: 14px; margin-bottom: 4px; border-color: rgba(255,255,255,0.08); background: rgba(22, 24, 35, 0.5);">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
               <span style="font-size: 11px; font-weight: 800; text-transform: uppercase; color: var(--ion-color-medium);">
-                Scoring for: <strong [style.color]="getPlayerColor(activeThreePlayerScorer)">{{ getPlayerName(activeThreePlayerScorer) }}</strong>
+                Scoring for: <strong [style.color]="getPlayerColor(activeUnifiedScorer)">{{ getPlayerName(activeUnifiedScorer) }}</strong>
               </span>
               
               <div style="position: relative; display: inline-block;" (click)="p1StagedScore > 0 ? clearStagedScore(1) : null" class="clickable">
                 <div id="game-staged-pill" class="draft-pill" [class.active]="p1StagedScore > 0">
                   <span>Staged:</span>
-                  <span [style.color]="getPlayerColor(activeThreePlayerScorer)" style="font-weight: 800;">+{{ p1StagedScore }}</span>
+                  <span [style.color]="getPlayerColor(activeUnifiedScorer)" style="font-weight: 800;">+{{ p1StagedScore }}</span>
                 </div>
                 @if (p1StagedScore > 0) {
                   <div style="position: absolute; right: -6px; top: 50%; transform: translateY(-50%); background: #ef4444; border: 1px solid rgba(255,255,255,0.2); border-radius: 50%; width: 15px; height: 15px; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 8px; font-weight: 900; box-shadow: 0 2px 5px rgba(0,0,0,0.3); z-index: 10;">
@@ -319,9 +481,9 @@
 
             <!-- Categories -->
             <div id="game-category-select" class="category-pill-container" style="margin: 8px 0;">
-              <button class="category-pill-btn" [class.active-p1]="p1Category === 'Pegging' && activeThreePlayerScorer === 1" [class.active-p2]="p1Category === 'Pegging' && activeThreePlayerScorer === 2" [class.active-p3]="p1Category === 'Pegging' && activeThreePlayerScorer === 3" (click)="p1Category = 'Pegging'">Peg</button>
-              <button class="category-pill-btn" [class.active-p1]="p1Category === 'Hand' && activeThreePlayerScorer === 1" [class.active-p2]="p1Category === 'Hand' && activeThreePlayerScorer === 2" [class.active-p3]="p1Category === 'Hand' && activeThreePlayerScorer === 3" (click)="p1Category = 'Hand'">Hand</button>
-              <button class="category-pill-btn" [class.active-p1]="p1Category === 'Crib' && activeThreePlayerScorer === 1" [class.active-p2]="p1Category === 'Crib' && activeThreePlayerScorer === 2" [class.active-p3]="p1Category === 'Crib' && activeThreePlayerScorer === 3" (click)="p1Category = 'Crib'">Crib</button>
+              <button class="category-pill-btn" [class.active-p1]="p1Category === 'Pegging' && activeUnifiedScorer === 1" [class.active-p2]="p1Category === 'Pegging' && activeUnifiedScorer === 2" [class.active-p3]="p1Category === 'Pegging' && activeUnifiedScorer === 3" [class.active-p4]="p1Category === 'Pegging' && activeUnifiedScorer === 4" (click)="p1Category = 'Pegging'">Peg</button>
+              <button class="category-pill-btn" [class.active-p1]="p1Category === 'Hand' && activeUnifiedScorer === 1" [class.active-p2]="p1Category === 'Hand' && activeUnifiedScorer === 2" [class.active-p3]="p1Category === 'Hand' && activeUnifiedScorer === 3" [class.active-p4]="p1Category === 'Hand' && activeUnifiedScorer === 4" (click)="p1Category = 'Hand'">Hand</button>
+              <button class="category-pill-btn" [class.active-p1]="p1Category === 'Crib' && activeUnifiedScorer === 1" [class.active-p2]="p1Category === 'Crib' && activeUnifiedScorer === 2" [class.active-p3]="p1Category === 'Crib' && activeUnifiedScorer === 3" [class.active-p4]="p1Category === 'Crib' && activeUnifiedScorer === 4" (click)="p1Category = 'Crib'">Crib</button>
             </div>
 
             <!-- Point Grid -->
@@ -334,13 +496,13 @@
 
             <!-- Submission Row -->
             <div id="game-actions-row" class="action-btn-grid" style="margin-top: 10px;">
-              <button class="control-icon-btn" [disabled]="!canUndo(activeThreePlayerScorer)" (click)="undo(activeThreePlayerScorer)">
+              <button class="control-icon-btn" [disabled]="!canUndo(activeUnifiedScorer)" (click)="undo(activeUnifiedScorer)">
                 <ion-icon name="arrow-undo-outline" style="font-size: 18px;"></ion-icon>
               </button>
-              <button class="submit-btn" [class.p1]="activeThreePlayerScorer === 1" [class.p2]="activeThreePlayerScorer === 2" [class.p3]="activeThreePlayerScorer === 3" [disabled]="p1StagedScore === 0" (click)="submitScore(1)" style="flex: 1;">
+              <button class="submit-btn" [class.p1]="activeUnifiedScorer === 1" [class.p2]="activeUnifiedScorer === 2" [class.p3]="activeUnifiedScorer === 3" [class.p4]="activeUnifiedScorer === 4" [disabled]="p1StagedScore === 0" (click)="submitScore(1)" style="flex: 1;">
                 Submit (+{{ p1StagedScore }})
               </button>
-              <button class="control-icon-btn" [disabled]="!canRedo(activeThreePlayerScorer)" (click)="redo(activeThreePlayerScorer)">
+              <button class="control-icon-btn" [disabled]="!canRedo(activeUnifiedScorer)" (click)="redo(activeUnifiedScorer)">
                 <ion-icon name="arrow-redo-outline" style="font-size: 18px;"></ion-icon>
               </button>
             </div>
@@ -663,58 +825,5 @@
     </ion-modal>
 
   </div>
-
-  <!-- WALKTHROUGH OVERLAY -->
-  <ng-container *ngIf="onboardingService.isActive && onboardingService.currentStep">
-    <!-- Highlight overlay cutout mask -->
-    <div class="walkthrough-highlight"
-         [style.top.px]="onboardingService.highlightRect.top"
-         [style.left.px]="onboardingService.highlightRect.left"
-         [style.width.px]="onboardingService.highlightRect.width"
-         [style.height.px]="onboardingService.highlightRect.height">
-    </div>
-
-    <!-- Tooltip box -->
-    <div class="walkthrough-tooltip animate-fade-in"
-         [style.top.px]="onboardingService.tooltipTop"
-         [style.left.px]="onboardingService.tooltipLeft"
-         style="pointer-events: auto;">
-      
-      <!-- Header -->
-      <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
-        <h4 style="margin: 0; font-size: 14px; font-weight: 800; color: #fff;">
-          {{ onboardingService.currentStep.title }}
-        </h4>
-        <span style="font-size: 10px; font-weight: 700; color: var(--ion-color-medium); background: rgba(255,255,255,0.06); padding: 2px 6px; border-radius: 8px; flex-shrink: 0;">
-          {{ onboardingService.currentStepIndex + 1 }}/{{ onboardingService.totalSteps }}
-        </span>
-      </div>
-
-      <!-- Description -->
-      <p style="margin: 0 0 16px 0; font-size: 12px; line-height: 1.5; color: rgba(255,255,255,0.8);">
-        {{ onboardingService.currentStep.description }}
-      </p>
-
-      <!-- Actions -->
-      <div style="display: flex; justify-content: space-between; align-items: center;">
-        <button (click)="onboardingService.skip()" 
-                style="background: transparent; border: none; color: var(--ion-color-medium); font-size: 12px; font-weight: 600; padding: 6px 0; cursor: pointer;">
-          Skip
-        </button>
-        <div style="display: flex; gap: 8px;">
-          <button (click)="onboardingService.prev()" 
-                  [disabled]="onboardingService.currentStepIndex === 0"
-                  style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: #fff; padding: 6px 12px; font-size: 11px; font-weight: 700; cursor: pointer; transition: all 0.2s;"
-                  [style.opacity]="onboardingService.currentStepIndex === 0 ? '0.4' : '1'">
-            Back
-          </button>
-          <button (click)="onboardingService.next()" 
-                  style="background: var(--player-one-color); border: none; border-radius: 8px; color: #000; padding: 6px 14px; font-size: 11px; font-weight: 800; cursor: pointer; transition: all 0.2s;">
-            {{ onboardingService.currentStepIndex === onboardingService.totalSteps - 1 ? 'Finish' : 'Next' }}
-          </button>
-        </div>
-      </div>
-    </div>
-  </ng-container>
 
 </ion-content>

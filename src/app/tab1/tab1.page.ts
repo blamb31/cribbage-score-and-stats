@@ -87,8 +87,8 @@ export class Tab1Page implements OnInit, AfterViewInit, OnDestroy {
   public p1Category: 'Pegging' | 'Hand' | 'Crib' = 'Pegging';
   public p2Category: 'Pegging' | 'Hand' | 'Crib' = 'Pegging';
 
-  // Active scorers for 3 and 4 players
-  public activeThreePlayerScorer: 1 | 2 | 3 = 1;
+  // Active scorers for 3 and 4 players (and 2/4 in unified view)
+  public activeUnifiedScorer: 1 | 2 | 3 | 4 = 1;
   public p1ActiveScorer: 1 | 3 = 1;
   public p2ActiveScorer: 2 | 4 = 2;
 
@@ -306,7 +306,7 @@ export class Tab1Page implements OnInit, AfterViewInit, OnDestroy {
     this.p1Category = 'Pegging';
     this.p2Category = 'Pegging';
     
-    this.activeThreePlayerScorer = 1;
+    this.activeUnifiedScorer = 1;
     this.p1ActiveScorer = 1;
     this.p2ActiveScorer = 2;
     this.showSetupModal = false;
@@ -335,11 +335,11 @@ export class Tab1Page implements OnInit, AfterViewInit, OnDestroy {
   }
 
   public submitScore(side: 1 | 2) {
-    if (this.gameState.mode === 3) {
+    if (this.gameState.mode === 3 || this.gameService.isUnifiedView) {
       const points = this.p1StagedScore;
       const category = this.p1Category;
       if (points > 0) {
-        this.gameService.addPoints(this.activeThreePlayerScorer, points, category);
+        this.gameService.addPoints(this.activeUnifiedScorer, points, category);
         this.p1StagedScore = 0;
       }
     } else {
@@ -408,10 +408,10 @@ export class Tab1Page implements OnInit, AfterViewInit, OnDestroy {
   }
 
   public swapPlayers3P(idx1: number, idx2: number) {
-    if (this.activeThreePlayerScorer === idx1) {
-      this.activeThreePlayerScorer = idx2 as any;
-    } else if (this.activeThreePlayerScorer === idx2) {
-      this.activeThreePlayerScorer = idx1 as any;
+    if (this.activeUnifiedScorer === idx1) {
+      this.activeUnifiedScorer = idx2 as any;
+    } else if (this.activeUnifiedScorer === idx2) {
+      this.activeUnifiedScorer = idx1 as any;
     }
     this.gameService.swapPlayers3P(idx1, idx2);
   }
@@ -786,7 +786,7 @@ export class Tab1Page implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private triggerPlayOnboarding() {
-    this.onboardingService.start('onboarded_play', [
+    const steps = [
       {
         targetId: 'game-p1-header',
         title: 'Player Score Plaques',
@@ -822,6 +822,32 @@ export class Tab1Page implements OnInit, AfterViewInit, OnDestroy {
         title: 'Match Controls',
         description: 'Open the Options menu, start a New Hand (resets categories and swaps the Crib), or reset with New Game.'
       }
-    ]);
+    ];
+
+    const hasCompletedPlayOnboarding = localStorage.getItem('onboarded_play') === 'true';
+    const hasCompletedLayoutToggleOnboarding = localStorage.getItem('onboarded_play_layout_toggle') === 'true';
+    const isLayoutToggleSupported = this.gameState.mode !== 3;
+
+    if (isLayoutToggleSupported) {
+      const layoutToggleStep = {
+        targetId: 'game-layout-toggle',
+        title: 'Split & Unified Layout',
+        description: 'Toggles between face-to-face Split-Screen and single-panel Unified view. This setting is saved in the bottom Options menu.'
+      };
+
+      if (!hasCompletedPlayOnboarding) {
+        // First-time user: Append the step to the full walkthrough
+        steps.push(layoutToggleStep);
+        this.onboardingService.start('onboarded_play', steps);
+      } else if (!hasCompletedLayoutToggleOnboarding) {
+        // Existing user who completed play onboarding but not layout toggle: Show ONLY the layout toggle step
+        this.onboardingService.start('onboarded_play_layout_toggle', [layoutToggleStep]);
+      }
+    } else {
+      // 3-Player game: standard play onboarding without layout toggle
+      if (!hasCompletedPlayOnboarding) {
+        this.onboardingService.start('onboarded_play', steps);
+      }
+    }
   }
 }

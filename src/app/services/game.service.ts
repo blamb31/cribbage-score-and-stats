@@ -81,6 +81,17 @@ export class GameService {
   public players$: Observable<PlayerProfile[]> = this.playersSub.asObservable();
 
   public showTabBar = true;
+  private _isUnifiedView = localStorage.getItem('cribbage_is_unified_view') === 'true';
+
+  public get isUnifiedView(): boolean {
+    return this._isUnifiedView;
+  }
+
+  public set isUnifiedView(val: boolean) {
+    this._isUnifiedView = val;
+    localStorage.setItem('cribbage_is_unified_view', String(val));
+    this.triggerHaptic(ImpactStyle.Light);
+  }
 
   public toggleTabBar() {
     this.showTabBar = !this.showTabBar;
