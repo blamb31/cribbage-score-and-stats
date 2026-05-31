@@ -323,7 +323,7 @@
             <!-- 4-PLAYER MODE HEADER TABS -->
             @if (gameState.mode === 4) {
               <!-- Player 1 (Team 1) -->
-              <div (click)="activeUnifiedScorer = 1" class="player-picker-btn" [class.active-p1]="activeUnifiedScorer === 1" style="flex: 1; position: relative;">
+              <div (click)="activeUnifiedScorer = 1; p1ActiveScorer = 1" class="player-picker-btn" [class.active-p1]="activeUnifiedScorer === 1" style="flex: 1; position: relative;">
                 <!-- Crib Selector -->
                 <div (click)="gameService.setActiveCrib(1); $event.stopPropagation()"
                      [style.background]="gameState.activeCrib === 1 ? 'var(--player-one-color)' : 'rgba(255,255,255,0.05)'"
@@ -341,7 +341,7 @@
               </div>
 
               <!-- Player 3 (Team 1) -->
-              <div (click)="activeUnifiedScorer = 3" class="player-picker-btn" [class.active-p3]="activeUnifiedScorer === 3" style="flex: 1; position: relative;">
+              <div (click)="activeUnifiedScorer = 3; p1ActiveScorer = 3" class="player-picker-btn" [class.active-p3]="activeUnifiedScorer === 3" style="flex: 1; position: relative;">
                 <!-- Crib Selector -->
                 <div (click)="gameService.setActiveCrib(1); $event.stopPropagation()"
                      [style.background]="gameState.activeCrib === 1 ? 'var(--player-three-color)' : 'rgba(255,255,255,0.05)'"
@@ -359,7 +359,7 @@
               </div>
 
               <!-- Player 2 (Team 2) -->
-              <div (click)="activeUnifiedScorer = 2" class="player-picker-btn" [class.active-p2]="activeUnifiedScorer === 2" style="flex: 1; position: relative;">
+              <div (click)="activeUnifiedScorer = 2; p2ActiveScorer = 2" class="player-picker-btn" [class.active-p2]="activeUnifiedScorer === 2" style="flex: 1; position: relative;">
                 <!-- Crib Selector -->
                 <div (click)="gameService.setActiveCrib(2); $event.stopPropagation()"
                      [style.background]="gameState.activeCrib === 2 ? 'var(--player-two-color)' : 'rgba(255,255,255,0.05)'"
@@ -377,7 +377,7 @@
               </div>
 
               <!-- Player 4 (Team 2) -->
-              <div (click)="activeUnifiedScorer = 4" class="player-picker-btn" [class.active-p4]="activeUnifiedScorer === 4" style="flex: 1; position: relative;">
+              <div (click)="activeUnifiedScorer = 4; p2ActiveScorer = 4" class="player-picker-btn" [class.active-p4]="activeUnifiedScorer === 4" style="flex: 1; position: relative;">
                 <!-- Crib Selector -->
                 <div (click)="gameService.setActiveCrib(2); $event.stopPropagation()"
                      [style.background]="gameState.activeCrib === 2 ? 'var(--player-four-color)' : 'rgba(255,255,255,0.05)'"
@@ -425,8 +425,10 @@
                   </span>
                   <span style="font-size: 14px; font-weight: 800; color: #fff;">{{ gameState.player1.score }} / 121</span>
                 </div>
-                <div class="progress-track" style="height: 12px; border-radius: 6px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255, 255, 255, 0.05); overflow: hidden; position: relative;">
-                  <div style="background: linear-gradient(to right, var(--player-one-color), var(--player-three-color)); height: 100%; border-radius: 6px; transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 0 0 10px rgba(6, 182, 212, 0.25);"></div>
+                <div class="progress-track" 
+                     style="height: 12px; border-radius: 6px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255, 255, 255, 0.05); overflow: hidden; position: relative; box-shadow: 0 0 10px rgba(6, 182, 212, 0.25);">
+                  <div [style.width.%]="(gameState.player1.score / 121) * 100" 
+                       style="background: linear-gradient(to right, var(--player-one-color), var(--player-three-color)); height: 100%; border-radius: 6px; transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);"></div>
                 </div>
               </div>
 
@@ -438,8 +440,10 @@
                   </span>
                   <span style="font-size: 14px; font-weight: 800; color: #fff;">{{ gameState.player2.score }} / 121</span>
                 </div>
-                <div class="progress-track" style="height: 12px; border-radius: 6px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255, 255, 255, 0.05); overflow: hidden; position: relative;">
-                  <div style="background: linear-gradient(to right, var(--player-two-color), var(--player-four-color)); height: 100%; border-radius: 6px; transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 0 0 10px rgba(217, 70, 239, 0.25);"></div>
+                <div class="progress-track" 
+                     style="height: 12px; border-radius: 6px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255, 255, 255, 0.05); overflow: hidden; position: relative; box-shadow: 0 0 10px rgba(217, 70, 239, 0.25);">
+                  <div [style.width.%]="(gameState.player2.score / 121) * 100" 
+                       style="background: linear-gradient(to right, var(--player-two-color), var(--player-four-color)); height: 100%; border-radius: 6px; transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);"></div>
                 </div>
               </div>
             }
