@@ -524,7 +524,10 @@
             <div class="score-row">
               <div class="own-score-box">
                 <div class="prev-score-label">Prev: {{ gameState.player1.prevScore }}</div>
-                <div class="grand-total-text" [class.glow-cyan]="p1ActiveScorer === 1" [class.glow-emerald]="p1ActiveScorer === 3">{{ gameState.player1.score }}</div>
+                <div class="grand-total-text" 
+                     [class.score-gradient-team1]="gameState.mode === 4"
+                     [class.glow-cyan]="gameState.mode !== 4 && p1ActiveScorer === 1" 
+                     [class.glow-emerald]="gameState.mode !== 4 && p1ActiveScorer === 3">{{ gameState.player1.score }}</div>
                 <!-- 4P Mode Active Player Selector -->
                 <div *ngIf="gameState.mode === 4" style="display: flex; flex-direction: column; gap: 4px; background: rgba(0, 0, 0, 0.25); padding: 3px; border-radius: 8px; margin-top: 6px; width: fit-content; min-width: 80px; box-sizing: border-box;">
                   <button (click)="p1ActiveScorer = 1" [class.active-p1]="p1ActiveScorer === 1" [style.border-color]="p1ActiveScorer !== 1 ? 'rgba(6, 182, 212, 0.25)' : null" class="teammate-btn" style="padding: 4px 6px; width: 100%; text-align: center; display: block; box-sizing: border-box;">
@@ -565,7 +568,9 @@
 
               <div class="opponent-score-box">
                 <div class="prev-score-label">Opponent</div>
-                <div style="font-size: 24px; font-weight: 800; transition: color 0.2s ease;" [style.color]="gameState.mode === 4 ? getPlayerColor(p2ActiveScorer) : 'var(--player-two-color)'">{{ gameState.player2.score }}</div>
+                <div [class.score-gradient-team2]="gameState.mode === 4"
+                     [style.color]="gameState.mode === 4 ? null : 'var(--player-two-color)'"
+                     style="font-size: 24px; font-weight: 800; transition: color 0.2s ease;">{{ gameState.player2.score }}</div>
                 <div style="font-size: 10px; font-weight: 600; color: var(--ion-color-medium); text-transform: uppercase; letter-spacing: 0.5px;">
                   {{ gameState.mode === 4 ? (getFirstName(gameState.player2.name) + ' & ' + getFirstName(gameState.player4?.name || '')) : getFirstName(gameState.player2.name) }}
                 </div>
@@ -615,8 +620,8 @@
           <div id="game-center-divider" class="center-divider-container">
             <!-- Player 1 Progress Bar (fills right-to-left, which is left-to-right from P1's rotated view) -->
             <div class="progress-track">
-              <div [class.progress-fill-p1]="gameState.mode !== 4 || p1ActiveScorer === 1"
-                   [class.progress-fill-p3]="gameState.mode === 4 && p1ActiveScorer === 3"
+              <div [class.progress-fill-p1]="gameState.mode !== 4"
+                   [class.progress-fill-team1]="gameState.mode === 4"
                    [style.width.%]="(gameState.player1.score / 121) * 100"></div>
             </div>
 
@@ -635,8 +640,8 @@
 
             <!-- Player 2 Progress Bar (fills left-to-right) -->
             <div class="progress-track">
-              <div [class.progress-fill-p2]="gameState.mode !== 4 || p2ActiveScorer === 2"
-                   [class.progress-fill-p4]="gameState.mode === 4 && p2ActiveScorer === 4"
+              <div [class.progress-fill-p2]="gameState.mode !== 4"
+                   [class.progress-fill-team2]="gameState.mode === 4"
                    [style.width.%]="(gameState.player2.score / 121) * 100"></div>
             </div>
           </div>
@@ -648,7 +653,10 @@
             <div id="game-p1-header" class="score-row">
               <div class="own-score-box">
                 <div class="prev-score-label">Prev: {{ gameState.player2.prevScore }}</div>
-                <div class="grand-total-text" [class.glow-fuchsia]="p2ActiveScorer === 2" [class.glow-amber]="p2ActiveScorer === 4">{{ gameState.player2.score }}</div>
+                <div class="grand-total-text" 
+                     [class.score-gradient-team2]="gameState.mode === 4"
+                     [class.glow-fuchsia]="gameState.mode !== 4 && p2ActiveScorer === 2" 
+                     [class.glow-amber]="gameState.mode !== 4 && p2ActiveScorer === 4">{{ gameState.player2.score }}</div>
                 <!-- 4P Mode Active Player Selector -->
                 <div *ngIf="gameState.mode === 4" style="display: flex; flex-direction: column; gap: 4px; background: rgba(0, 0, 0, 0.25); padding: 3px; border-radius: 8px; margin-top: 6px; width: fit-content; min-width: 80px; box-sizing: border-box;">
                   <button (click)="p2ActiveScorer = 2" [class.active-p2]="p2ActiveScorer === 2" [style.border-color]="p2ActiveScorer !== 2 ? 'rgba(217, 70, 239, 0.25)' : null" class="teammate-btn" style="padding: 4px 6px; width: 100%; text-align: center; display: block; box-sizing: border-box;">
@@ -689,7 +697,9 @@
 
               <div class="opponent-score-box">
                 <div class="prev-score-label">Opponent</div>
-                <div style="font-size: 24px; font-weight: 800; transition: color 0.2s ease;" [style.color]="gameState.mode === 4 ? getPlayerColor(p1ActiveScorer) : 'var(--player-one-color)'">{{ gameState.player1.score }}</div>
+                <div [class.score-gradient-team1]="gameState.mode === 4"
+                     [style.color]="gameState.mode === 4 ? null : 'var(--player-one-color)'"
+                     style="font-size: 24px; font-weight: 800; transition: color 0.2s ease;">{{ gameState.player1.score }}</div>
                 <div style="font-size: 10px; font-weight: 600; color: var(--ion-color-medium); text-transform: uppercase; letter-spacing: 0.5px;">
                   {{ gameState.mode === 4 ? (getFirstName(gameState.player1.name) + ' & ' + getFirstName(gameState.player3?.name || '')) : getFirstName(gameState.player1.name) }}
                 </div>
