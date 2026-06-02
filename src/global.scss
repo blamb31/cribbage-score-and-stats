@@ -173,3 +173,14 @@ ion-tab-bar {
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+/* Custom dark-theme segment readability fixes regardless of system theme */
+ion-segment-button {
+  --color: rgba(255, 255, 255, 0.55) !important;
+  --color-checked: #ffffff !important;
+  --background-checked: rgba(255, 255, 255, 0.12) !important;
+}
+ion-segment-button ion-label {
+  color: inherit !important;
+}
+
+
