@@ -195,7 +195,25 @@
   <!-- 2. COMPLETED GAMES HISTORY LIST -->
   @if (activeSegment === 'history') {
     <div style="padding: 16px;" class="animate-fade-in">
-      <div style="font-size: 11px; font-weight: 800; color: var(--ion-color-medium); text-transform: uppercase; margin-bottom: 12px; letter-spacing: 0.5px;">All Completed Games</div>
+      <input type="file" id="upload-game-file-input" style="display: none;" accept=".json" (change)="onFileSelected($event)" />
+
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+        <div style="font-size: 11px; font-weight: 800; color: var(--ion-color-medium); text-transform: uppercase; letter-spacing: 0.5px;">
+          {{ isSelectionMode ? 'Select Games' : 'All Completed Games' }}
+        </div>
+        
+        <div style="display: flex; gap: 8px;">
+          <button *ngIf="!isSelectionMode" (click)="triggerFileUpload()" style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; color: var(--player-one-color); padding: 6px 12px; display: flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 700;" class="clickable">
+            <ion-icon name="cloud-upload-outline" style="font-size: 14px;"></ion-icon>
+            Import
+          </button>
+          
+          <button (click)="toggleSelectionMode()" style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; color: #fff; padding: 6px 12px; display: flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 700;" class="clickable">
+            <ion-icon [name]="isSelectionMode ? 'close-outline' : 'checkbox-outline'" style="font-size: 14px;"></ion-icon>
+            {{ isSelectionMode ? 'Cancel' : 'Select' }}
+          </button>
+        </div>
+      </div>
 
       @if (historyList.length === 0) {
         <div style="text-align: center; padding: 40px 16px; color: var(--ion-color-medium);">
@@ -205,9 +223,12 @@
       }
 
       @for (game of historyList; track game.id) {
-        <div class="game-history-card">
+        <div class="game-history-card" [class.selected]="isSelectionMode && isGameSelected(game.id)">
           <!-- Accordion Header Clickable -->
-          <div class="game-history-header" (click)="toggleExpandGame(game.id)">
+          <div class="game-history-header" (click)="isSelectionMode ? toggleSelectGame(game.id) : toggleExpandGame(game.id)">
+            <div *ngIf="isSelectionMode" style="margin-right: 12px; display: flex; align-items: center; pointer-events: none;">
+              <ion-checkbox [checked]="isGameSelected(game.id)" mode="md" style="--size: 20px; --border-radius: 6px;"></ion-checkbox>
+            </div>
             <div style="text-align: left; flex: 1;">
               <div style="display: flex; align-items: center; gap: 8px;">
                 <span [style.color]="game.winner === 1 ? 'var(--player-one-color)' : (game.winner === 2 ? 'var(--player-two-color)' : 'var(--player-three-color)')" style="font-weight: 800; font-size: 14px;">
@@ -238,15 +259,20 @@
             </div>
             
             <div style="display: flex; align-items: center; gap: 12px;">
-              <button (click)="deleteGame(game.id, $event)" style="background: transparent; border: none; color: var(--ion-color-danger); display: flex; align-items: center; justify-content: center;" class="clickable">
-                <ion-icon name="trash-outline" style="font-size: 18px;"></ion-icon>
-              </button>
-              <ion-icon [name]="expandedGameId === game.id ? 'chevron-up-outline' : 'chevron-down-outline'" style="color: var(--ion-color-medium); font-size: 18px;"></ion-icon>
+              <ng-container *ngIf="!isSelectionMode">
+                <button (click)="downloadSingleGame(game, $event)" style="background: transparent; border: none; color: var(--player-one-color); display: flex; align-items: center; justify-content: center;" class="clickable">
+                  <ion-icon name="download-outline" style="font-size: 18px;"></ion-icon>
+                </button>
+                <button (click)="deleteGame(game.id, $event)" style="background: transparent; border: none; color: var(--ion-color-danger); display: flex; align-items: center; justify-content: center;" class="clickable">
+                  <ion-icon name="trash-outline" style="font-size: 18px;"></ion-icon>
+                </button>
+                <ion-icon [name]="isGameExpanded(game.id) ? 'chevron-up-outline' : 'chevron-down-outline'" style="color: var(--ion-color-medium); font-size: 18px;"></ion-icon>
+              </ng-container>
             </div>
           </div>
 
           <!-- Expanded Game details -->
-          @if (expandedGameId === game.id) {
+          @if (isGameExpanded(game.id)) {
             <div class="game-history-details">
               <div style="display: flex; justify-content: space-between; font-size: 11px; color: var(--ion-color-medium); font-weight: 700; text-transform: uppercase; margin-bottom: 8px;">
                 <span>Duration: {{ formatDuration(game.duration) }}</span>
@@ -326,8 +352,92 @@
           }
         </div>
       }
+
+      <!-- Spacer to prevent the floating selection bar from covering the last item -->
+      <div *ngIf="isSelectionMode" style="height: 100px; pointer-events: none;"></div>
+
     </div>
   }
+
+  <!-- Floating Selection Action Bar (Direct Child of ion-content) -->
+  <div slot="fixed" *ngIf="activeSegment === 'history' && isSelectionMode" class="selection-footer-bar glass-panel animate-fade-in">
+    <div style="display: flex; align-items: center; justify-content: space-between; width: 100%; gap: 12px;">
+      <div style="font-size: 12px; font-weight: 700; color: #fff;">
+        {{ selectedGameIds.size }} Selected
+      </div>
+      
+      <div style="display: flex; gap: 8px;">
+        <button *ngIf="selectedGameIds.size < historyList.length" (click)="selectAllGames()" style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: #fff; padding: 6px 10px; font-size: 11px; font-weight: 600;" class="clickable">
+          Select All
+        </button>
+        <button *ngIf="selectedGameIds.size > 0" (click)="clearSelectedGames()" style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: #fff; padding: 6px 10px; font-size: 11px; font-weight: 600;" class="clickable">
+          Clear
+        </button>
+        <button [disabled]="selectedGameIds.size === 0" (click)="downloadSelectedGames()" style="background: var(--player-one-color); border: none; border-radius: 8px; color: #fff; padding: 6px 12px; font-size: 11px; font-weight: 700; display: flex; align-items: center; gap: 4px;" [style.opacity]="selectedGameIds.size === 0 ? '0.5' : '1'" class="clickable">
+          <ion-icon name="download-outline" style="font-size: 13px;"></ion-icon>
+          Export
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 6. UPLOAD MAPPING MODAL -->
+  <ion-modal [isOpen]="showUploadMappingModal" (didDismiss)="showUploadMappingModal = false" style="--height: 90%; --max-height: 520px; --border-radius: 20px; --width: 90%; --max-width: 365px; --background: var(--app-bg); border: 1px solid rgba(255,255,255,0.15);">
+    <ng-template>
+      <div class="glass-panel" style="padding: 20px; border: none; border-radius: 0; display: flex; flex-direction: column; height: 100%; overflow: hidden;">
+        <h3 style="font-weight: 800; font-size: 18px; margin: 0 0 4px 0; color: #fff; text-align: center;">Map Uploaded Players</h3>
+        <p style="color: var(--ion-color-medium); font-size: 11px; text-align: center; margin: 0 0 16px 0; line-height: 1.4;">
+          Map players found in the uploaded games to existing profiles, or choose to create new players in the app.
+        </p>
+
+        <!-- Scrollable list of mappings -->
+        <div style="flex: 1; overflow-y: auto; padding-right: 4px; margin-bottom: 16px;">
+          <div *ngFor="let mapping of uploadMappings" style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; padding: 12px; margin-bottom: 12px;">
+            <div style="font-size: 10px; font-weight: 800; color: var(--ion-color-medium); text-transform: uppercase; margin-bottom: 8px; letter-spacing: 0.5px;">
+              Uploaded Player: <span style="color: #fff; font-weight: 700; font-size: 12px;">{{ mapping.uploadedName }}</span>
+            </div>
+
+            <!-- Segment to choose mapping mode -->
+            <ion-segment [(ngModel)]="mapping.mapType" mode="ios" style="--background: rgba(0,0,0,0.2); height: 28px; margin-bottom: 8px;">
+              <ion-segment-button value="existing">
+                <ion-label style="font-size: 9px; font-weight: 700;">Use Existing</ion-label>
+              </ion-segment-button>
+              <ion-segment-button value="new">
+                <ion-label style="font-size: 9px; font-weight: 700;">Create New</ion-label>
+              </ion-segment-button>
+            </ion-segment>
+
+            <!-- Choice 1: Existing Player Select -->
+            <div *ngIf="mapping.mapType === 'existing'">
+              <div style="border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; background: rgba(0,0,0,0.15); height: 38px; display: flex; align-items: center; padding: 0 8px;">
+                <ion-select [(ngModel)]="mapping.selectedExistingId" interface="popover" style="width: 100%; color: #fff; font-weight: 600; font-size: 12px; --padding-start: 4px;">
+                  <ion-select-option *ngFor="let p of playersList" [value]="p.id">{{ p.name }}</ion-select-option>
+                </ion-select>
+              </div>
+            </div>
+
+            <!-- Choice 2: New Player Name Input -->
+            <div *ngIf="mapping.mapType === 'new'">
+              <div style="border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; background: rgba(0,0,0,0.15); padding: 4px 10px; height: 38px; display: flex; align-items: center;">
+                <input type="text" [(ngModel)]="mapping.newPlayerName" placeholder="New player name..." style="width: 100%; background: transparent; border: none; outline: none; color: #fff; font-weight: 600; font-size: 12px;" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Action buttons -->
+        <div style="display: flex; flex-direction: column; gap: 8px; margin-top: auto;">
+          <button (click)="confirmImport()" style="background: var(--player-one-color); border: none; border-radius: 12px; color: #fff; height: 44px; font-weight: 700; font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;" class="clickable">
+            <ion-icon name="checkmark-outline" style="font-size: 18px;"></ion-icon>
+            Import {{ uploadedGames.length }} {{ uploadedGames.length === 1 ? 'Game' : 'Games' }}
+          </button>
+          <button (click)="showUploadMappingModal = false" style="background: transparent; border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; color: var(--ion-color-medium); height: 44px; font-weight: 600; font-size: 14px; cursor: pointer;" class="clickable">
+            Cancel
+          </button>
+        </div>
+      </div>
+    </ng-template>
+  </ion-modal>
 
   <!-- 3. DELETE GAME CONFIRMATION MODAL -->
   <ion-modal [isOpen]="showDeleteConfirm" (didDismiss)="showDeleteConfirm = false" style="--height: auto; --border-radius: 20px; --width: 90%; --max-width: 340px; --background: var(--app-bg); border: 1px solid rgba(255,255,255,0.15);">

@@ -5,13 +5,15 @@ import {
   IonHeader, IonToolbar, IonTitle, IonContent, IonSegment, IonSegmentButton, 
   IonSelect, IonSelectOption, IonList, IonItem, IonLabel, IonNote, IonIcon, 
   IonButton, IonCard, IonCardContent, IonCardHeader, IonCardTitle, IonRow, IonCol,
-  IonModal
+  IonModal, IonCheckbox
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import { 
   chevronDownOutline, chevronUpOutline, trashOutline, trophyOutline, 
   timeOutline, calendarOutline, barChartOutline, analyticsOutline,
-  createOutline, personRemoveOutline
+  createOutline, personRemoveOutline, downloadOutline, cloudUploadOutline,
+  checkboxOutline, checkmarkCircleOutline, closeOutline, listOutline,
+  checkmarkOutline
 } from 'ionicons/icons';
 import { GameService, CompletedGame, PlayerProfile } from '../services/game.service';
 import { OnboardingService } from '../services/onboarding.service';
@@ -40,6 +42,13 @@ export interface PlayerStats {
   avgOpponentCrib: number;
 }
 
+export interface PlayerMapping {
+  uploadedName: string;
+  mapType: 'existing' | 'new';
+  selectedExistingId: string;
+  newPlayerName: string;
+}
+
 @Component({
     selector: 'app-tab3',
     templateUrl: 'tab3.page.html',
@@ -50,7 +59,7 @@ export interface PlayerStats {
     IonHeader, IonToolbar, IonTitle, IonContent, IonSegment, IonSegmentButton, 
     IonSelect, IonSelectOption, IonList, IonItem, IonLabel, IonNote, IonIcon, 
     IonButton, IonCard, IonCardContent, IonCardHeader, IonCardTitle, IonRow, IonCol,
-    IonModal
+    IonModal, IonCheckbox
 ]
 })
 export class Tab3Page implements OnInit, OnDestroy {
@@ -61,13 +70,19 @@ export class Tab3Page implements OnInit, OnDestroy {
   public selectedPlayerId = '';
   
   public activeStats!: PlayerStats;
-  public expandedGameId: string | null = null;
+  public expandedGameIds = new Set<string>();
   public showDeleteConfirm = false;
   public gameIdToDelete: string | null = null;
   public showEditPlayerModal = false;
   public editPlayerName = '';
   public showDeletePlayerModal = false;
   public statsModeFilter: 'all' | '2' | '3' | '4' = '2';
+
+  public isSelectionMode = false;
+  public selectedGameIds = new Set<string>();
+  public showUploadMappingModal = false;
+  public uploadedGames: CompletedGame[] = [];
+  public uploadMappings: PlayerMapping[] = [];
 
   private playersSub!: Subscription;
   private historySub!: Subscription;
@@ -79,7 +94,9 @@ export class Tab3Page implements OnInit, OnDestroy {
     addIcons({
       chevronDownOutline, chevronUpOutline, trashOutline, trophyOutline, 
       timeOutline, calendarOutline, barChartOutline, analyticsOutline,
-      createOutline, personRemoveOutline
+      createOutline, personRemoveOutline, downloadOutline, cloudUploadOutline,
+      checkboxOutline, checkmarkCircleOutline, closeOutline, listOutline,
+      checkmarkOutline
     });
   }
 
@@ -144,7 +161,15 @@ export class Tab3Page implements OnInit, OnDestroy {
   }
 
   public toggleExpandGame(gameId: string) {
-    this.expandedGameId = this.expandedGameId === gameId ? null : gameId;
+    if (this.expandedGameIds.has(gameId)) {
+      this.expandedGameIds.delete(gameId);
+    } else {
+      this.expandedGameIds.add(gameId);
+    }
+  }
+
+  public isGameExpanded(gameId: string): boolean {
+    return this.expandedGameIds.has(gameId);
   }
 
   public getSelectedPlayerName(): string {
@@ -438,5 +463,193 @@ export class Tab3Page implements OnInit, OnDestroy {
     stats.avgOpponentCrib = Math.round((totalOpponentCrib / stats.gamesPlayed) * 10) / 10;
 
     return stats;
+  }
+
+  // --- Selection Mode Actions ---
+  public toggleSelectionMode() {
+    this.isSelectionMode = !this.isSelectionMode;
+    this.selectedGameIds.clear();
+  }
+
+  public toggleSelectGame(id: string) {
+    if (this.selectedGameIds.has(id)) {
+      this.selectedGameIds.delete(id);
+    } else {
+      this.selectedGameIds.add(id);
+    }
+  }
+
+  public isGameSelected(id: string): boolean {
+    return this.selectedGameIds.has(id);
+  }
+
+  public selectAllGames() {
+    this.historyList.forEach(g => this.selectedGameIds.add(g.id));
+  }
+
+  public clearSelectedGames() {
+    this.selectedGameIds.clear();
+  }
+
+  // --- Download Game Actions ---
+  public downloadSingleGame(game: CompletedGame, event: Event) {
+    event.stopPropagation();
+    const filename = `cribbage_game_${game.id || Date.now()}_${new Date(game.date).toISOString().split('T')[0]}.json`;
+    this.downloadJSON(game, filename);
+  }
+
+  public downloadSelectedGames() {
+    if (this.selectedGameIds.size === 0) return;
+    const gamesToDownload = this.historyList.filter(g => this.selectedGameIds.has(g.id));
+    const filename = `cribbage_games_export_${Date.now()}.json`;
+    this.downloadJSON(gamesToDownload, filename);
+    this.isSelectionMode = false;
+    this.selectedGameIds.clear();
+  }
+
+  private downloadJSON(data: any, filename: string) {
+    const jsonStr = JSON.stringify(data, null, 2);
+    const blob = new Blob([jsonStr], { type: 'application/json' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
+  }
+
+  // --- Upload Game Actions ---
+  public triggerFileUpload() {
+    const fileInput = document.getElementById('upload-game-file-input') as HTMLInputElement;
+    if (fileInput) {
+      fileInput.click();
+    }
+  }
+
+  public onFileSelected(event: Event) {
+    const input = event.target as HTMLInputElement;
+    if (!input.files || input.files.length === 0) return;
+
+    const file = input.files[0];
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const content = e.target?.result as string;
+        const parsed = JSON.parse(content);
+        
+        let games: CompletedGame[] = [];
+        if (Array.isArray(parsed)) {
+          games = parsed;
+        } else if (parsed && typeof parsed === 'object' && parsed.player1Name && parsed.player2Name) {
+          games = [parsed];
+        } else {
+          throw new Error('Invalid cribbage game file schema');
+        }
+
+        // Validate basic schema
+        for (const g of games) {
+          if (!g.player1Name || !g.player2Name || g.player1Score === undefined || g.player2Score === undefined) {
+            throw new Error('Some games are missing required player name or score fields');
+          }
+        }
+
+        this.uploadedGames = games;
+        this.setupPlayerMappings();
+      } catch (err: any) {
+        alert(err.message || 'Failed to parse JSON file.');
+      } finally {
+        input.value = '';
+      }
+    };
+    reader.readAsText(file);
+  }
+
+  private setupPlayerMappings() {
+    const uniqueNames = new Set<string>();
+    this.uploadedGames.forEach(g => {
+      if (g.player1Name) uniqueNames.add(g.player1Name);
+      if (g.player2Name) uniqueNames.add(g.player2Name);
+      if (g.player3Name) uniqueNames.add(g.player3Name);
+      if (g.player4Name) uniqueNames.add(g.player4Name);
+    });
+
+    const mappings: PlayerMapping[] = [];
+    uniqueNames.forEach(name => {
+      const existing = this.playersList.find(p => p.name.toLowerCase() === name.toLowerCase());
+      if (existing) {
+        mappings.push({
+          uploadedName: name,
+          mapType: 'existing',
+          selectedExistingId: existing.id,
+          newPlayerName: name
+        });
+      } else {
+        mappings.push({
+          uploadedName: name,
+          mapType: 'new',
+          selectedExistingId: this.playersList.length > 0 ? this.playersList[0].id : '',
+          newPlayerName: name
+        });
+      }
+    });
+
+    this.uploadMappings = mappings;
+    this.showUploadMappingModal = true;
+  }
+
+  public confirmImport() {
+    for (const mapping of this.uploadMappings) {
+      if (mapping.mapType === 'new') {
+        const newName = mapping.newPlayerName.trim();
+        if (!newName) {
+          alert('Player names cannot be empty');
+          return;
+        }
+      }
+    }
+
+    try {
+      const nameToProfileMap = new Map<string, string>();
+
+      for (const mapping of this.uploadMappings) {
+        if (mapping.mapType === 'new') {
+          const targetName = mapping.newPlayerName.trim();
+          const existing = this.playersList.find(p => p.name.toLowerCase() === targetName.toLowerCase());
+          if (existing) {
+            nameToProfileMap.set(mapping.uploadedName, existing.name);
+          } else {
+            const newP = this.gameService.createPlayer(targetName);
+            nameToProfileMap.set(mapping.uploadedName, newP.name);
+          }
+        } else {
+          const existing = this.playersList.find(p => p.id === mapping.selectedExistingId);
+          if (existing) {
+            nameToProfileMap.set(mapping.uploadedName, existing.name);
+          } else {
+            nameToProfileMap.set(mapping.uploadedName, mapping.uploadedName);
+          }
+        }
+      }
+
+      const mappedGames = this.uploadedGames.map(game => {
+        return {
+          ...game,
+          player1Name: nameToProfileMap.get(game.player1Name) || game.player1Name,
+          player2Name: nameToProfileMap.get(game.player2Name) || game.player2Name,
+          player3Name: game.player3Name ? (nameToProfileMap.get(game.player3Name) || game.player3Name) : undefined,
+          player4Name: game.player4Name ? (nameToProfileMap.get(game.player4Name) || game.player4Name) : undefined
+        };
+      });
+
+      this.gameService.importCompletedGames(mappedGames);
+      this.showUploadMappingModal = false;
+      this.uploadedGames = [];
+      this.uploadMappings = [];
+      alert(`Successfully imported ${mappedGames.length} games!`);
+    } catch (e: any) {
+      alert(e.message || 'Error occurred during import.');
+    }
   }
 }

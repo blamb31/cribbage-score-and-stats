@@ -655,4 +655,26 @@ export class GameService {
     localStorage.removeItem(this.STORAGE_KEY);
     this.triggerHaptic(ImpactStyle.Heavy);
   }
+
+  public importCompletedGames(games: CompletedGame[]) {
+    const currentHistory = this.historySub.value;
+    const existingIds = new Set(currentHistory.map(g => g.id));
+    const gamesToImport = games.map(game => {
+      let newId = game.id;
+      if (!newId || existingIds.has(newId)) {
+        newId = Math.random().toString(36).substring(2, 9);
+      }
+      return {
+        ...game,
+        id: newId
+      };
+    });
+
+    const updatedHistory = [...gamesToImport, ...currentHistory];
+    updatedHistory.sort((a, b) => b.date - a.date);
+
+    this.historySub.next(updatedHistory);
+    localStorage.setItem(this.STORAGE_KEY, JSON.stringify(updatedHistory));
+    this.triggerHaptic(ImpactStyle.Heavy);
+  }
 }
