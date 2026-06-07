@@ -363,11 +363,6 @@
 
   <!-- Floating Selection Action Bar (Direct Child of ion-content) -->
   <div slot="fixed" *ngIf="activeSegment === 'history' && isSelectionMode" class="selection-footer-bar glass-panel animate-fade-in">
-<<<<<<< Updated upstream
-    <div style="display: flex; align-items: center; justify-content: space-between; width: 100%; gap: 12px;">
-      <div style="font-size: 12px; font-weight: 700; color: #fff;">
-        {{ selectedGameIds.size }} Selected
-=======
     <div style="display: flex; flex-direction: column; gap: 8px; width: 100%;">
       <div style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
         <div style="font-size: 13px; font-weight: 800; color: #fff; display: flex; align-items: center; gap: 6px;">
@@ -378,7 +373,6 @@
             {{ selectedGameIds.size < historyList.length ? 'Select All' : 'Deselect All' }}
           </button>
         </div>
->>>>>>> Stashed changes
       </div>
       
       <div style="display: flex; gap: 8px;">
@@ -516,8 +510,7 @@
     </ng-template>
   </ion-modal>
 
-<<<<<<< Updated upstream
-=======
+
   <!-- ==========================================
        CLOUD SYNC & AUTH MODAL
        ========================================== -->
@@ -837,5 +830,5 @@
     </ng-template>
   </ion-modal>
 
->>>>>>> Stashed changes
+
 </ion-content>

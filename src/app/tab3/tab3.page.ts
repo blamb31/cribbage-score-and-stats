@@ -84,10 +84,6 @@ export class Tab3Page implements OnInit, OnDestroy {
   public uploadedGames: CompletedGame[] = [];
   public uploadMappings: PlayerMapping[] = [];
 
-<<<<<<< Updated upstream
-  private playersSub!: Subscription;
-  private historySub!: Subscription;
-=======
   // Cloud auth properties
   public showCloudModal = false;
   public cloudMode: 'signup' | 'signin' | 'forgot' | 'reset' = 'signup';
@@ -119,7 +115,6 @@ export class Tab3Page implements OnInit, OnDestroy {
   private userSub!: Subscription;
   private mergeSub!: Subscription;
   private recoverySub!: Subscription;
->>>>>>> Stashed changes
 
   constructor(
     public gameService: GameService,
@@ -183,9 +178,6 @@ export class Tab3Page implements OnInit, OnDestroy {
       this.historyList = history;
       this.updateSelectedPlayerStats();
     });
-<<<<<<< Updated upstream
-=======
-
     this.userSub = this.supabaseService.user$.subscribe(user => {
       this.currentUser = user;
     });
@@ -224,14 +216,11 @@ export class Tab3Page implements OnInit, OnDestroy {
         this.showMergeModal = false;
       }
     });
->>>>>>> Stashed changes
   }
 
   ngOnDestroy() {
     if (this.playersSub) this.playersSub.unsubscribe();
     if (this.historySub) this.historySub.unsubscribe();
-<<<<<<< Updated upstream
-=======
     if (this.userSub) this.userSub.unsubscribe();
     if (this.mergeSub) this.mergeSub.unsubscribe();
     if (this.recoverySub) this.recoverySub.unsubscribe();
@@ -378,7 +367,6 @@ export class Tab3Page implements OnInit, OnDestroy {
     } catch (e: any) {
       this.cloudErrorMessage = e.message || 'Sync failed';
     }
->>>>>>> Stashed changes
   }
 
   public onPlayerChange() {
