@@ -84,8 +84,42 @@ export class Tab3Page implements OnInit, OnDestroy {
   public uploadedGames: CompletedGame[] = [];
   public uploadMappings: PlayerMapping[] = [];
 
+<<<<<<< Updated upstream
   private playersSub!: Subscription;
   private historySub!: Subscription;
+=======
+  // Cloud auth properties
+  public showCloudModal = false;
+  public cloudMode: 'signup' | 'signin' | 'forgot' | 'reset' = 'signup';
+  public cloudEmail = '';
+  public cloudPassword = '';
+  public cloudConfirmPassword = '';
+  public currentUser: User | null = null;
+
+  // Syncing and Error properties
+  public syncStatusMessage = '';
+  public syncStatusType: 'success' | 'error' | '' = '';
+  public editPlayerErrorMessage = '';
+  public mappingErrorMessage = '';
+
+  // Game Settings and Bulk Action properties
+  public showGameSettingsModal = false;
+  public selectedGameForSettings: CompletedGame | null = null;
+  public showBulkDeleteConfirm = false;
+
+  // Player Merge properties
+  public showMergeModal = false;
+  public mergeMappings: PlayerMergeMapping[] = [];
+  public localMergePlayers: PlayerProfile[] = [];
+  public cloudMergePlayers: PlayerProfile[] = [];
+  public mergeErrorMessage = '';
+
+  private playersSub!: Subscription;
+  private historySub!: Subscription;
+  private userSub!: Subscription;
+  private mergeSub!: Subscription;
+  private recoverySub!: Subscription;
+>>>>>>> Stashed changes
 
   constructor(
     public gameService: GameService,
@@ -149,11 +183,202 @@ export class Tab3Page implements OnInit, OnDestroy {
       this.historyList = history;
       this.updateSelectedPlayerStats();
     });
+<<<<<<< Updated upstream
+=======
+
+    this.userSub = this.supabaseService.user$.subscribe(user => {
+      this.currentUser = user;
+    });
+
+    this.recoverySub = this.supabaseService.passwordRecovery$.subscribe(recovery => {
+      if (recovery) {
+        this.cloudMode = 'reset';
+        this.cloudEmail = '';
+        this.cloudPassword = '';
+        this.cloudConfirmPassword = '';
+        this.cloudErrorMessage = '';
+        this.cloudSuccessMessage = '';
+        this.showCloudModal = true;
+      }
+    });
+
+    this.mergeSub = this.gameService.pendingMergePlayers$.subscribe(mergeState => {
+      if (mergeState) {
+        this.localMergePlayers = mergeState.local;
+        this.cloudMergePlayers = mergeState.cloud;
+        
+        // Initialize mappings: auto-map to same name if exists, otherwise default to "new"
+        this.mergeMappings = this.localMergePlayers.map(lp => {
+          const similarCloud = this.cloudMergePlayers.find(cp => cp.name.toLowerCase() === lp.name.toLowerCase());
+          return {
+            localId: lp.id,
+            localName: lp.name,
+            mapType: similarCloud ? 'existing' as const : 'new' as const,
+            selectedExistingId: similarCloud ? similarCloud.id : (this.cloudMergePlayers.length > 0 ? this.cloudMergePlayers[0].id : ''),
+            newName: lp.name
+          };
+        });
+        
+        this.showMergeModal = true;
+      } else {
+        this.showMergeModal = false;
+      }
+    });
+>>>>>>> Stashed changes
   }
 
   ngOnDestroy() {
     if (this.playersSub) this.playersSub.unsubscribe();
     if (this.historySub) this.historySub.unsubscribe();
+<<<<<<< Updated upstream
+=======
+    if (this.userSub) this.userSub.unsubscribe();
+    if (this.mergeSub) this.mergeSub.unsubscribe();
+    if (this.recoverySub) this.recoverySub.unsubscribe();
+  }
+
+  // Cloud Actions
+  public cloudErrorMessage = '';
+  public showEmailVerifyNotice = false;
+
+  public openCloudModal() {
+    this.cloudEmail = '';
+    this.cloudPassword = '';
+    this.cloudConfirmPassword = '';
+    this.cloudErrorMessage = '';
+    this.cloudSuccessMessage = '';
+    this.showEmailVerifyNotice = false;
+
+    // Reset cloudMode back to standard sign-in if we are not actively recovering
+    if (this.cloudMode === 'reset' && !this.supabaseService.passwordRecovery$.value) {
+      this.cloudMode = 'signin';
+    }
+    if (this.cloudMode === 'forgot') {
+      this.cloudMode = 'signin';
+    }
+
+    this.showCloudModal = true;
+  }
+
+  public switchToSignIn() {
+    this.showEmailVerifyNotice = false;
+    this.cloudMode = 'signin';
+    this.cloudPassword = '';
+    this.cloudConfirmPassword = '';
+    this.cloudErrorMessage = '';
+    this.cloudSuccessMessage = '';
+  }
+
+  public switchToForgot() {
+    this.showEmailVerifyNotice = false;
+    this.cloudMode = 'forgot';
+    this.cloudPassword = '';
+    this.cloudConfirmPassword = '';
+    this.cloudErrorMessage = '';
+    this.cloudSuccessMessage = '';
+  }
+
+  public async sendResetEmail() {
+    if (!this.cloudEmail.trim()) {
+      this.cloudErrorMessage = 'Please enter your email address';
+      return;
+    }
+    this.cloudErrorMessage = '';
+    this.cloudSuccessMessage = '';
+
+    try {
+      await this.supabaseService.sendPasswordResetEmail(this.cloudEmail.trim());
+      this.cloudSuccessMessage = 'Reset link sent! Please check your email inbox.';
+    } catch (e: any) {
+      this.cloudErrorMessage = e.message || 'Failed to send reset email';
+    }
+  }
+
+  public async resetPassword() {
+    if (!this.cloudPassword.trim()) {
+      this.cloudErrorMessage = 'Please enter a new password';
+      return;
+    }
+    if (this.cloudPassword.trim().length < 6) {
+      this.cloudErrorMessage = 'Password must be at least 6 characters long';
+      return;
+    }
+    if (this.cloudPassword !== this.cloudConfirmPassword) {
+      this.cloudErrorMessage = 'Passwords do not match';
+      return;
+    }
+    this.cloudErrorMessage = '';
+    this.cloudSuccessMessage = '';
+
+    try {
+      await this.supabaseService.updatePassword(this.cloudPassword.trim());
+      this.cloudSuccessMessage = 'Password updated successfully!';
+      // Reset state and clear recovery trigger
+      this.supabaseService.passwordRecovery$.next(false);
+      // Reset cloud mode to signin for subsequent manual opens
+      this.cloudMode = 'signin';
+      setTimeout(() => {
+        this.showCloudModal = false;
+        this.cloudSuccessMessage = '';
+      }, 2000);
+    } catch (e: any) {
+      this.cloudErrorMessage = e.message || 'Failed to update password';
+    }
+  }
+
+  public async onCloudAction() {
+    if (!this.cloudEmail.trim() || !this.cloudPassword.trim()) {
+      this.cloudErrorMessage = 'Please enter your email and password';
+      return;
+    }
+    this.cloudErrorMessage = '';
+
+    try {
+      if (this.cloudMode === 'signup') {
+        await this.supabaseService.signUp(this.cloudEmail.trim(), this.cloudPassword.trim());
+        // Switch to showing the verification message inside the modal
+        this.showEmailVerifyNotice = true;
+      } else {
+        await this.supabaseService.signIn(this.cloudEmail.trim(), this.cloudPassword.trim());
+        
+        // Auto-sync local storage to the database immediately upon login
+        try {
+          const syncResult = await this.supabaseService.syncLocalStorageToSupabase();
+          console.log(`Auto-sync complete: synced ${syncResult.playersSynced} players and ${syncResult.gamesSynced} games.`);
+        } catch (syncErr) {
+          console.warn('Auto-sync failed on auth action:', syncErr);
+        }
+        
+        this.showCloudModal = false;
+      }
+    } catch (e: any) {
+      this.cloudErrorMessage = e.message || 'Authentication failed';
+    }
+  }
+
+  public cloudSuccessMessage = '';
+
+  public async onSignOut() {
+    this.cloudErrorMessage = '';
+    this.cloudSuccessMessage = '';
+    try {
+      await this.supabaseService.signOut();
+      this.showCloudModal = false;
+    } catch (e: any) {
+      this.cloudErrorMessage = e.message || 'Logout failed';
+    }
+  }
+
+  public async triggerManualSync() {
+    this.cloudErrorMessage = '';
+    this.cloudSuccessMessage = '';
+    try {
+      const res = await this.supabaseService.syncLocalStorageToSupabase();
+      this.cloudSuccessMessage = `Synced ${res.playersSynced} players and ${res.gamesSynced} games to the cloud!`;
+    } catch (e: any) {
+      this.cloudErrorMessage = e.message || 'Sync failed';
+    }
+>>>>>>> Stashed changes
   }
 
   public onPlayerChange() {
