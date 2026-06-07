@@ -68,3 +68,11 @@ testem.log
 # System files
 .DS_Store
 Thumbs.db
+
+# Environments (ignored to prevent publishable key scanning alerts)
+/src/environments/environment.ts
+/src/environments/environment.prod.ts
+
+# Local environment variables
+.env
+

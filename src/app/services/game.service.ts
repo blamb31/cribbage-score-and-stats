@@ -1,62 +1,10 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { Haptics, ImpactStyle } from '@capacitor/haptics';
+import { SupabaseService } from './supabase.service';
 
-export interface PlayerProfile {
-  id: string;
-  name: string;
-  created: number;
-}
-
-export interface ScoreLog {
-  id: string;
-  player: number; // 1 | 2 | 3 | 4
-  delta: number;
-  newScore: number;
-  reason: string;
-  timestamp: number;
-}
-
-export interface Player {
-  name: string;
-  score: number;
-  prevScore: number; // For rendering the trailing peg on the board
-  color: string;
-}
-
-export interface GameState {
-  isActive: boolean;
-  mode: 2 | 3 | 4;
-  player1: Player;
-  player2: Player;
-  player3?: Player;
-  player4?: Player;
-  scoreLogs: ScoreLog[];
-  undoStack: ScoreLog[][]; // Nested logs for restoring entire states
-  redoStack: ScoreLog[][];
-  winner: number | null; // 1 | 2 | 3 | null
-  startDate: number;
-  endDate: number | null;
-  playerRedoStacks?: { [player: number]: ScoreLog[] };
-  activeCrib: number | null; // 1 | 2 | 3 | null
-}
-
-export interface CompletedGame {
-  id: string;
-  mode?: 2 | 3 | 4;
-  player1Name: string;
-  player2Name: string;
-  player3Name?: string;
-  player4Name?: string;
-  player1Score: number;
-  player2Score: number;
-  player3Score?: number;
-  player4Score?: number;
-  winner: number; // 1 | 2 | 3
-  scoreLogs: ScoreLog[];
-  date: number;
-  duration: number; // in milliseconds
-}
+export * from './game.interfaces';
+import { PlayerProfile, CompletedGame, ScoreLog, GameState, Player } from './game.interfaces';
 
 @Injectable({
   providedIn: 'root'
@@ -80,6 +28,8 @@ export class GameService {
   private playersSub = new BehaviorSubject<PlayerProfile[]>(this.loadPlayersFromStorage());
   public players$: Observable<PlayerProfile[]> = this.playersSub.asObservable();
 
+  public pendingMergePlayers$ = new BehaviorSubject<{ local: PlayerProfile[], cloud: PlayerProfile[] } | null>(null);
+
   public showTabBar = true;
   private _isUnifiedView = localStorage.getItem('cribbage_is_unified_view') === 'true';
 
@@ -97,22 +47,196 @@ export class GameService {
     this.showTabBar = !this.showTabBar;
   }
 
-  constructor() {
+  constructor(private supabaseService: SupabaseService) {
     this.restoreGameState();
+    
+    // Listen to user auth changes to reload data
+    this.supabaseService.user$.subscribe(user => {
+      if (user) {
+        this.initializeCloudSync();
+      } else {
+        this.playersSub.next([]);
+        this.historySub.next([]);
+      }
+    });
+  }
+
+  private async initializeCloudSync() {
+    try {
+      const cloudPlayers = await this.supabaseService.getPlayers();
+      const localPlayers = this.loadPlayersFromStorage();
+      
+      // Filter local players that are not in the cloud (by ID or name case-insensitive)
+      const unsavedLocalPlayers = localPlayers.filter(lp => 
+        !cloudPlayers.some(cp => cp.id === lp.id || cp.name.toLowerCase() === lp.name.toLowerCase())
+      );
+
+      if (unsavedLocalPlayers.length > 0 && cloudPlayers.length > 0) {
+        // We have local players that aren't in the cloud, and the cloud database already has profiles.
+        // We must prompt the user to merge or create new!
+        this.pendingMergePlayers$.next({ local: unsavedLocalPlayers, cloud: cloudPlayers });
+        
+        // Defer updating playersSub (keep local profiles visible in UI) but pull cloud games
+        const cloudGames = await this.supabaseService.getGamesHistory();
+        const localGames = this.loadHistoryFromStorage();
+        const combined = [...localGames.filter(g => !g.synced), ...(cloudGames || []).map(g => ({ ...g, synced: true }))];
+        combined.sort((a, b) => b.date - a.date);
+        this.historySub.next(combined);
+      } else {
+        // No conflict: either no local unsaved players, or cloud database is completely empty.
+        if (unsavedLocalPlayers.length > 0 && cloudPlayers.length === 0) {
+          // Cloud has no players: automatically upload all local profiles to DB
+          for (const lp of localPlayers) {
+            await this.supabaseService.savePlayer(lp);
+          }
+        }
+        
+        // Reload players from cloud (which now includes any uploaded local ones)
+        const updatedPlayers = await this.supabaseService.getPlayers();
+        this.playersSub.next(updatedPlayers);
+        localStorage.setItem(this.PLAYERS_STORAGE_KEY, JSON.stringify(updatedPlayers));
+
+        // Sync history
+        const cloudGames = await this.supabaseService.getGamesHistory();
+        const localGames = this.loadHistoryFromStorage();
+        const unsynced = localGames.filter(g => !g.synced);
+        const syncedCloudGames = (cloudGames || []).map(g => ({ ...g, synced: true }));
+        const cloudIds = new Set(syncedCloudGames.map(g => g.id));
+        const filteredUnsynced = unsynced.filter(g => !cloudIds.has(g.id));
+        const combined = [...filteredUnsynced, ...syncedCloudGames];
+        combined.sort((a, b) => b.date - a.date);
+        
+        this.historySub.next(combined);
+        localStorage.setItem(this.STORAGE_KEY, JSON.stringify(combined));
+
+        if (filteredUnsynced.length > 0) {
+          this.uploadUnsyncedGames().catch(err => console.error('Failed auto-upload on sync:', err));
+        }
+      }
+
+      // 4. Restore active state
+      const activeState = await this.supabaseService.getActiveGameState();
+      if (activeState && activeState.isActive && !this.gameStateSub.value.isActive) {
+        this.gameStateSub.next(activeState);
+        localStorage.setItem(this.STATE_STORAGE_KEY, JSON.stringify(activeState));
+      }
+    } catch (e) {
+      console.warn('Could not sync on startup (offline or not authenticated yet):', e);
+    }
+  }
+
+  public async completePlayerMerge(
+    mappings: { localId: string, mapType: 'existing' | 'new', targetPlayerId?: string, newName?: string }[]
+  ) {
+    const localPlayers = this.loadPlayersFromStorage();
+    const currentHistory = [...this.historySub.value];
+    
+    // We will build a name-to-name mapping for updating games
+    const nameMapping = new Map<string, string>();
+    const cloudPlayers = await this.supabaseService.getPlayers();
+    
+    for (const mapping of mappings) {
+      const localPlayer = localPlayers.find(p => p.id === mapping.localId);
+      if (!localPlayer) continue;
+
+      if (mapping.mapType === 'new') {
+        // Create new player in DB
+        const nameToCreate = (mapping.newName || localPlayer.name).trim();
+        const newPlayer: PlayerProfile = {
+          ...localPlayer,
+          name: nameToCreate
+        };
+        await this.supabaseService.savePlayer(newPlayer);
+        nameMapping.set(localPlayer.name, nameToCreate);
+      } else if (mapping.mapType === 'existing') {
+        // Merge with existing player in DB
+        const targetPlayer = cloudPlayers.find(p => p.id === mapping.targetPlayerId);
+        if (targetPlayer) {
+          nameMapping.set(localPlayer.name, targetPlayer.name);
+        }
+      }
+    }
+
+    // Apply name changes to history games
+    const updatedHistory = currentHistory.map(game => {
+      let modified = false;
+      let p1 = game.player1Name;
+      let p2 = game.player2Name;
+      let p3 = game.player3Name;
+      let p4 = game.player4Name;
+      
+      if (nameMapping.has(p1)) { p1 = nameMapping.get(p1)!; modified = true; }
+      if (nameMapping.has(p2)) { p2 = nameMapping.get(p2)!; modified = true; }
+      if (p3 && nameMapping.has(p3)) { p3 = nameMapping.get(p3)!; modified = true; }
+      if (p4 && nameMapping.has(p4)) { p4 = nameMapping.get(p4)!; modified = true; }
+      
+      return modified ? {
+        ...game,
+        player1Name: p1,
+        player2Name: p2,
+        player3Name: p3,
+        player4Name: p4,
+        synced: false // Mark as unsynced so it uploads with new names
+      } : game;
+    });
+
+    // Save history
+    this.historySub.next(updatedHistory);
+    localStorage.setItem(this.STORAGE_KEY, JSON.stringify(updatedHistory));
+
+    // Reload players from cloud and save
+    const updatedPlayers = await this.supabaseService.getPlayers();
+    this.playersSub.next(updatedPlayers);
+    localStorage.setItem(this.PLAYERS_STORAGE_KEY, JSON.stringify(updatedPlayers));
+
+    // Clear pending merge state
+    this.pendingMergePlayers$.next(null);
+
+    // Trigger upload of all unsynced games (with new mappings applied)
+    await this.uploadUnsyncedGames();
+  }
+
+  public async uploadUnsyncedGames(): Promise<number> {
+    const currentHistory = [...this.historySub.value];
+    let uploadedCount = 0;
+    let updated = false;
+
+    for (let i = 0; i < currentHistory.length; i++) {
+      const game = currentHistory[i];
+      if (!game.synced) {
+        try {
+          await this.supabaseService.saveGame(game);
+          currentHistory[i] = { ...game, synced: true };
+          uploadedCount++;
+          updated = true;
+        } catch (err) {
+          console.warn(`Failed to upload game ${game.id} during background push:`, err);
+        }
+      }
+    }
+
+    if (updated) {
+      this.historySub.next(currentHistory);
+      localStorage.setItem(this.STORAGE_KEY, JSON.stringify(currentHistory));
+    }
+
+    return uploadedCount;
+  }
+
+  private loadHistoryFromStorage(): CompletedGame[] {
+    try {
+      const stored = localStorage.getItem(this.STORAGE_KEY);
+      return stored ? JSON.parse(stored) : [];
+    } catch (e) {
+      console.error('Failed to load games history', e);
+      return [];
+    }
   }
 
   private loadPlayersFromStorage(): PlayerProfile[] {
     try {
       const stored = localStorage.getItem(this.PLAYERS_STORAGE_KEY);
-      if (stored) {
-        return JSON.parse(stored);
-      }
-      const defaults: PlayerProfile[] = [
-        { id: '1', name: 'Player 1', created: Date.now() },
-        { id: '2', name: 'Player 2', created: Date.now() }
-      ];
-      localStorage.setItem(this.PLAYERS_STORAGE_KEY, JSON.stringify(defaults));
-      return defaults;
+      return stored ? JSON.parse(stored) : [];
     } catch (e) {
       console.error('Failed to load players', e);
       return [];
@@ -137,6 +261,10 @@ export class GameService {
     this.playersSub.next(updated);
     localStorage.setItem(this.PLAYERS_STORAGE_KEY, JSON.stringify(updated));
     this.triggerHaptic(ImpactStyle.Light);
+
+    // Sync to Supabase
+    this.supabaseService.savePlayer(newPlayer).catch(e => console.error('Supabase sync failed:', e));
+
     return newPlayer;
   }
 
@@ -146,6 +274,9 @@ export class GameService {
     this.playersSub.next(updated);
     localStorage.setItem(this.PLAYERS_STORAGE_KEY, JSON.stringify(updated));
     this.triggerHaptic(ImpactStyle.Medium);
+
+    // Sync to Supabase
+    this.supabaseService.deletePlayer(id).catch(e => console.error('Supabase sync failed:', e));
   }
 
   public updatePlayerName(id: string, newName: string) {
@@ -196,6 +327,10 @@ export class GameService {
       if (JSON.stringify(currentHistory) !== JSON.stringify(updatedHistory)) {
         this.historySub.next(updatedHistory);
         localStorage.setItem(this.STORAGE_KEY, JSON.stringify(updatedHistory));
+        // Sync modified history games to Supabase
+        for (const game of updatedHistory) {
+          this.supabaseService.saveGame(game).catch(e => console.error('Supabase history sync failed:', e));
+        }
       }
     }
 
@@ -203,6 +338,12 @@ export class GameService {
     this.playersSub.next(updated);
     localStorage.setItem(this.PLAYERS_STORAGE_KEY, JSON.stringify(updated));
     this.triggerHaptic(ImpactStyle.Medium);
+
+    // Sync updated player to Supabase
+    const updatedPlayer = updated.find(p => p.id === id);
+    if (updatedPlayer) {
+      this.supabaseService.savePlayer(updatedPlayer).catch(e => console.error('Supabase sync failed:', e));
+    }
   }
 
   private getDefaultState(): GameState {
@@ -442,6 +583,18 @@ export class GameService {
     this.updateState(state);
     localStorage.removeItem(this.STATE_STORAGE_KEY);
     this.triggerHaptic(ImpactStyle.Medium);
+
+    // Clear active game state in Supabase
+    const user = this.supabaseService.getCurrentUser();
+    if (user) {
+      (this.supabaseService as any).supabase
+        .from('active_game_states')
+        .delete()
+        .eq('user_id', user.id)
+        .then(({ error }: any) => {
+          if (error) console.error('Failed to clear active state from Supabase', error);
+        });
+    }
   }
 
   private recalculateScoresFromLogs(state: GameState) {
@@ -489,6 +642,11 @@ export class GameService {
   private updateState(state: GameState) {
     this.gameStateSub.next(state);
     localStorage.setItem(this.STATE_STORAGE_KEY, JSON.stringify(state));
+
+    // Sync active state in background
+    if (state.isActive) {
+      this.supabaseService.saveActiveGameState(state).catch(e => console.error('Supabase active state sync failed:', e));
+    }
   }
 
   private restoreGameState() {
@@ -623,7 +781,8 @@ export class GameService {
       winner: state.winner,
       scoreLogs: state.scoreLogs,
       date: state.endDate,
-      duration: state.endDate - state.startDate
+      duration: state.endDate - state.startDate,
+      synced: false // Start as unsynced locally
     };
 
     const currentHistory = this.historySub.value;
@@ -631,16 +790,25 @@ export class GameService {
     
     this.historySub.next(updatedHistory);
     localStorage.setItem(this.STORAGE_KEY, JSON.stringify(updatedHistory));
-  }
 
-  private loadHistoryFromStorage(): CompletedGame[] {
-    try {
-      const stored = localStorage.getItem(this.STORAGE_KEY);
-      return stored ? JSON.parse(stored) : [];
-    } catch (e) {
-      console.error('Failed to load games history', e);
-      return [];
-    }
+    // Sync to Supabase
+    this.supabaseService.saveGame(newGame)
+      .then(() => {
+        // If successful, update the status to synced: true
+        const history = [...this.historySub.value];
+        const idx = history.findIndex(g => g.id === newGame.id);
+        if (idx !== -1) {
+          history[idx] = { ...newGame, synced: true };
+          this.historySub.next(history);
+          localStorage.setItem(this.STORAGE_KEY, JSON.stringify(history));
+        }
+        
+        // Auto-upload any other unsynced games
+        this.uploadUnsyncedGames().catch(err => console.error('Auto-upload error after game completed:', err));
+      })
+      .catch(e => {
+        console.warn('Supabase game save failed (cached locally):', e);
+      });
   }
 
   public deleteGameFromHistory(id: string) {
@@ -648,12 +816,80 @@ export class GameService {
     this.historySub.next(updatedHistory);
     localStorage.setItem(this.STORAGE_KEY, JSON.stringify(updatedHistory));
     this.triggerHaptic(ImpactStyle.Medium);
+
+    // Sync to Supabase
+    this.supabaseService.deleteGame(id).catch(e => console.error('Supabase game delete failed:', e));
+  }
+
+  public deleteGamesFromHistory(ids: string[]) {
+    const idSet = new Set(ids);
+    const updatedHistory = this.historySub.value.filter(game => !idSet.has(game.id));
+    this.historySub.next(updatedHistory);
+    localStorage.setItem(this.STORAGE_KEY, JSON.stringify(updatedHistory));
+    this.triggerHaptic(ImpactStyle.Medium);
+
+    // Sync to Supabase
+    for (const id of ids) {
+      this.supabaseService.deleteGame(id).catch(e => console.error('Supabase game bulk delete failed:', e));
+    }
+  }
+
+  public updateGameStatsInclusion(id: string, excluded: boolean) {
+    const current = [...this.historySub.value];
+    const idx = current.findIndex(g => g.id === id);
+    if (idx !== -1) {
+      current[idx] = { ...current[idx], excluded, synced: false };
+      this.historySub.next(current);
+      localStorage.setItem(this.STORAGE_KEY, JSON.stringify(current));
+      
+      // Upload update to Supabase
+      this.supabaseService.saveGame(current[idx])
+        .then(() => {
+          const history = [...this.historySub.value];
+          const innerIdx = history.findIndex(g => g.id === id);
+          if (innerIdx !== -1) {
+            history[innerIdx] = { ...history[innerIdx], synced: true };
+            this.historySub.next(history);
+            localStorage.setItem(this.STORAGE_KEY, JSON.stringify(history));
+          }
+        })
+        .catch(err => console.warn('Supabase game exclusion update failed:', err));
+    }
+  }
+
+  public updateGamesStatsInclusion(ids: string[], excluded: boolean) {
+    const idSet = new Set(ids);
+    const current = [...this.historySub.value];
+    let updated = false;
+    
+    for (let i = 0; i < current.length; i++) {
+      if (idSet.has(current[i].id)) {
+        current[i] = { ...current[i], excluded, synced: false };
+        updated = true;
+      }
+    }
+    
+    if (updated) {
+      this.historySub.next(current);
+      localStorage.setItem(this.STORAGE_KEY, JSON.stringify(current));
+      
+      // Trigger background upload of updated games
+      this.uploadUnsyncedGames().catch(err => console.error('Upload after bulk exclusion update failed:', err));
+    }
   }
 
   public clearHistory() {
+    const current = this.historySub.value;
     this.historySub.next([]);
     localStorage.removeItem(this.STORAGE_KEY);
     this.triggerHaptic(ImpactStyle.Heavy);
+
+    // Sync to Supabase
+    for (const g of current) {
+      if (g.synced) {
+        this.supabaseService.deleteGame(g.id).catch(e => console.error('Supabase game clear failed:', e));
+      }
+    }
   }
 
   public importCompletedGames(games: CompletedGame[]) {
@@ -666,7 +902,8 @@ export class GameService {
       }
       return {
         ...game,
-        id: newId
+        id: newId,
+        synced: false // Start as unsynced for import
       };
     });
 
@@ -676,5 +913,8 @@ export class GameService {
     this.historySub.next(updatedHistory);
     localStorage.setItem(this.STORAGE_KEY, JSON.stringify(updatedHistory));
     this.triggerHaptic(ImpactStyle.Heavy);
+
+    // Try uploading the imported games
+    this.uploadUnsyncedGames().catch(err => console.error('Import upload error:', err));
   }
 }
