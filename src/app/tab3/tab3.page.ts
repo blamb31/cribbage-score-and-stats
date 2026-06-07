@@ -97,9 +97,10 @@ export class Tab3Page implements OnInit, OnDestroy {
 
   // Cloud auth properties
   public showCloudModal = false;
-  public cloudMode: 'signup' | 'signin' = 'signup';
+  public cloudMode: 'signup' | 'signin' | 'forgot' | 'reset' = 'signup';
   public cloudEmail = '';
   public cloudPassword = '';
+  public cloudConfirmPassword = '';
   public currentUser: User | null = null;
 
   // Syncing and Error properties
@@ -124,6 +125,7 @@ export class Tab3Page implements OnInit, OnDestroy {
   private historySub!: Subscription;
   private userSub!: Subscription;
   private mergeSub!: Subscription;
+  private recoverySub!: Subscription;
 
   constructor(
     public gameService: GameService,
@@ -194,6 +196,17 @@ export class Tab3Page implements OnInit, OnDestroy {
       this.currentUser = user;
     });
 
+    this.recoverySub = this.supabaseService.passwordRecovery$.subscribe(recovery => {
+      if (recovery) {
+        this.cloudMode = 'reset';
+        this.cloudEmail = '';
+        this.cloudPassword = '';
+        this.cloudConfirmPassword = '';
+        this.cloudErrorMessage = '';
+        this.cloudSuccessMessage = '';
+        this.showCloudModal = true;
+      }
+    });
     this.mergeSub = this.gameService.pendingMergePlayers$.subscribe(mergeState => {
       if (mergeState) {
         this.localMergePlayers = mergeState.local;
@@ -223,6 +236,7 @@ export class Tab3Page implements OnInit, OnDestroy {
     if (this.historySub) this.historySub.unsubscribe();
     if (this.userSub) this.userSub.unsubscribe();
     if (this.mergeSub) this.mergeSub.unsubscribe();
+    if (this.recoverySub) this.recoverySub.unsubscribe();
   }
 
   // Cloud Actions
@@ -232,8 +246,18 @@ export class Tab3Page implements OnInit, OnDestroy {
   public openCloudModal() {
     this.cloudEmail = '';
     this.cloudPassword = '';
+    this.cloudConfirmPassword = '';
     this.cloudErrorMessage = '';
+    this.cloudSuccessMessage = '';
     this.showEmailVerifyNotice = false;
+
+    // Reset cloudMode back to standard sign-in if we are not actively recovering
+    if (this.cloudMode === 'reset' && !this.supabaseService.passwordRecovery$.value) {
+      this.cloudMode = 'signin';
+    }
+    if (this.cloudMode === 'forgot') {
+      this.cloudMode = 'signin';
+    }
     this.showCloudModal = true;
   }
 
@@ -241,7 +265,66 @@ export class Tab3Page implements OnInit, OnDestroy {
     this.showEmailVerifyNotice = false;
     this.cloudMode = 'signin';
     this.cloudPassword = '';
+    this.cloudConfirmPassword = '';
     this.cloudErrorMessage = '';
+    this.cloudSuccessMessage = '';
+  }
+
+  public switchToForgot() {
+    this.showEmailVerifyNotice = false;
+    this.cloudMode = 'forgot';
+    this.cloudPassword = '';
+    this.cloudConfirmPassword = '';
+    this.cloudErrorMessage = '';
+    this.cloudSuccessMessage = '';
+  }
+
+  public async sendResetEmail() {
+    if (!this.cloudEmail.trim()) {
+      this.cloudErrorMessage = 'Please enter your email address';
+      return;
+    }
+    this.cloudErrorMessage = '';
+    this.cloudSuccessMessage = '';
+
+    try {
+      await this.supabaseService.sendPasswordResetEmail(this.cloudEmail.trim());
+      this.cloudSuccessMessage = 'Reset link sent! Please check your email inbox.';
+    } catch (e: any) {
+      this.cloudErrorMessage = e.message || 'Failed to send reset email';
+    }
+  }
+
+  public async resetPassword() {
+    if (!this.cloudPassword.trim()) {
+      this.cloudErrorMessage = 'Please enter a new password';
+      return;
+    }
+    if (this.cloudPassword.trim().length < 6) {
+      this.cloudErrorMessage = 'Password must be at least 6 characters long';
+      return;
+    }
+    if (this.cloudPassword !== this.cloudConfirmPassword) {
+      this.cloudErrorMessage = 'Passwords do not match';
+      return;
+    }
+    this.cloudErrorMessage = '';
+    this.cloudSuccessMessage = '';
+
+    try {
+      await this.supabaseService.updatePassword(this.cloudPassword.trim());
+      this.cloudSuccessMessage = 'Password updated successfully!';
+      // Reset state and clear recovery trigger
+      this.supabaseService.passwordRecovery$.next(false);
+      // Reset cloud mode to signin for subsequent manual opens
+      this.cloudMode = 'signin';
+      setTimeout(() => {
+        this.showCloudModal = false;
+        this.cloudSuccessMessage = '';
+      }, 2000);
+    } catch (e: any) {
+      this.cloudErrorMessage = e.message || 'Failed to update password';
+    }
   }
 
   public async onCloudAction() {

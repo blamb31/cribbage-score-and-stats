@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { createClient, SupabaseClient, User } from '@supabase/supabase-js';
 import { BehaviorSubject, Observable } from 'rxjs';
+import { Router } from '@angular/router';
 import { environment } from '../../environments/environment';
 import { PlayerProfile, CompletedGame, ScoreLog, GameState } from './game.interfaces';
 
@@ -14,7 +15,10 @@ export class SupabaseService {
   private userSub = new BehaviorSubject<User | null>(null);
   public user$: Observable<User | null> = this.userSub.asObservable();
 
-  constructor() {
+  // Subject to notify Tab3 if recovery/password reset redirect event triggers
+  public passwordRecovery$ = new BehaviorSubject<boolean>(false);
+
+  constructor(private router: Router) {
     // Initialize the Supabase Client
     const supabaseUrl = (environment as any).supabaseUrl || 'YOUR_SUPABASE_URL';
     const supabaseKey = (environment as any).supabaseKey || 'YOUR_SUPABASE_ANON_KEY';
@@ -42,6 +46,10 @@ export class SupabaseService {
     this.supabase.auth.onAuthStateChange((event, session) => {
       console.log(`Supabase Auth Event: ${event}`);
       this.userSub.next(session?.user || null);
+      if (event === 'PASSWORD_RECOVERY') {
+        this.passwordRecovery$.next(true);
+        this.router.navigateByUrl('/tabs/tab3');
+      }
     });
 
     // 3. Auto-login: If no user is logged in, log them in anonymously so they are "logged in always"
@@ -96,6 +104,24 @@ export class SupabaseService {
     const { error } = await this.supabase.auth.signOut();
     if (error) throw error;
     this.userSub.next(null);
+  }
+
+  /**
+   * Sends a password reset email to the user.
+   */
+  async sendPasswordResetEmail(email: string): Promise<void> {
+    const { error } = await this.supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: window.location.origin + '/tabs/tab3'
+    });
+    if (error) throw error;
+  }
+
+  /**
+   * Updates the authenticated user's password.
+   */
+  async updatePassword(password: string): Promise<void> {
+    const { error } = await this.supabase.auth.updateUser({ password });
+    if (error) throw error;
   }
 
   /**

@@ -196,6 +196,8 @@
         </div>
       }
 
+      <!-- Spacer to prevent bottom navigation bar from covering stats elements -->
+      <div style="height: 70px; pointer-events: none;"></div>
     </div>
   }
 
@@ -388,14 +390,14 @@
         </div>
       }
 
-      <!-- Spacer to prevent the floating selection bar from covering the last item -->
-      <div *ngIf="isSelectionMode" style="height: 100px; pointer-events: none;"></div>
+      <!-- Spacer to prevent bottom navigation bar or floating selection action bar from covering history items -->
+      <div style="pointer-events: none;" [style.height.px]="isSelectionMode ? 180 : 70"></div>
 
     </div>
   }
 
   <!-- Floating Selection Action Bar (Direct Child of ion-content) -->
-  <div slot="fixed" *ngIf="activeSegment === 'history' && isSelectionMode" class="selection-footer-bar glass-panel animate-fade-in" style="padding: 12px 16px; border-radius: 16px; margin: 0 16px 16px 16px; width: calc(100% - 32px); bottom: 10px; position: absolute; box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4); border: 1px solid rgba(255,255,255,0.1);">
+  <div slot="fixed" *ngIf="activeSegment === 'history' && isSelectionMode" class="selection-footer-bar glass-panel animate-fade-in">
     <div style="display: flex; flex-direction: column; gap: 8px; width: 100%;">
       <div style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
         <div style="font-size: 13px; font-weight: 800; color: #fff; display: flex; align-items: center; gap: 6px;">
@@ -560,6 +562,7 @@
     </ng-template>
   </ion-modal>
 
+
   <!-- ==========================================
        CLOUD SYNC & AUTH MODAL
        ========================================== -->
@@ -589,7 +592,7 @@
         </div>
 
         <!-- LOGGED IN STATE (Permanent Account) -->
-        <div *ngIf="currentUser && !currentUser.is_anonymous" style="text-align: center;">
+        <div *ngIf="currentUser && !currentUser.is_anonymous && cloudMode !== 'reset'" style="text-align: center;">
           <div style="background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.2); border-radius: 12px; padding: 14px; margin-bottom: 20px;">
             <div style="font-size: 11px; font-weight: 800; color: #10b981; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;">
               Backup Active
@@ -626,47 +629,118 @@
         </div>
 
         <!-- ANONYMOUS OR NOT LOGGED IN STATE -->
-        <div *ngIf="(!currentUser || currentUser.is_anonymous) && !showEmailVerifyNotice">
-          <div style="background: rgba(255, 196, 9, 0.08); border: 1px solid rgba(255, 196, 9, 0.2); border-radius: 12px; padding: 12px; margin-bottom: 20px; text-align: center;">
-            <div style="font-size: 10px; font-weight: 800; color: var(--ion-color-warning); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;">
-              Local Session Only
+        <div *ngIf="(!currentUser || currentUser.is_anonymous) && !showEmailVerifyNotice && cloudMode !== 'reset'">
+          
+          <!-- Normal Sign In / Sign Up Form -->
+          <div *ngIf="cloudMode === 'signup' || cloudMode === 'signin'">
+            <div style="background: rgba(255, 196, 9, 0.08); border: 1px solid rgba(255, 196, 9, 0.2); border-radius: 12px; padding: 12px; margin-bottom: 20px; text-align: center;">
+              <div style="font-size: 10px; font-weight: 800; color: var(--ion-color-warning); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;">
+                Local Session Only
+              </div>
+              <div style="font-size: 12px; color: #eee; line-height: 1.4;">
+                Your history is currently anonymous. Register a cloud account to back up and sync across multiple devices.
+              </div>
             </div>
-            <div style="font-size: 12px; color: #eee; line-height: 1.4;">
-              Your history is currently anonymous. Register a cloud account to back up and sync across multiple devices.
+
+            <!-- Segment Selector -->
+            <ion-segment [(ngModel)]="cloudMode" mode="ios" style="--background: rgba(255,255,255,0.03); height: 36px; margin-bottom: 16px;">
+              <ion-segment-button value="signup">
+                <ion-label style="font-size: 11px; font-weight: 700;">Create Account</ion-label>
+              </ion-segment-button>
+              <ion-segment-button value="signin">
+                <ion-label style="font-size: 11px; font-weight: 700;">Log In</ion-label>
+              </ion-segment-button>
+            </ion-segment>
+
+            <!-- Email Input -->
+            <div style="border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; background: rgba(255,255,255,0.02); padding: 0 12px; height: 48px; display: flex; align-items: center; margin-bottom: 12px;">
+              <ion-icon name="mail-outline" style="color: var(--ion-color-medium); font-size: 18px; margin-right: 10px;"></ion-icon>
+              <input type="email" [(ngModel)]="cloudEmail" placeholder="Email address..." style="width: 100%; background: transparent; border: none; outline: none; color: #fff; font-weight: 600; font-size: 14px;" />
             </div>
-          </div>
 
-          <!-- Segment Selector -->
-          <ion-segment [(ngModel)]="cloudMode" mode="ios" style="--background: rgba(255,255,255,0.03); height: 36px; margin-bottom: 16px;">
-            <ion-segment-button value="signup">
-              <ion-label style="font-size: 11px; font-weight: 700;">Create Account</ion-label>
-            </ion-segment-button>
-            <ion-segment-button value="signin">
-              <ion-label style="font-size: 11px; font-weight: 700;">Log In</ion-label>
-            </ion-segment-button>
-          </ion-segment>
+            <!-- Password Input -->
+            <div style="border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; background: rgba(255,255,255,0.02); padding: 0 12px; height: 48px; display: flex; align-items: center; margin-bottom: 8px;">
+              <ion-icon name="lock-closed-outline" style="color: var(--ion-color-medium); font-size: 18px; margin-right: 10px;"></ion-icon>
+              <input type="password" [(ngModel)]="cloudPassword" placeholder="Password..." style="width: 100%; background: transparent; border: none; outline: none; color: #fff; font-weight: 600; font-size: 14px;" />
+            </div>
 
-          <!-- Email Input -->
-          <div style="border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; background: rgba(255,255,255,0.02); padding: 0 12px; height: 48px; display: flex; align-items: center; margin-bottom: 12px;">
-            <ion-icon name="mail-outline" style="color: var(--ion-color-medium); font-size: 18px; margin-right: 10px;"></ion-icon>
-            <input type="email" [(ngModel)]="cloudEmail" placeholder="Email address..." style="width: 100%; background: transparent; border: none; outline: none; color: #fff; font-weight: 600; font-size: 14px;" />
-          </div>
-
-          <!-- Password Input -->
-          <div style="border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; background: rgba(255,255,255,0.02); padding: 0 12px; height: 48px; display: flex; align-items: center; margin-bottom: 20px;">
-            <ion-icon name="lock-closed-outline" style="color: var(--ion-color-medium); font-size: 18px; margin-right: 10px;"></ion-icon>
-            <input type="password" [(ngModel)]="cloudPassword" placeholder="Password..." style="width: 100%; background: transparent; border: none; outline: none; color: #fff; font-weight: 600; font-size: 14px;" />
-          </div>
-
-          <!-- Submit Actions -->
-          <div style="display: flex; flex-direction: column; gap: 8px;">
-            <button (click)="onCloudAction()" [disabled]="!cloudEmail.trim() || !cloudPassword.trim()" style="background: var(--player-one-color); border: none; border-radius: 12px; color: #fff; height: 44px; font-weight: 700; font-size: 14px; cursor: pointer;" class="clickable">
-              {{ cloudMode === 'signup' ? 'Secure My Data' : 'Sign In & Sync' }}
-            </button>
+            <!-- Forgot Password link inside Sign In view -->
+            <div *ngIf="cloudMode === 'signin'" style="display: flex; justify-content: flex-end; margin-bottom: 20px; padding: 0 4px;">
+              <button (click)="switchToForgot()" style="background: transparent; border: none; color: var(--player-one-color); font-size: 12px; font-weight: 700; cursor: pointer; padding: 4px;" class="clickable">
+                Forgot Password?
+              </button>
+            </div>
             
-            <!-- Manual Sync for Anonymous Users -->
-            <button *ngIf="currentUser && currentUser.is_anonymous" (click)="triggerManualSync()" style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; color: #fff; height: 44px; font-weight: 600; font-size: 13px;" class="clickable">
-              Force Upload Local Data
+            <div *ngIf="cloudMode === 'signup'" style="margin-bottom: 20px;"></div>
+
+            <!-- Submit Actions -->
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+              <button (click)="onCloudAction()" [disabled]="!cloudEmail.trim() || !cloudPassword.trim()" style="background: var(--player-one-color); border: none; border-radius: 12px; color: #fff; height: 44px; font-weight: 700; font-size: 14px; cursor: pointer;" class="clickable">
+                {{ cloudMode === 'signup' ? 'Secure My Data' : 'Sign In & Sync' }}
+              </button>
+              
+              <!-- Manual Sync for Anonymous Users -->
+              <button *ngIf="currentUser && currentUser.is_anonymous" (click)="triggerManualSync()" style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; color: #fff; height: 44px; font-weight: 600; font-size: 13px;" class="clickable">
+                Force Upload Local Data
+              </button>
+            </div>
+          </div>
+
+          <!-- Forgot Password View -->
+          <div *ngIf="cloudMode === 'forgot'">
+            <div style="text-align: center; margin-bottom: 20px;">
+              <h4 style="font-weight: 800; font-size: 18px; margin: 0 0 6px 0; color: #fff;">Reset Password</h4>
+              <p style="color: var(--ion-color-medium); font-size: 12px; margin: 0; line-height: 1.4;">
+                Enter your email address below and we'll send you a link to reset your password.
+              </p>
+            </div>
+
+            <!-- Email Input -->
+            <div style="border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; background: rgba(255,255,255,0.02); padding: 0 12px; height: 48px; display: flex; align-items: center; margin-bottom: 20px;">
+              <ion-icon name="mail-outline" style="color: var(--ion-color-medium); font-size: 18px; margin-right: 10px;"></ion-icon>
+              <input type="email" [(ngModel)]="cloudEmail" placeholder="Email address..." style="width: 100%; background: transparent; border: none; outline: none; color: #fff; font-weight: 600; font-size: 14px;" />
+            </div>
+
+            <!-- Actions -->
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+              <button (click)="sendResetEmail()" [disabled]="!cloudEmail.trim()" style="background: var(--player-one-color); border: none; border-radius: 12px; color: #fff; height: 44px; font-weight: 700; font-size: 14px; cursor: pointer;" class="clickable">
+                Send Reset Link
+              </button>
+              <button (click)="switchToSignIn()" style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; color: #fff; height: 44px; font-weight: 600; font-size: 13px;" class="clickable">
+                Back to Log In
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- PASSWORD RESET VIEW -->
+        <div *ngIf="cloudMode === 'reset' && !showEmailVerifyNotice">
+          <div style="text-align: center; margin-bottom: 20px;">
+            <h4 style="font-weight: 800; font-size: 18px; margin: 0 0 6px 0; color: #fff;">Enter New Password</h4>
+            <p style="color: var(--ion-color-medium); font-size: 12px; margin: 0; line-height: 1.4;">
+              Type a secure new password for your account (minimum 6 characters).
+            </p>
+          </div>
+
+          <!-- New Password Input -->
+          <div style="border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; background: rgba(255,255,255,0.02); padding: 0 12px; height: 48px; display: flex; align-items: center; margin-bottom: 12px;">
+            <ion-icon name="lock-closed-outline" style="color: var(--ion-color-medium); font-size: 18px; margin-right: 10px;"></ion-icon>
+            <input type="password" [(ngModel)]="cloudPassword" placeholder="New password..." style="width: 100%; background: transparent; border: none; outline: none; color: #fff; font-weight: 600; font-size: 14px;" />
+          </div>
+
+          <!-- Confirm Password Input -->
+          <div style="border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; background: rgba(255,255,255,0.02); padding: 0 12px; height: 48px; display: flex; align-items: center; margin-bottom: 20px;">
+            <ion-icon name="checkbox-outline" style="color: var(--ion-color-medium); font-size: 18px; margin-right: 10px;"></ion-icon>
+            <input type="password" [(ngModel)]="cloudConfirmPassword" placeholder="Confirm password..." style="width: 100%; background: transparent; border: none; outline: none; color: #fff; font-weight: 600; font-size: 14px;" />
+          </div>
+
+          <!-- Actions -->
+          <div style="display: flex; flex-direction: column; gap: 8px;">
+            <button (click)="resetPassword()" [disabled]="!cloudPassword.trim() || !cloudConfirmPassword.trim()" style="background: var(--player-one-color); border: none; border-radius: 12px; color: #fff; height: 44px; font-weight: 700; font-size: 14px; cursor: pointer;" class="clickable">
+              Update Password
+            </button>
+            <button (click)="supabaseService.passwordRecovery$.next(false); switchToSignIn();" style="background: transparent; border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; color: var(--ion-color-danger); height: 44px; font-weight: 600; font-size: 13px;" class="clickable">
+              Cancel Recovery
             </button>
           </div>
         </div>
@@ -807,5 +881,6 @@
       </div>
     </ng-template>
   </ion-modal>
+
 
 </ion-content>
