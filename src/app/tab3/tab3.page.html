@@ -1,6 +1,13 @@
 <ion-header [translucent]="true">
   <ion-toolbar>
     <ion-title class="glow-cyan" style="font-weight: 800; letter-spacing: 0.5px;">History & Stats</ion-title>
+    <ion-buttons slot="end" style="margin-right: 8px;">
+      <button (click)="openCloudModal()" style="background: transparent; border: none; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px;" class="clickable">
+        <ion-icon [name]="unsyncedGamesCount === 0 ? 'cloud-done-outline' : 'cloud-offline-outline'" 
+                  [style.color]="unsyncedGamesCount === 0 ? (currentUser && !currentUser.is_anonymous ? '#10b981' : '#f59e0b') : 'var(--ion-color-medium)'" 
+                  style="font-size: 24px;"></ion-icon>
+      </button>
+    </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
@@ -202,7 +209,12 @@
           {{ isSelectionMode ? 'Select Games' : 'All Completed Games' }}
         </div>
         
-        <div style="display: flex; gap: 8px;">
+        <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+          <button *ngIf="!isSelectionMode && unsyncedGamesCount > 0" (click)="uploadUnsynced()" style="background: rgba(245,158,11,0.15); border: 1px solid rgba(245,158,11,0.3); border-radius: 8px; color: #f59e0b; padding: 6px 12px; display: flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 700;" class="clickable">
+            <ion-icon name="cloud-upload-outline" style="font-size: 14px;"></ion-icon>
+            Upload Unsynced ({{ unsyncedGamesCount }})
+          </button>
+
           <button *ngIf="!isSelectionMode" (click)="triggerFileUpload()" style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; color: var(--player-one-color); padding: 6px 12px; display: flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 700;" class="clickable">
             <ion-icon name="cloud-upload-outline" style="font-size: 14px;"></ion-icon>
             Import
@@ -213,6 +225,18 @@
             {{ isSelectionMode ? 'Cancel' : 'Select' }}
           </button>
         </div>
+      </div>
+
+      <!-- Inline sync notifications banner -->
+      <div *ngIf="syncStatusMessage" [style.background]="syncStatusType === 'success' ? 'rgba(16, 185, 129, 0.08)' : 'rgba(235, 68, 90, 0.08)'" 
+           [style.border]="syncStatusType === 'success' ? '1px solid rgba(16, 185, 129, 0.2)' : '1px solid rgba(235, 68, 90, 0.2)'" 
+           style="border-radius: 12px; font-size: 12px; padding: 10px; margin-bottom: 16px; display: flex; align-items: center; justify-content: space-between;" class="animate-fade-in">
+        <span [style.color]="syncStatusType === 'success' ? '#10b981' : 'var(--ion-color-danger)'" style="font-weight: 600; line-height: 1.4;">
+          {{ syncStatusMessage }}
+        </span>
+        <button (click)="syncStatusMessage = ''" style="background: transparent; border: none; color: var(--ion-color-medium); display: flex; align-items: center; justify-content: center; padding: 4px;" class="clickable">
+          <ion-icon name="close-outline" style="font-size: 16px;"></ion-icon>
+        </button>
       </div>
 
       @if (historyList.length === 0) {
@@ -229,8 +253,8 @@
             <div *ngIf="isSelectionMode" style="margin-right: 12px; display: flex; align-items: center; pointer-events: none;">
               <ion-checkbox [checked]="isGameSelected(game.id)" mode="md" style="--size: 20px; --border-radius: 6px;"></ion-checkbox>
             </div>
-            <div style="text-align: left; flex: 1;">
-              <div style="display: flex; align-items: center; gap: 8px;">
+            <div style="text-align: left; flex: 1; margin-right: 16px;">
+              <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
                 <span [style.color]="game.winner === 1 ? 'var(--player-one-color)' : (game.winner === 2 ? 'var(--player-two-color)' : 'var(--player-three-color)')" style="font-weight: 800; font-size: 14px;">
                   @if ((game.mode || 2) === 4) {
                     {{ game.winner === 1 ? (getFirstName(game.player1Name) + ' & ' + getFirstName(game.player3Name)) : (getFirstName(game.player2Name) + ' & ' + getFirstName(game.player4Name)) }}
@@ -239,6 +263,17 @@
                   }
                 </span>
                 <span style="font-size: 10px; font-weight: 800; background: rgba(16,185,129,0.15); color: #10b981; padding: 1px 6px; border-radius: 6px; text-transform: uppercase;">Won</span>
+                
+                <!-- Synced/Local Icon Only -->
+                <ion-icon *ngIf="game.synced" name="cloud-done-outline" style="font-size: 16px; color: #10b981; display: inline-flex; align-items: center;"></ion-icon>
+                <ion-icon *ngIf="!game.synced" name="cloud-offline-outline" style="font-size: 16px; color: #f59e0b; display: inline-flex; align-items: center;"></ion-icon>
+
+                <!-- Excluded Badge -->
+                <span *ngIf="game.excluded" style="font-size: 10px; font-weight: 800; background: rgba(239, 68, 68, 0.15); color: #ef4444; padding: 1px 6px; border-radius: 6px; text-transform: uppercase; display: inline-flex; align-items: center; gap: 3px;">
+                  <ion-icon name="eye-off-outline" style="font-size: 11px;"></ion-icon>
+                  Excluded
+                </span>
+
                 <span style="font-size: 9px; font-weight: 700; background: rgba(255,255,255,0.06); color: #ccc; padding: 1px 5px; border-radius: 4px; margin-left: auto;">
                   {{ (game.mode || 2) }}P
                 </span>
@@ -260,8 +295,8 @@
             
             <div style="display: flex; align-items: center; gap: 12px;">
               <ng-container *ngIf="!isSelectionMode">
-                <button (click)="downloadSingleGame(game, $event)" style="background: transparent; border: none; color: var(--player-one-color); display: flex; align-items: center; justify-content: center;" class="clickable">
-                  <ion-icon name="download-outline" style="font-size: 18px;"></ion-icon>
+                <button (click)="openGameSettings(game, $event)" style="background: transparent; border: none; color: var(--player-one-color); display: flex; align-items: center; justify-content: center;" class="clickable">
+                  <ion-icon name="settings-outline" style="font-size: 18px;"></ion-icon>
                 </button>
                 <button (click)="deleteGame(game.id, $event)" style="background: transparent; border: none; color: var(--ion-color-danger); display: flex; align-items: center; justify-content: center;" class="clickable">
                   <ion-icon name="trash-outline" style="font-size: 18px;"></ion-icon>
@@ -360,22 +395,35 @@
   }
 
   <!-- Floating Selection Action Bar (Direct Child of ion-content) -->
-  <div slot="fixed" *ngIf="activeSegment === 'history' && isSelectionMode" class="selection-footer-bar glass-panel animate-fade-in">
-    <div style="display: flex; align-items: center; justify-content: space-between; width: 100%; gap: 12px;">
-      <div style="font-size: 12px; font-weight: 700; color: #fff;">
-        {{ selectedGameIds.size }} Selected
+  <div slot="fixed" *ngIf="activeSegment === 'history' && isSelectionMode" class="selection-footer-bar glass-panel animate-fade-in" style="padding: 12px 16px; border-radius: 16px; margin: 0 16px 16px 16px; width: calc(100% - 32px); bottom: 10px; position: absolute; box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4); border: 1px solid rgba(255,255,255,0.1);">
+    <div style="display: flex; flex-direction: column; gap: 8px; width: 100%;">
+      <div style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
+        <div style="font-size: 13px; font-weight: 800; color: #fff; display: flex; align-items: center; gap: 6px;">
+          <span style="background: var(--player-one-color); border-radius: 12px; padding: 2px 8px; font-size: 11px;">{{ selectedGameIds.size }}</span> Selected
+        </div>
+        <div style="display: flex; gap: 6px;">
+          <button (click)="selectedGameIds.size < historyList.length ? selectAllGames() : clearSelectedGames()" style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: #fff; padding: 6px 10px; font-size: 11px; font-weight: 600;" class="clickable">
+            {{ selectedGameIds.size < historyList.length ? 'Select All' : 'Deselect All' }}
+          </button>
+        </div>
       </div>
       
-      <div style="display: flex; gap: 8px;">
-        <button *ngIf="selectedGameIds.size < historyList.length" (click)="selectAllGames()" style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: #fff; padding: 6px 10px; font-size: 11px; font-weight: 600;" class="clickable">
-          Select All
-        </button>
-        <button *ngIf="selectedGameIds.size > 0" (click)="clearSelectedGames()" style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: #fff; padding: 6px 10px; font-size: 11px; font-weight: 600;" class="clickable">
-          Clear
-        </button>
-        <button [disabled]="selectedGameIds.size === 0" (click)="downloadSelectedGames()" style="background: var(--player-one-color); border: none; border-radius: 8px; color: #fff; padding: 6px 12px; font-size: 11px; font-weight: 700; display: flex; align-items: center; gap: 4px;" [style.opacity]="selectedGameIds.size === 0 ? '0.5' : '1'" class="clickable">
-          <ion-icon name="download-outline" style="font-size: 13px;"></ion-icon>
-          Export
+      <div style="display: flex; gap: 6px; flex-wrap: wrap; justify-content: space-between; align-items: center;">
+        <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+          <button [disabled]="selectedGameIds.size === 0" (click)="bulkStatsInclusion(false)" style="background: rgba(16,185,129,0.12); border: 1px solid rgba(16,185,129,0.3); border-radius: 8px; color: #10b981; padding: 6px 10px; font-size: 11px; font-weight: 700; display: flex; align-items: center; gap: 4px;" [style.opacity]="selectedGameIds.size === 0 ? '0.4' : '1'" class="clickable">
+            Include Stats
+          </button>
+          <button [disabled]="selectedGameIds.size === 0" (click)="bulkStatsInclusion(true)" style="background: rgba(239,68,68,0.12); border: 1px solid rgba(239,68,68,0.3); border-radius: 8px; color: #ef4444; padding: 6px 10px; font-size: 11px; font-weight: 700; display: flex; align-items: center; gap: 4px;" [style.opacity]="selectedGameIds.size === 0 ? '0.4' : '1'" class="clickable">
+            Exclude Stats
+          </button>
+          <button [disabled]="selectedGameIds.size === 0" (click)="downloadSelectedGames()" style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: #fff; padding: 6px 10px; font-size: 11px; font-weight: 600; display: flex; align-items: center; gap: 4px;" [style.opacity]="selectedGameIds.size === 0 ? '0.4' : '1'" class="clickable">
+            <ion-icon name="download-outline" style="font-size: 13px;"></ion-icon>
+            Export
+          </button>
+        </div>
+        <button [disabled]="selectedGameIds.size === 0" (click)="showBulkDeleteConfirm = true" style="background: var(--ion-color-danger); border: none; border-radius: 8px; color: #fff; padding: 6px 12px; font-size: 11px; font-weight: 700; display: flex; align-items: center; gap: 4px;" [style.opacity]="selectedGameIds.size === 0 ? '0.4' : '1'" class="clickable">
+          <ion-icon name="trash-outline" style="font-size: 13px;"></ion-icon>
+          Delete
         </button>
       </div>
     </div>
@@ -389,6 +437,11 @@
         <p style="color: var(--ion-color-medium); font-size: 11px; text-align: center; margin: 0 0 16px 0; line-height: 1.4;">
           Map players found in the uploaded games to existing profiles, or choose to create new players in the app.
         </p>
+
+        <!-- Error Message Display inside Mapping Modal -->
+        <div *ngIf="mappingErrorMessage" style="background: rgba(235, 68, 90, 0.08); border: 1px solid rgba(235, 68, 90, 0.2); border-radius: 12px; color: var(--ion-color-danger); font-size: 12px; padding: 10px; margin-bottom: 16px; text-align: center; font-weight: 600; line-height: 1.4;">
+          {{ mappingErrorMessage }}
+        </div>
 
         <!-- Scrollable list of mappings -->
         <div style="flex: 1; overflow-y: auto; padding-right: 4px; margin-bottom: 16px;">
@@ -465,6 +518,12 @@
     <ng-template>
       <div class="glass-panel" style="padding: 24px; border: none; border-radius: 0;">
         <h3 style="font-weight: 800; font-size: 18px; margin: 0 0 16px 0; color: #fff; text-align: center;">Edit Player Name</h3>
+        
+        <!-- Error Message Display inside Edit Player Modal -->
+        <div *ngIf="editPlayerErrorMessage" style="background: rgba(235, 68, 90, 0.08); border: 1px solid rgba(235, 68, 90, 0.2); border-radius: 12px; color: var(--ion-color-danger); font-size: 12px; padding: 10px; margin-bottom: 16px; text-align: center; font-weight: 600; line-height: 1.4;">
+          {{ editPlayerErrorMessage }}
+        </div>
+
         <div style="border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; background: rgba(255,255,255,0.02); padding: 4px 12px; height: 48px; display: flex; align-items: center; margin-bottom: 20px;">
           <input type="text" [(ngModel)]="editPlayerName" placeholder="Player name..." style="width: 100%; background: transparent; border: none; outline: none; color: #fff; font-weight: 600; font-size: 14px;" />
         </div>
@@ -495,6 +554,254 @@
           </button>
           <button (click)="showDeletePlayerModal = false" style="background: transparent; border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; color: var(--ion-color-medium); height: 44px; font-weight: 600; font-size: 14px; cursor: pointer;" class="clickable">
             Cancel
+          </button>
+        </div>
+      </div>
+    </ng-template>
+  </ion-modal>
+
+  <!-- ==========================================
+       CLOUD SYNC & AUTH MODAL
+       ========================================== -->
+  <ion-modal [isOpen]="showCloudModal" (didDismiss)="showCloudModal = false" style="--height: auto; --border-radius: 20px; --width: 95%; --max-width: 360px; --background: var(--app-bg); border: 1px solid rgba(255,255,255,0.15);">
+    <ng-template>
+      <div class="glass-panel" style="padding: 24px; border: none; border-radius: 0; display: flex; flex-direction: column;">
+        
+        <!-- Header -->
+        <div style="text-align: center; margin-bottom: 20px;">
+          <ion-icon [name]="currentUser && !currentUser.is_anonymous ? 'cloud-done-outline' : 'cloud-offline-outline'" 
+                    [style.color]="currentUser && !currentUser.is_anonymous ? '#10b981' : 'var(--ion-color-warning)'" 
+                    style="font-size: 48px; margin-bottom: 8px;"></ion-icon>
+          <h3 style="font-weight: 800; font-size: 20px; margin: 0 0 6px 0; color: #fff;">Cloud Sync & Backup</h3>
+          <p style="color: var(--ion-color-medium); font-size: 12px; margin: 0; line-height: 1.4;">
+            Keep your games, players, and stats backed up and synced across all your devices.
+          </p>
+        </div>
+
+        <!-- Error Message Display -->
+        <div *ngIf="cloudErrorMessage" style="background: rgba(235, 68, 90, 0.08); border: 1px solid rgba(235, 68, 90, 0.2); border-radius: 12px; color: var(--ion-color-danger); font-size: 12px; padding: 10px; margin-bottom: 16px; text-align: center; font-weight: 600; line-height: 1.4;">
+          {{ cloudErrorMessage }}
+        </div>
+
+        <!-- Success Message Display -->
+        <div *ngIf="cloudSuccessMessage" style="background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.2); border-radius: 12px; color: #10b981; font-size: 12px; padding: 10px; margin-bottom: 16px; text-align: center; font-weight: 600; line-height: 1.4;">
+          {{ cloudSuccessMessage }}
+        </div>
+
+        <!-- LOGGED IN STATE (Permanent Account) -->
+        <div *ngIf="currentUser && !currentUser.is_anonymous" style="text-align: center;">
+          <div style="background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.2); border-radius: 12px; padding: 14px; margin-bottom: 20px;">
+            <div style="font-size: 11px; font-weight: 800; color: #10b981; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;">
+              Backup Active
+            </div>
+            <div style="font-size: 13px; font-weight: 700; color: #fff; word-break: break-all;">
+              {{ currentUser.email }}
+            </div>
+          </div>
+
+          <div style="display: flex; flex-direction: column; gap: 8px;">
+            <button (click)="triggerManualSync()" style="background: var(--player-one-color); border: none; border-radius: 12px; color: #fff; height: 44px; font-weight: 700; font-size: 14px; display: flex; align-items: center; justify-content: center; gap: 6px;" class="clickable">
+              <ion-icon name="cloud-upload-outline" style="font-size: 18px;"></ion-icon>
+              Sync Local Storage Data
+            </button>
+            
+            <button (click)="onSignOut()" style="background: transparent; border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; color: var(--ion-color-danger); height: 44px; font-weight: 700; font-size: 14px;" class="clickable">
+              Sign Out
+            </button>
+          </div>
+        </div>
+
+        <!-- EMAIL VERIFICATION NOTICE STATE -->
+        <div *ngIf="showEmailVerifyNotice" style="text-align: center; padding: 8px 0;">
+          <div style="font-size: 40px; margin-bottom: 12px;">✉️</div>
+          <h4 style="font-weight: 800; font-size: 18px; margin: 0 0 10px 0; color: #fff;">Verify Your Email</h4>
+          <p style="color: var(--ion-color-medium); font-size: 13px; line-height: 1.5; margin: 0 0 24px 0;">
+            We have sent a verification link to <strong>{{ cloudEmail }}</strong>. 
+            Please open the email, verify your account, and then click below to sign in.
+          </p>
+
+          <button (click)="switchToSignIn()" style="background: var(--player-one-color); border: none; border-radius: 12px; color: #fff; height: 44px; font-weight: 700; font-size: 14px; width: 100%;" class="clickable">
+            Got it, Go to Sign In
+          </button>
+        </div>
+
+        <!-- ANONYMOUS OR NOT LOGGED IN STATE -->
+        <div *ngIf="(!currentUser || currentUser.is_anonymous) && !showEmailVerifyNotice">
+          <div style="background: rgba(255, 196, 9, 0.08); border: 1px solid rgba(255, 196, 9, 0.2); border-radius: 12px; padding: 12px; margin-bottom: 20px; text-align: center;">
+            <div style="font-size: 10px; font-weight: 800; color: var(--ion-color-warning); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;">
+              Local Session Only
+            </div>
+            <div style="font-size: 12px; color: #eee; line-height: 1.4;">
+              Your history is currently anonymous. Register a cloud account to back up and sync across multiple devices.
+            </div>
+          </div>
+
+          <!-- Segment Selector -->
+          <ion-segment [(ngModel)]="cloudMode" mode="ios" style="--background: rgba(255,255,255,0.03); height: 36px; margin-bottom: 16px;">
+            <ion-segment-button value="signup">
+              <ion-label style="font-size: 11px; font-weight: 700;">Create Account</ion-label>
+            </ion-segment-button>
+            <ion-segment-button value="signin">
+              <ion-label style="font-size: 11px; font-weight: 700;">Log In</ion-label>
+            </ion-segment-button>
+          </ion-segment>
+
+          <!-- Email Input -->
+          <div style="border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; background: rgba(255,255,255,0.02); padding: 0 12px; height: 48px; display: flex; align-items: center; margin-bottom: 12px;">
+            <ion-icon name="mail-outline" style="color: var(--ion-color-medium); font-size: 18px; margin-right: 10px;"></ion-icon>
+            <input type="email" [(ngModel)]="cloudEmail" placeholder="Email address..." style="width: 100%; background: transparent; border: none; outline: none; color: #fff; font-weight: 600; font-size: 14px;" />
+          </div>
+
+          <!-- Password Input -->
+          <div style="border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; background: rgba(255,255,255,0.02); padding: 0 12px; height: 48px; display: flex; align-items: center; margin-bottom: 20px;">
+            <ion-icon name="lock-closed-outline" style="color: var(--ion-color-medium); font-size: 18px; margin-right: 10px;"></ion-icon>
+            <input type="password" [(ngModel)]="cloudPassword" placeholder="Password..." style="width: 100%; background: transparent; border: none; outline: none; color: #fff; font-weight: 600; font-size: 14px;" />
+          </div>
+
+          <!-- Submit Actions -->
+          <div style="display: flex; flex-direction: column; gap: 8px;">
+            <button (click)="onCloudAction()" [disabled]="!cloudEmail.trim() || !cloudPassword.trim()" style="background: var(--player-one-color); border: none; border-radius: 12px; color: #fff; height: 44px; font-weight: 700; font-size: 14px; cursor: pointer;" class="clickable">
+              {{ cloudMode === 'signup' ? 'Secure My Data' : 'Sign In & Sync' }}
+            </button>
+            
+            <!-- Manual Sync for Anonymous Users -->
+            <button *ngIf="currentUser && currentUser.is_anonymous" (click)="triggerManualSync()" style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; color: #fff; height: 44px; font-weight: 600; font-size: 13px;" class="clickable">
+              Force Upload Local Data
+            </button>
+          </div>
+        </div>
+
+        <button (click)="showCloudModal = false" style="background: transparent; border: none; color: var(--ion-color-medium); height: 36px; font-weight: 600; font-size: 13px; margin-top: 12px;" class="clickable">
+          Close
+        </button>
+
+      </div>
+    </ng-template>
+  </ion-modal>
+
+  <!-- GAME SETTINGS MODAL -->
+  <ion-modal [isOpen]="showGameSettingsModal" (didDismiss)="showGameSettingsModal = false" style="--height: auto; --border-radius: 20px; --width: 90%; --max-width: 340px; --background: var(--app-bg); border: 1px solid rgba(255,255,255,0.15);">
+    <ng-template>
+      <div class="glass-panel" style="padding: 24px; border: none; border-radius: 0;" *ngIf="selectedGameForSettings">
+        <div style="text-align: center; margin-bottom: 20px;">
+          <ion-icon name="settings-outline" style="font-size: 40px; color: var(--player-one-color); margin-bottom: 8px;"></ion-icon>
+          <h3 style="font-weight: 800; font-size: 18px; margin: 0 0 4px 0; color: #fff;">Game Settings</h3>
+          <p style="color: var(--ion-color-medium); font-size: 11px; margin: 0; line-height: 1.4;">
+            Configure statistics inclusion and export options for this match.
+          </p>
+        </div>
+
+        <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; padding: 14px; margin-bottom: 20px;">
+          <!-- Stats Toggle Item -->
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+            <div style="text-align: left; margin-right: 12px;">
+              <div style="font-size: 13px; font-weight: 700; color: #fff;">Include in Statistics</div>
+              <div style="font-size: 10px; color: var(--ion-color-medium); margin-top: 2px; line-height: 1.3;">
+                Controls whether this game affects win rates, average scores, and records.
+              </div>
+            </div>
+            <ion-checkbox [checked]="!selectedGameForSettings.excluded" (ionChange)="toggleGameStatsInclusion(selectedGameForSettings)" mode="md" style="--size: 20px; --border-radius: 6px;"></ion-checkbox>
+          </div>
+          
+          <div style="border-top: 1px solid rgba(255,255,255,0.05); padding-top: 12px; display: flex; align-items: center; justify-content: space-between;">
+            <div style="font-size: 12px; color: var(--ion-color-medium);">
+              Game Date: {{ selectedGameForSettings.date | date:'shortDate' }}
+            </div>
+            <div style="font-size: 12px; color: var(--ion-color-medium);">
+              Mode: {{ selectedGameForSettings.mode || 2 }}P
+            </div>
+          </div>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+          <button (click)="downloadSingleGame(selectedGameForSettings, $event); showGameSettingsModal = false;" style="background: var(--player-one-color); border: none; border-radius: 12px; color: #fff; height: 44px; font-weight: 700; font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;" class="clickable">
+            <ion-icon name="download-outline" style="font-size: 18px;"></ion-icon>
+            Download Game JSON
+          </button>
+          
+          <button (click)="showGameSettingsModal = false" style="background: transparent; border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; color: var(--ion-color-medium); height: 44px; font-weight: 600; font-size: 14px; cursor: pointer;" class="clickable">
+            Close
+          </button>
+        </div>
+      </div>
+    </ng-template>
+  </ion-modal>
+
+  <!-- BULK DELETE CONFIRMATION MODAL -->
+  <ion-modal [isOpen]="showBulkDeleteConfirm" (didDismiss)="showBulkDeleteConfirm = false" style="--height: auto; --border-radius: 20px; --width: 90%; --max-width: 340px; --background: var(--app-bg); border: 1px solid rgba(255,255,255,0.15);">
+    <ng-template>
+      <div class="glass-panel" style="padding: 24px; border: none; border-radius: 0; text-align: center;">
+        <div style="font-size: 32px; margin-bottom: 8px;">🗑️</div>
+        <h3 style="font-weight: 800; font-size: 18px; margin: 0 0 8px 0; color: #fff;">Delete {{ selectedGameIds.size }} Matches?</h3>
+        <p style="color: var(--ion-color-medium); font-size: 13px; margin: 0 0 24px 0; line-height: 1.4;">
+          Are you sure you want to permanently delete all selected matches from history? Player statistics will update automatically.
+        </p>
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+          <button (click)="deleteSelectedGames()" style="background: var(--ion-color-danger); border: none; border-radius: 12px; color: #fff; height: 44px; font-weight: 700; font-size: 14px; cursor: pointer;" class="clickable">
+            Delete Games
+          </button>
+          <button (click)="showBulkDeleteConfirm = false" style="background: transparent; border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; color: var(--ion-color-medium); height: 44px; font-weight: 600; font-size: 14px; cursor: pointer;" class="clickable">
+            Cancel
+          </button>
+        </div>
+      </div>
+    </ng-template>
+  </ion-modal>
+
+  <!-- MERGE LOCAL PLAYERS MODAL (ON AUTH SYNC) -->
+  <ion-modal [isOpen]="showMergeModal" style="--height: 90%; --max-height: 520px; --border-radius: 20px; --width: 90%; --max-width: 365px; --background: var(--app-bg); border: 1px solid rgba(255,255,255,0.15);">
+    <ng-template>
+      <div class="glass-panel" style="padding: 20px; border: none; border-radius: 0; display: flex; flex-direction: column; height: 100%; overflow: hidden;">
+        <h3 style="font-weight: 800; font-size: 18px; margin: 0 0 4px 0; color: #fff; text-align: center;">Merge Local Players</h3>
+        <p style="color: var(--ion-color-medium); font-size: 11px; text-align: center; margin: 0 0 16px 0; line-height: 1.4;">
+          Your local profiles don't match your cloud account profiles. Map each local player to an existing profile in your cloud account or create it as a new profile.
+        </p>
+
+        <!-- Error Message Display inside Merge Modal -->
+        <div *ngIf="mergeErrorMessage" style="background: rgba(235, 68, 90, 0.08); border: 1px solid rgba(235, 68, 90, 0.2); border-radius: 12px; color: var(--ion-color-danger); font-size: 12px; padding: 10px; margin-bottom: 16px; text-align: center; font-weight: 600; line-height: 1.4;">
+          {{ mergeErrorMessage }}
+        </div>
+
+        <!-- Scrollable list of mappings -->
+        <div style="flex: 1; overflow-y: auto; padding-right: 4px; margin-bottom: 16px;">
+          <div *ngFor="let mapping of mergeMappings" style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; padding: 12px; margin-bottom: 12px;">
+            <div style="font-size: 10px; font-weight: 800; color: var(--ion-color-medium); text-transform: uppercase; margin-bottom: 8px; letter-spacing: 0.5px;">
+              Local Profile: <span style="color: #fff; font-weight: 700; font-size: 12px;">{{ mapping.localName }}</span>
+            </div>
+
+            <!-- Segment to choose mapping mode -->
+            <ion-segment [(ngModel)]="mapping.mapType" mode="ios" style="--background: rgba(0,0,0,0.2); height: 28px; margin-bottom: 8px;">
+              <ion-segment-button value="existing">
+                <ion-label style="font-size: 9px; font-weight: 700;">Merge with Cloud</ion-label>
+              </ion-segment-button>
+              <ion-segment-button value="new">
+                <ion-label style="font-size: 9px; font-weight: 700;">Create as New</ion-label>
+              </ion-segment-button>
+            </ion-segment>
+
+            <!-- Choice 1: Existing Player Select -->
+            <div *ngIf="mapping.mapType === 'existing'">
+              <div style="border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; background: rgba(0,0,0,0.15); height: 38px; display: flex; align-items: center; padding: 0 8px;">
+                <ion-select [(ngModel)]="mapping.selectedExistingId" interface="popover" style="width: 100%; color: #fff; font-weight: 600; font-size: 12px; --padding-start: 4px;">
+                  <ion-select-option *ngFor="let p of cloudMergePlayers" [value]="p.id">{{ p.name }}</ion-select-option>
+                </ion-select>
+              </div>
+            </div>
+
+            <!-- Choice 2: New Player Name Input -->
+            <div *ngIf="mapping.mapType === 'new'">
+              <div style="border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; background: rgba(0,0,0,0.15); padding: 4px 10px; height: 38px; display: flex; align-items: center;">
+                <input type="text" [(ngModel)]="mapping.newName" placeholder="New player name..." style="width: 100%; background: transparent; border: none; outline: none; color: #fff; font-weight: 600; font-size: 12px;" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Action button -->
+        <div style="display: flex; flex-direction: column; gap: 8px; margin-top: auto;">
+          <button (click)="confirmPlayerMerge()" style="background: var(--player-one-color); border: none; border-radius: 12px; color: #fff; height: 44px; font-weight: 700; font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;" class="clickable">
+            <ion-icon name="checkmark-outline" style="font-size: 18px;"></ion-icon>
+            Confirm Sync & Merge
           </button>
         </div>
       </div>

@@ -5,7 +5,7 @@ import {
   IonHeader, IonToolbar, IonTitle, IonContent, IonSegment, IonSegmentButton, 
   IonSelect, IonSelectOption, IonList, IonItem, IonLabel, IonNote, IonIcon, 
   IonButton, IonCard, IonCardContent, IonCardHeader, IonCardTitle, IonRow, IonCol,
-  IonModal, IonCheckbox
+  IonModal, IonCheckbox, IonButtons
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import { 
@@ -13,11 +13,14 @@ import {
   timeOutline, calendarOutline, barChartOutline, analyticsOutline,
   createOutline, personRemoveOutline, downloadOutline, cloudUploadOutline,
   checkboxOutline, checkmarkCircleOutline, closeOutline, listOutline,
-  checkmarkOutline
+  checkmarkOutline, cloudDoneOutline, cloudOfflineOutline, mailOutline,
+  lockClosedOutline, cloudDownloadOutline, settingsOutline, eyeOffOutline
 } from 'ionicons/icons';
 import { GameService, CompletedGame, PlayerProfile } from '../services/game.service';
 import { OnboardingService } from '../services/onboarding.service';
+import { SupabaseService } from '../services/supabase.service';
 import { Subscription } from 'rxjs';
+import { User } from '@supabase/supabase-js';
 
 export interface PlayerStats {
   gamesPlayed: number;
@@ -49,6 +52,14 @@ export interface PlayerMapping {
   newPlayerName: string;
 }
 
+export interface PlayerMergeMapping {
+  localId: string;
+  localName: string;
+  mapType: 'existing' | 'new';
+  selectedExistingId: string;
+  newName: string;
+}
+
 @Component({
     selector: 'app-tab3',
     templateUrl: 'tab3.page.html',
@@ -59,7 +70,7 @@ export interface PlayerMapping {
     IonHeader, IonToolbar, IonTitle, IonContent, IonSegment, IonSegmentButton, 
     IonSelect, IonSelectOption, IonList, IonItem, IonLabel, IonNote, IonIcon, 
     IonButton, IonCard, IonCardContent, IonCardHeader, IonCardTitle, IonRow, IonCol,
-    IonModal, IonCheckbox
+    IonModal, IonCheckbox, IonButtons
 ]
 })
 export class Tab3Page implements OnInit, OnDestroy {
@@ -84,19 +95,48 @@ export class Tab3Page implements OnInit, OnDestroy {
   public uploadedGames: CompletedGame[] = [];
   public uploadMappings: PlayerMapping[] = [];
 
+  // Cloud auth properties
+  public showCloudModal = false;
+  public cloudMode: 'signup' | 'signin' = 'signup';
+  public cloudEmail = '';
+  public cloudPassword = '';
+  public currentUser: User | null = null;
+
+  // Syncing and Error properties
+  public syncStatusMessage = '';
+  public syncStatusType: 'success' | 'error' | '' = '';
+  public editPlayerErrorMessage = '';
+  public mappingErrorMessage = '';
+
+  // Game Settings and Bulk Action properties
+  public showGameSettingsModal = false;
+  public selectedGameForSettings: CompletedGame | null = null;
+  public showBulkDeleteConfirm = false;
+
+  // Player Merge properties
+  public showMergeModal = false;
+  public mergeMappings: PlayerMergeMapping[] = [];
+  public localMergePlayers: PlayerProfile[] = [];
+  public cloudMergePlayers: PlayerProfile[] = [];
+  public mergeErrorMessage = '';
+
   private playersSub!: Subscription;
   private historySub!: Subscription;
+  private userSub!: Subscription;
+  private mergeSub!: Subscription;
 
   constructor(
     public gameService: GameService,
-    public onboardingService: OnboardingService
+    public onboardingService: OnboardingService,
+    public supabaseService: SupabaseService
   ) {
     addIcons({
       chevronDownOutline, chevronUpOutline, trashOutline, trophyOutline, 
       timeOutline, calendarOutline, barChartOutline, analyticsOutline,
       createOutline, personRemoveOutline, downloadOutline, cloudUploadOutline,
       checkboxOutline, checkmarkCircleOutline, closeOutline, listOutline,
-      checkmarkOutline
+      checkmarkOutline, cloudDoneOutline, cloudOfflineOutline, mailOutline,
+      lockClosedOutline, cloudDownloadOutline, settingsOutline, eyeOffOutline
     });
   }
 
@@ -149,11 +189,113 @@ export class Tab3Page implements OnInit, OnDestroy {
       this.historyList = history;
       this.updateSelectedPlayerStats();
     });
+
+    this.userSub = this.supabaseService.user$.subscribe(user => {
+      this.currentUser = user;
+    });
+
+    this.mergeSub = this.gameService.pendingMergePlayers$.subscribe(mergeState => {
+      if (mergeState) {
+        this.localMergePlayers = mergeState.local;
+        this.cloudMergePlayers = mergeState.cloud;
+        
+        // Initialize mappings: auto-map to same name if exists, otherwise default to "new"
+        this.mergeMappings = this.localMergePlayers.map(lp => {
+          const similarCloud = this.cloudMergePlayers.find(cp => cp.name.toLowerCase() === lp.name.toLowerCase());
+          return {
+            localId: lp.id,
+            localName: lp.name,
+            mapType: similarCloud ? 'existing' as const : 'new' as const,
+            selectedExistingId: similarCloud ? similarCloud.id : (this.cloudMergePlayers.length > 0 ? this.cloudMergePlayers[0].id : ''),
+            newName: lp.name
+          };
+        });
+        
+        this.showMergeModal = true;
+      } else {
+        this.showMergeModal = false;
+      }
+    });
   }
 
   ngOnDestroy() {
     if (this.playersSub) this.playersSub.unsubscribe();
     if (this.historySub) this.historySub.unsubscribe();
+    if (this.userSub) this.userSub.unsubscribe();
+    if (this.mergeSub) this.mergeSub.unsubscribe();
+  }
+
+  // Cloud Actions
+  public cloudErrorMessage = '';
+  public showEmailVerifyNotice = false;
+
+  public openCloudModal() {
+    this.cloudEmail = '';
+    this.cloudPassword = '';
+    this.cloudErrorMessage = '';
+    this.showEmailVerifyNotice = false;
+    this.showCloudModal = true;
+  }
+
+  public switchToSignIn() {
+    this.showEmailVerifyNotice = false;
+    this.cloudMode = 'signin';
+    this.cloudPassword = '';
+    this.cloudErrorMessage = '';
+  }
+
+  public async onCloudAction() {
+    if (!this.cloudEmail.trim() || !this.cloudPassword.trim()) {
+      this.cloudErrorMessage = 'Please enter your email and password';
+      return;
+    }
+    this.cloudErrorMessage = '';
+
+    try {
+      if (this.cloudMode === 'signup') {
+        await this.supabaseService.signUp(this.cloudEmail.trim(), this.cloudPassword.trim());
+        // Switch to showing the verification message inside the modal
+        this.showEmailVerifyNotice = true;
+      } else {
+        await this.supabaseService.signIn(this.cloudEmail.trim(), this.cloudPassword.trim());
+        
+        // Auto-sync local storage to the database immediately upon login
+        try {
+          const syncResult = await this.supabaseService.syncLocalStorageToSupabase();
+          console.log(`Auto-sync complete: synced ${syncResult.playersSynced} players and ${syncResult.gamesSynced} games.`);
+        } catch (syncErr) {
+          console.warn('Auto-sync failed on auth action:', syncErr);
+        }
+        
+        this.showCloudModal = false;
+      }
+    } catch (e: any) {
+      this.cloudErrorMessage = e.message || 'Authentication failed';
+    }
+  }
+
+  public cloudSuccessMessage = '';
+
+  public async onSignOut() {
+    this.cloudErrorMessage = '';
+    this.cloudSuccessMessage = '';
+    try {
+      await this.supabaseService.signOut();
+      this.showCloudModal = false;
+    } catch (e: any) {
+      this.cloudErrorMessage = e.message || 'Logout failed';
+    }
+  }
+
+  public async triggerManualSync() {
+    this.cloudErrorMessage = '';
+    this.cloudSuccessMessage = '';
+    try {
+      const res = await this.supabaseService.syncLocalStorageToSupabase();
+      this.cloudSuccessMessage = `Synced ${res.playersSynced} players and ${res.gamesSynced} games to the cloud!`;
+    } catch (e: any) {
+      this.cloudErrorMessage = e.message || 'Sync failed';
+    }
   }
 
   public onPlayerChange() {
@@ -191,19 +333,80 @@ export class Tab3Page implements OnInit, OnDestroy {
     }
   }
 
+  public openGameSettings(game: CompletedGame, event: Event) {
+    event.stopPropagation();
+    this.selectedGameForSettings = game;
+    this.showGameSettingsModal = true;
+  }
+
+  public toggleGameStatsInclusion(game: CompletedGame) {
+    const isExcluded = !game.excluded;
+    this.gameService.updateGameStatsInclusion(game.id, isExcluded);
+    // Refresh UI/statistics references
+    this.updateSelectedPlayerStats();
+  }
+
+  public deleteSelectedGames() {
+    if (this.selectedGameIds.size === 0) return;
+    const ids = Array.from(this.selectedGameIds);
+    this.gameService.deleteGamesFromHistory(ids);
+    this.selectedGameIds.clear();
+    this.isSelectionMode = false;
+    this.showBulkDeleteConfirm = false;
+    this.updateSelectedPlayerStats();
+  }
+
+  public bulkStatsInclusion(exclude: boolean) {
+    if (this.selectedGameIds.size === 0) return;
+    const ids = Array.from(this.selectedGameIds);
+    this.gameService.updateGamesStatsInclusion(ids, exclude);
+    this.selectedGameIds.clear();
+    this.isSelectionMode = false;
+    this.updateSelectedPlayerStats();
+  }
+
+  public get unsyncedGamesCount(): number {
+    return this.historyList.filter(g => !g.synced).length;
+  }
+
+  public async uploadUnsynced() {
+    this.syncStatusMessage = '';
+    this.syncStatusType = '';
+    try {
+      const count = await this.gameService.uploadUnsyncedGames();
+      if (count > 0) {
+        this.syncStatusType = 'success';
+        this.syncStatusMessage = `Successfully uploaded ${count} game${count === 1 ? '' : 's'} to the cloud!`;
+      } else {
+        this.syncStatusType = 'success';
+        this.syncStatusMessage = 'All games are already uploaded and synced.';
+      }
+      setTimeout(() => {
+        if (this.syncStatusMessage.includes('Successfully') || this.syncStatusMessage.includes('already')) {
+          this.syncStatusMessage = '';
+        }
+      }, 4000);
+    } catch (e: any) {
+      this.syncStatusType = 'error';
+      this.syncStatusMessage = e.message || 'Failed to upload unsynced games.';
+    }
+  }
+
   public openEditPlayerModal() {
     this.editPlayerName = this.getSelectedPlayerName();
+    this.editPlayerErrorMessage = '';
     this.showEditPlayerModal = true;
   }
 
   public savePlayerName() {
     if (!this.editPlayerName.trim()) return;
+    this.editPlayerErrorMessage = '';
     try {
       this.gameService.updatePlayerName(this.selectedPlayerId, this.editPlayerName);
       this.showEditPlayerModal = false;
       this.updateSelectedPlayerStats();
     } catch (e: any) {
-      alert(e.message || 'Error updating player name');
+      this.editPlayerErrorMessage = e.message || 'Error updating player name';
     }
   }
 
@@ -297,6 +500,8 @@ export class Tab3Page implements OnInit, OnDestroy {
     };
 
     const games = this.historyList.filter(g => {
+      if (g.excluded) return false;
+
       const hasPlayer = g.player1Name === playerName ||
                         g.player2Name === playerName ||
                         g.player3Name === playerName ||
@@ -535,6 +740,8 @@ export class Tab3Page implements OnInit, OnDestroy {
     const file = input.files[0];
     const reader = new FileReader();
     reader.onload = (e) => {
+      this.syncStatusMessage = '';
+      this.syncStatusType = '';
       try {
         const content = e.target?.result as string;
         const parsed = JSON.parse(content);
@@ -558,7 +765,8 @@ export class Tab3Page implements OnInit, OnDestroy {
         this.uploadedGames = games;
         this.setupPlayerMappings();
       } catch (err: any) {
-        alert(err.message || 'Failed to parse JSON file.');
+        this.syncStatusType = 'error';
+        this.syncStatusMessage = err.message || 'Failed to parse JSON file.';
       } finally {
         input.value = '';
       }
@@ -567,6 +775,7 @@ export class Tab3Page implements OnInit, OnDestroy {
   }
 
   private setupPlayerMappings() {
+    this.mappingErrorMessage = '';
     const uniqueNames = new Set<string>();
     this.uploadedGames.forEach(g => {
       if (g.player1Name) uniqueNames.add(g.player1Name);
@@ -600,11 +809,12 @@ export class Tab3Page implements OnInit, OnDestroy {
   }
 
   public confirmImport() {
+    this.mappingErrorMessage = '';
     for (const mapping of this.uploadMappings) {
       if (mapping.mapType === 'new') {
         const newName = mapping.newPlayerName.trim();
         if (!newName) {
-          alert('Player names cannot be empty');
+          this.mappingErrorMessage = 'Player names cannot be empty';
           return;
         }
       }
@@ -647,9 +857,43 @@ export class Tab3Page implements OnInit, OnDestroy {
       this.showUploadMappingModal = false;
       this.uploadedGames = [];
       this.uploadMappings = [];
-      alert(`Successfully imported ${mappedGames.length} games!`);
+      
+      this.syncStatusType = 'success';
+      this.syncStatusMessage = `Successfully imported ${mappedGames.length} games!`;
+      setTimeout(() => {
+        if (this.syncStatusMessage.includes('Successfully imported')) {
+          this.syncStatusMessage = '';
+        }
+      }, 4000);
     } catch (e: any) {
-      alert(e.message || 'Error occurred during import.');
+      this.mappingErrorMessage = e.message || 'Error occurred during import.';
+    }
+  }
+
+  public async confirmPlayerMerge() {
+    this.mergeErrorMessage = '';
+    // Validation
+    for (const mapping of this.mergeMappings) {
+      if (mapping.mapType === 'new') {
+        if (!mapping.newName.trim()) {
+          this.mergeErrorMessage = 'Player names cannot be empty';
+          return;
+        }
+      }
+    }
+
+    try {
+      const payload = this.mergeMappings.map(m => ({
+        localId: m.localId,
+        mapType: m.mapType,
+        targetPlayerId: m.mapType === 'existing' ? m.selectedExistingId : undefined,
+        newName: m.mapType === 'new' ? m.newName : undefined
+      }));
+      
+      await this.gameService.completePlayerMerge(payload);
+      this.showMergeModal = false;
+    } catch (e: any) {
+      this.mergeErrorMessage = e.message || 'Failed to merge players.';
     }
   }
 }
