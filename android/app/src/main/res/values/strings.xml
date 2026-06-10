@@ -2,6 +2,6 @@
 <resources>
     <string name="app_name">Cribbage Score and Stats</string>
     <string name="title_activity_main">Cribbage Score and Stats</string>
-    <string name="package_name">io.ionic.cribbageScoreAndStats</string>
-    <string name="custom_url_scheme">io.ionic.cribbageScoreAndStats</string>
+    <string name="package_name">cribbage_score.myapp</string>
+    <string name="custom_url_scheme">cribbage_score.myapp</string>
 </resources>

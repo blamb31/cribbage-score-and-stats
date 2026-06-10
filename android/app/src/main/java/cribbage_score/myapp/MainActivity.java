@@ -1,4 +1,4 @@
-package io.ionic.cribbageScoreAndStats;
+package cribbage_score.myapp;
 
 import com.getcapacitor.BridgeActivity;
 

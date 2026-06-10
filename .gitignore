@@ -76,3 +76,6 @@ Thumbs.db
 # Local environment variables
 .env
 
+# Android release keystore
+/android/app/release.keystore
+
