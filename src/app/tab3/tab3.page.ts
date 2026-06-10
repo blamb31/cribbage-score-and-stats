@@ -5,7 +5,7 @@ import {
   IonHeader, IonToolbar, IonTitle, IonContent, IonSegment, IonSegmentButton, 
   IonSelect, IonSelectOption, IonList, IonItem, IonLabel, IonNote, IonIcon, 
   IonButton, IonCard, IonCardContent, IonCardHeader, IonCardTitle, IonRow, IonCol,
-  IonModal, IonCheckbox, IonButtons
+  IonModal, IonCheckbox, IonButtons, IonPopover, IonAlert
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import { 
@@ -70,7 +70,7 @@ export interface PlayerMergeMapping {
     IonHeader, IonToolbar, IonTitle, IonContent, IonSegment, IonSegmentButton, 
     IonSelect, IonSelectOption, IonList, IonItem, IonLabel, IonNote, IonIcon, 
     IonButton, IonCard, IonCardContent, IonCardHeader, IonCardTitle, IonRow, IonCol,
-    IonModal, IonCheckbox, IonButtons
+    IonModal, IonCheckbox, IonButtons, IonPopover, IonAlert
 ]
 })
 export class Tab3Page implements OnInit, OnDestroy {

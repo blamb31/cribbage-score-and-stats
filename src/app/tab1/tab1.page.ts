@@ -8,7 +8,7 @@ import {
   IonHeader, IonToolbar, IonTitle, IonContent, IonGrid, IonRow, IonCol, 
   IonButton, IonIcon, IonCard, IonCardContent, IonCardHeader, IonCardTitle,
   IonItem, IonLabel, IonInput, IonModal, IonList, IonNote, IonSegment, IonSegmentButton, IonListHeader,
-  IonButtons, IonSelect, IonSelectOption
+  IonButtons, IonSelect, IonSelectOption, IonPopover, IonAlert
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import { 
@@ -49,7 +49,9 @@ import {
     IonListHeader,
     IonButtons,
     IonSelect,
-    IonSelectOption
+    IonSelectOption,
+    IonPopover,
+    IonAlert
 ]
 })
 export class Tab1Page implements OnInit, AfterViewInit, OnDestroy {
