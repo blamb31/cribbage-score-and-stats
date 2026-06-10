@@ -1,6 +1,6 @@
 {
   "name": "cribbage-score-and-stats",
-  "version": "0.0.1",
+  "version": "0.0.5",
   "author": "Ionic Framework",
   "homepage": "https://ionicframework.com/",
   "scripts": {
@@ -9,7 +9,8 @@
     "build": "node set-env.js && ng build",
     "watch": "node set-env.js && ng build --watch --configuration development",
     "test": "ng test",
-    "lint": "ng lint"
+    "lint": "ng lint",
+    "build:android": "node .agents/skills/build/scripts/build.js"
   },
   "private": true,
   "dependencies": {
