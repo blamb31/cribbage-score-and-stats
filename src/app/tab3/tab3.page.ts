@@ -229,6 +229,19 @@ export class Tab3Page implements OnInit, OnDestroy {
         this.showMergeModal = false;
       }
     });
+
+    // Check if user is landing from an email verification redirect (excluding password recovery)
+    const isAuthRedirect = (location.hash.includes('access_token=') || 
+                            location.hash.includes('type=signup') ||
+                            location.search.includes('code=')) && 
+                           !location.hash.includes('type=recovery');
+    if (isAuthRedirect) {
+      this.showCloudModal = true;
+      setTimeout(() => {
+        // Clear hash and query params to keep URL clean
+        window.history.replaceState({}, document.title, window.location.pathname);
+      }, 500);
+    }
   }
 
   ngOnDestroy() {

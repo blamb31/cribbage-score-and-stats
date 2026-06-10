@@ -2,10 +2,12 @@
   <ion-toolbar>
     <ion-title class="glow-cyan" style="font-weight: 800; letter-spacing: 0.5px;">History & Stats</ion-title>
     <ion-buttons slot="end" style="margin-right: 8px;">
-      <button (click)="openCloudModal()" style="background: transparent; border: none; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px;" class="clickable">
-        <ion-icon [name]="unsyncedGamesCount === 0 ? 'cloud-done-outline' : 'cloud-offline-outline'" 
-                  [style.color]="unsyncedGamesCount === 0 ? (currentUser && !currentUser.is_anonymous ? '#10b981' : '#f59e0b') : 'var(--ion-color-medium)'" 
-                  style="font-size: 24px;"></ion-icon>
+      <button (click)="openCloudModal()"
+        style="background: transparent; border: none; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px;"
+        class="clickable">
+        <ion-icon [name]="unsyncedGamesCount === 0 ? 'cloud-done-outline' : 'cloud-offline-outline'"
+          [style.color]="unsyncedGamesCount === 0 ? (currentUser && !currentUser.is_anonymous ? '#10b981' : '#f59e0b') : 'var(--ion-color-medium)'"
+          style="font-size: 24px;"></ion-icon>
       </button>
     </ion-buttons>
   </ion-toolbar>
@@ -26,404 +28,484 @@
 
   <!-- 1. STATS DASHBOARD SEGMENT -->
   @if (activeSegment === 'stats') {
-    <div class="stats-container animate-fade-in">
-      
-      <!-- Player Profile Selector -->
-      <div style="margin-bottom: 20px;">
-        <div style="font-size: 11px; font-weight: 800; color: var(--ion-color-medium); text-transform: uppercase; margin-bottom: 8px; letter-spacing: 0.5px;">Select Player Profile</div>
-        <div id="stats-player-select" style="display: flex; gap: 8px; align-items: center;">
-          <div style="flex: 1; border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; background: rgba(22, 24, 35, 0.65); height: 48px; display: flex; align-items: center; padding: 0 8px;">
-            <ion-select [(ngModel)]="selectedPlayerId" (ionChange)="onPlayerChange()" placeholder="Choose Player" interface="popover" style="width: 100%; color: #fff; font-weight: 600; font-size: 14px;">
-              <ion-select-option *ngFor="let p of playersList" [value]="p.id">{{ p.name }}</ion-select-option>
-            </ion-select>
-          </div>
-          
-          <button *ngIf="selectedPlayerId" (click)="openEditPlayerModal()" style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; color: var(--player-one-color); width: 48px; height: 48px; display: flex; align-items: center; justify-content: center;" class="clickable">
-            <ion-icon name="create-outline" style="font-size: 20px;"></ion-icon>
-          </button>
-          
-          <button *ngIf="selectedPlayerId" (click)="openDeletePlayerModal()" style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; color: var(--ion-color-danger); width: 48px; height: 48px; display: flex; align-items: center; justify-content: center;" class="clickable">
-            <ion-icon name="person-remove-outline" style="font-size: 20px;"></ion-icon>
-          </button>
+  <div class="stats-container animate-fade-in">
+
+    <!-- Player Profile Selector -->
+    <div style="margin-bottom: 20px;">
+      <div
+        style="font-size: 11px; font-weight: 800; color: var(--ion-color-medium); text-transform: uppercase; margin-bottom: 8px; letter-spacing: 0.5px;">
+        Select Player Profile</div>
+      <div id="stats-player-select" style="display: flex; gap: 8px; align-items: center;">
+        <div
+          style="flex: 1; border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; background: rgba(22, 24, 35, 0.65); height: 48px; display: flex; align-items: center; padding: 0 8px;">
+          <ion-select [(ngModel)]="selectedPlayerId" (ionChange)="onPlayerChange()" placeholder="Choose Player"
+            interface="popover" style="width: 100%; color: #fff; font-weight: 600; font-size: 14px;">
+            <ion-select-option *ngFor="let p of playersList" [value]="p.id">{{ p.name }}</ion-select-option>
+          </ion-select>
         </div>
 
-        <!-- Game Mode Stats Filter -->
-        <ion-segment id="stats-player-count" [(ngModel)]="statsModeFilter" (ionChange)="updateSelectedPlayerStats()" mode="ios" style="--background: rgba(255, 255, 255, 0.02); height: 34px; margin-top: 12px;">
-          <ion-segment-button value="all">
-            <ion-label style="font-size: 11px; font-weight: 700;">All Modes</ion-label>
-          </ion-segment-button>
-          <ion-segment-button value="2">
-            <ion-label style="font-size: 11px; font-weight: 700;">2 Players</ion-label>
-          </ion-segment-button>
-          <ion-segment-button value="3">
-            <ion-label style="font-size: 11px; font-weight: 700;">3 Players</ion-label>
-          </ion-segment-button>
-          <ion-segment-button value="4">
-            <ion-label style="font-size: 11px; font-weight: 700;">4 Players</ion-label>
-          </ion-segment-button>
-        </ion-segment>
+        <button *ngIf="selectedPlayerId" (click)="openEditPlayerModal()"
+          style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; color: var(--player-one-color); width: 48px; height: 48px; display: flex; align-items: center; justify-content: center;"
+          class="clickable">
+          <ion-icon name="create-outline" style="font-size: 20px;"></ion-icon>
+        </button>
+
+        <button *ngIf="selectedPlayerId" (click)="openDeletePlayerModal()"
+          style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; color: var(--ion-color-danger); width: 48px; height: 48px; display: flex; align-items: center; justify-content: center;"
+          class="clickable">
+          <ion-icon name="person-remove-outline" style="font-size: 20px;"></ion-icon>
+        </button>
       </div>
 
-      @if (playersList.length === 0) {
-        <div style="text-align: center; padding: 40px 16px; color: var(--ion-color-medium);">
-          <div style="font-size: 32px; margin-bottom: 8px;">👤</div>
-          <p>No players created yet. Start a match in the Scoring tab to create players!</p>
-        </div>
-      } @else if (activeStats && activeStats.gamesPlayed === 0) {
-        <div style="text-align: center; padding: 40px 16px; color: var(--ion-color-medium);">
-          <div style="font-size: 32px; margin-bottom: 8px;">📈</div>
-          <p>No matches recorded for <strong>{{ getFirstName(getSelectedPlayerName()) }}</strong> in this mode. Complete a match to view stats!</p>
-        </div>
-      } @else if (activeStats) {
-        <!-- Overall Record Card -->
-        <div id="stats-records-card" class="glass-panel" style="padding: 16px; margin-bottom: 16px; text-align: center;">
-          <div class="stat-label">Win / Loss Record</div>
-          
-          <div class="record-circle-container">
-            <div class="record-circle">
-              <span style="font-size: 28px; font-weight: 800; color: #fff;">{{ activeStats.winRate }}%</span>
-              <span style="font-size: 10px; font-weight: 700; color: var(--ion-color-medium); text-transform: uppercase;">Win Rate</span>
-            </div>
-          </div>
-
-          <div style="display: flex; justify-content: space-around; margin-top: 8px;">
-            <div>
-              <div style="font-size: 18px; font-weight: 800; color: var(--player-one-color);">{{ activeStats.wins }}</div>
-              <div style="font-size: 10px; color: var(--ion-color-medium); text-transform: uppercase; font-weight: 700;">Wins</div>
-            </div>
-            <div style="border-right: 1px solid rgba(255,255,255,0.06); height: 28px;"></div>
-            <div>
-              <div style="font-size: 18px; font-weight: 800; color: var(--player-two-color);">{{ activeStats.losses }}</div>
-              <div style="font-size: 10px; color: var(--ion-color-medium); text-transform: uppercase; font-weight: 700;">Losses</div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Skunks Tracker Grid -->
-        <div class="stats-grid" style="margin-bottom: 16px;">
-          <div class="stat-card">
-            <div class="stat-label">Skunks Won</div>
-            <div class="stat-value" style="color: var(--player-one-color);">{{ activeStats.skunkWins }}</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-label">Double Skunks Won</div>
-            <div class="stat-value" style="color: var(--player-three-color);">{{ activeStats.doubleSkunkWins }}</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-label">Skunks Lost</div>
-            <div class="stat-value" style="color: var(--player-two-color);">{{ activeStats.skunkLosses }}</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-label">Double Skunks Lost</div>
-            <div class="stat-value" style="color: var(--ion-color-danger);">{{ activeStats.doubleSkunkLosses }}</div>
-          </div>
-        </div>
-
-        <!-- Average Scored Points Card -->
-        <div id="stats-averages-table" class="glass-panel" style="padding: 16px; margin-bottom: 16px;">
-          <div class="stat-label" style="margin-bottom: 10px; display: flex; align-items: center; gap: 6px;">
-            <ion-icon name="bar-chart-outline" style="color: var(--player-one-color); font-size: 16px;"></ion-icon>
-            Average Scoring Breakdown
-          </div>
-          
-          <table class="stats-table">
-            <thead>
-              @if (statsModeFilter === '4') {
-                <tr>
-                  <th style="text-align: left;">Point Category</th>
-                  <th style="text-align: right; color: var(--player-one-color);">{{ getFirstName(getSelectedPlayerName()) }} (Self)</th>
-                  <th style="text-align: right; color: var(--player-three-color);">Team Score</th>
-                  <th style="text-align: right; color: var(--player-two-color);">Opponent Team</th>
-                </tr>
-              } @else {
-                <tr>
-                  <th style="text-align: left;">Point Category</th>
-                  <th style="text-align: right; color: var(--player-one-color);">{{ getFirstName(getSelectedPlayerName()) }}</th>
-                  <th style="text-align: right; color: var(--player-two-color);">Opponent</th>
-                </tr>
-              }
-            </thead>
-            <tbody>
-              @if (statsModeFilter === '4') {
-                <tr>
-                  <td>Pegging</td>
-                  <td style="text-align: right; font-weight: 700;">{{ activeStats.avgPegging }} pts</td>
-                  <td style="text-align: right; font-weight: 700; color: var(--player-three-color);">{{ activeStats.avgTeamPegging }} pts</td>
-                  <td style="text-align: right; font-weight: 700; opacity: 0.8;">{{ activeStats.avgOpponentPegging }} pts</td>
-                </tr>
-                <tr>
-                  <td>Hand</td>
-                  <td style="text-align: right; font-weight: 700;">{{ activeStats.avgHand }} pts</td>
-                  <td style="text-align: right; font-weight: 700; color: var(--player-three-color);">{{ activeStats.avgTeamHand }} pts</td>
-                  <td style="text-align: right; font-weight: 700; opacity: 0.8;">{{ activeStats.avgOpponentHand }} pts</td>
-                </tr>
-                <tr>
-                  <td>Crib</td>
-                  <td style="text-align: right; font-weight: 700;">{{ activeStats.avgCrib }} pts</td>
-                  <td style="text-align: right; font-weight: 700; color: var(--player-three-color);">{{ activeStats.avgTeamCrib }} pts</td>
-                  <td style="text-align: right; font-weight: 700; opacity: 0.8;">{{ activeStats.avgOpponentCrib }} pts</td>
-                </tr>
-                <tr style="border-top: 1px solid rgba(255,255,255,0.08); font-weight: 800;">
-                  <td style="color: #fff; padding-top: 12px;">Match Score</td>
-                  <td style="text-align: right; color: var(--player-one-color); padding-top: 12px;">{{ activeStats.avgScore }} pts</td>
-                  <td style="text-align: right; color: var(--player-three-color); padding-top: 12px;">{{ activeStats.avgTeamScore }} pts</td>
-                  <td style="text-align: right; color: var(--player-two-color); padding-top: 12px;">{{ activeStats.avgOpponentScore }} pts</td>
-                </tr>
-              } @else {
-                <tr>
-                  <td>Pegging</td>
-                  <td style="text-align: right; font-weight: 700;">{{ activeStats.avgPegging }} pts</td>
-                  <td style="text-align: right; font-weight: 700; opacity: 0.8;">{{ activeStats.avgOpponentPegging }} pts</td>
-                </tr>
-                <tr>
-                  <td>Hand</td>
-                  <td style="text-align: right; font-weight: 700;">{{ activeStats.avgHand }} pts</td>
-                  <td style="text-align: right; font-weight: 700; opacity: 0.8;">{{ activeStats.avgOpponentHand }} pts</td>
-                </tr>
-                <tr>
-                  <td>Crib</td>
-                  <td style="text-align: right; font-weight: 700;">{{ activeStats.avgCrib }} pts</td>
-                  <td style="text-align: right; font-weight: 700; opacity: 0.8;">{{ activeStats.avgOpponentCrib }} pts</td>
-                </tr>
-                <tr style="border-top: 1px solid rgba(255,255,255,0.08); font-weight: 800;">
-                  <td style="color: #fff; padding-top: 12px;">Match Score</td>
-                  <td style="text-align: right; color: var(--player-one-color); padding-top: 12px;">{{ activeStats.avgScore }} pts</td>
-                  <td style="text-align: right; color: var(--player-two-color); padding-top: 12px;">{{ activeStats.avgOpponentScore }} pts</td>
-                </tr>
-              }
-            </tbody>
-          </table>
-        </div>
-      }
-
-      <!-- Spacer to prevent bottom navigation bar from covering stats elements -->
-      <div style="height: 70px; pointer-events: none;"></div>
+      <!-- Game Mode Stats Filter -->
+      <ion-segment id="stats-player-count" [(ngModel)]="statsModeFilter" (ionChange)="updateSelectedPlayerStats()"
+        mode="ios" style="--background: rgba(255, 255, 255, 0.02); height: 34px; margin-top: 12px;">
+        <ion-segment-button value="all">
+          <ion-label style="font-size: 11px; font-weight: 700;">All Modes</ion-label>
+        </ion-segment-button>
+        <ion-segment-button value="2">
+          <ion-label style="font-size: 11px; font-weight: 700;">2 Players</ion-label>
+        </ion-segment-button>
+        <ion-segment-button value="3">
+          <ion-label style="font-size: 11px; font-weight: 700;">3 Players</ion-label>
+        </ion-segment-button>
+        <ion-segment-button value="4">
+          <ion-label style="font-size: 11px; font-weight: 700;">4 Players</ion-label>
+        </ion-segment-button>
+      </ion-segment>
     </div>
+
+    @if (playersList.length === 0) {
+    <div style="text-align: center; padding: 40px 16px; color: var(--ion-color-medium);">
+      <div style="font-size: 32px; margin-bottom: 8px;">👤</div>
+      <p>No players created yet. Start a match in the Scoring tab to create players!</p>
+    </div>
+    } @else if (activeStats && activeStats.gamesPlayed === 0) {
+    <div style="text-align: center; padding: 40px 16px; color: var(--ion-color-medium);">
+      <div style="font-size: 32px; margin-bottom: 8px;">📈</div>
+      <p>No matches recorded for <strong>{{ getFirstName(getSelectedPlayerName()) }}</strong> in this mode. Complete a
+        match to view stats!</p>
+    </div>
+    } @else if (activeStats) {
+    <!-- Overall Record Card -->
+    <div id="stats-records-card" class="glass-panel" style="padding: 16px; margin-bottom: 16px; text-align: center;">
+      <div class="stat-label">Win / Loss Record</div>
+
+      <div class="record-circle-container">
+        <div class="record-circle">
+          <span style="font-size: 28px; font-weight: 800; color: #fff;">{{ activeStats.winRate }}%</span>
+          <span
+            style="font-size: 10px; font-weight: 700; color: var(--ion-color-medium); text-transform: uppercase;">Win
+            Rate</span>
+        </div>
+      </div>
+
+      <div style="display: flex; justify-content: space-around; margin-top: 8px;">
+        <div>
+          <div style="font-size: 18px; font-weight: 800; color: var(--player-one-color);">{{ activeStats.wins }}</div>
+          <div style="font-size: 10px; color: var(--ion-color-medium); text-transform: uppercase; font-weight: 700;">
+            Wins</div>
+        </div>
+        <div style="border-right: 1px solid rgba(255,255,255,0.06); height: 28px;"></div>
+        <div>
+          <div style="font-size: 18px; font-weight: 800; color: var(--player-two-color);">{{ activeStats.losses }}</div>
+          <div style="font-size: 10px; color: var(--ion-color-medium); text-transform: uppercase; font-weight: 700;">
+            Losses</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Skunks Tracker Grid -->
+    <div class="stats-grid" style="margin-bottom: 16px;">
+      <div class="stat-card">
+        <div class="stat-label">Skunks Won</div>
+        <div class="stat-value" style="color: var(--player-one-color);">{{ activeStats.skunkWins }}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Double Skunks Won</div>
+        <div class="stat-value" style="color: var(--player-three-color);">{{ activeStats.doubleSkunkWins }}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Skunks Lost</div>
+        <div class="stat-value" style="color: var(--player-two-color);">{{ activeStats.skunkLosses }}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Double Skunks Lost</div>
+        <div class="stat-value" style="color: var(--ion-color-danger);">{{ activeStats.doubleSkunkLosses }}</div>
+      </div>
+    </div>
+
+    <!-- Average Scored Points Card -->
+    <div id="stats-averages-table" class="glass-panel" style="padding: 16px; margin-bottom: 16px;">
+      <div class="stat-label" style="margin-bottom: 10px; display: flex; align-items: center; gap: 6px;">
+        <ion-icon name="bar-chart-outline" style="color: var(--player-one-color); font-size: 16px;"></ion-icon>
+        Average Scoring Breakdown
+      </div>
+
+      <table class="stats-table">
+        <thead>
+          @if (statsModeFilter === '4') {
+          <tr>
+            <th style="text-align: left;">Point Category</th>
+            <th style="text-align: right; color: var(--player-one-color);">{{ getFirstName(getSelectedPlayerName()) }}
+              (Self)</th>
+            <th style="text-align: right; color: var(--player-three-color);">Team Score</th>
+            <th style="text-align: right; color: var(--player-two-color);">Opponent Team</th>
+          </tr>
+          } @else {
+          <tr>
+            <th style="text-align: left;">Point Category</th>
+            <th style="text-align: right; color: var(--player-one-color);">{{ getFirstName(getSelectedPlayerName()) }}
+            </th>
+            <th style="text-align: right; color: var(--player-two-color);">Opponent</th>
+          </tr>
+          }
+        </thead>
+        <tbody>
+          @if (statsModeFilter === '4') {
+          <tr>
+            <td>Pegging</td>
+            <td style="text-align: right; font-weight: 700;">{{ activeStats.avgPegging }} pts</td>
+            <td style="text-align: right; font-weight: 700; color: var(--player-three-color);">{{
+              activeStats.avgTeamPegging }} pts</td>
+            <td style="text-align: right; font-weight: 700; opacity: 0.8;">{{ activeStats.avgOpponentPegging }} pts</td>
+          </tr>
+          <tr>
+            <td>Hand</td>
+            <td style="text-align: right; font-weight: 700;">{{ activeStats.avgHand }} pts</td>
+            <td style="text-align: right; font-weight: 700; color: var(--player-three-color);">{{
+              activeStats.avgTeamHand }} pts</td>
+            <td style="text-align: right; font-weight: 700; opacity: 0.8;">{{ activeStats.avgOpponentHand }} pts</td>
+          </tr>
+          <tr>
+            <td>Crib</td>
+            <td style="text-align: right; font-weight: 700;">{{ activeStats.avgCrib }} pts</td>
+            <td style="text-align: right; font-weight: 700; color: var(--player-three-color);">{{
+              activeStats.avgTeamCrib }} pts</td>
+            <td style="text-align: right; font-weight: 700; opacity: 0.8;">{{ activeStats.avgOpponentCrib }} pts</td>
+          </tr>
+          <tr style="border-top: 1px solid rgba(255,255,255,0.08); font-weight: 800;">
+            <td style="color: #fff; padding-top: 12px;">Match Score</td>
+            <td style="text-align: right; color: var(--player-one-color); padding-top: 12px;">{{ activeStats.avgScore }}
+              pts</td>
+            <td style="text-align: right; color: var(--player-three-color); padding-top: 12px;">{{
+              activeStats.avgTeamScore }} pts</td>
+            <td style="text-align: right; color: var(--player-two-color); padding-top: 12px;">{{
+              activeStats.avgOpponentScore }} pts</td>
+          </tr>
+          } @else {
+          <tr>
+            <td>Pegging</td>
+            <td style="text-align: right; font-weight: 700;">{{ activeStats.avgPegging }} pts</td>
+            <td style="text-align: right; font-weight: 700; opacity: 0.8;">{{ activeStats.avgOpponentPegging }} pts</td>
+          </tr>
+          <tr>
+            <td>Hand</td>
+            <td style="text-align: right; font-weight: 700;">{{ activeStats.avgHand }} pts</td>
+            <td style="text-align: right; font-weight: 700; opacity: 0.8;">{{ activeStats.avgOpponentHand }} pts</td>
+          </tr>
+          <tr>
+            <td>Crib</td>
+            <td style="text-align: right; font-weight: 700;">{{ activeStats.avgCrib }} pts</td>
+            <td style="text-align: right; font-weight: 700; opacity: 0.8;">{{ activeStats.avgOpponentCrib }} pts</td>
+          </tr>
+          <tr style="border-top: 1px solid rgba(255,255,255,0.08); font-weight: 800;">
+            <td style="color: #fff; padding-top: 12px;">Match Score</td>
+            <td style="text-align: right; color: var(--player-one-color); padding-top: 12px;">{{ activeStats.avgScore }}
+              pts</td>
+            <td style="text-align: right; color: var(--player-two-color); padding-top: 12px;">{{
+              activeStats.avgOpponentScore }} pts</td>
+          </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+    }
+
+    <!-- Spacer to prevent bottom navigation bar from covering stats elements -->
+    <div style="height: 70px; pointer-events: none;"></div>
+  </div>
   }
 
   <!-- 2. COMPLETED GAMES HISTORY LIST -->
   @if (activeSegment === 'history') {
-    <div style="padding: 16px;" class="animate-fade-in">
-      <input type="file" id="upload-game-file-input" style="display: none;" accept=".json" (change)="onFileSelected($event)" />
+  <div style="padding: 16px;" class="animate-fade-in">
+    <input type="file" id="upload-game-file-input" style="display: none;" accept=".json"
+      (change)="onFileSelected($event)" />
 
-      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
-        <div style="font-size: 11px; font-weight: 800; color: var(--ion-color-medium); text-transform: uppercase; letter-spacing: 0.5px;">
-          {{ isSelectionMode ? 'Select Games' : 'All Completed Games' }}
-        </div>
-        
-        <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
-          <button *ngIf="!isSelectionMode && unsyncedGamesCount > 0" (click)="uploadUnsynced()" style="background: rgba(245,158,11,0.15); border: 1px solid rgba(245,158,11,0.3); border-radius: 8px; color: #f59e0b; padding: 6px 12px; display: flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 700;" class="clickable">
-            <ion-icon name="cloud-upload-outline" style="font-size: 14px;"></ion-icon>
-            Upload Unsynced ({{ unsyncedGamesCount }})
-          </button>
-
-          <button *ngIf="!isSelectionMode" (click)="triggerFileUpload()" style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; color: var(--player-one-color); padding: 6px 12px; display: flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 700;" class="clickable">
-            <ion-icon name="cloud-upload-outline" style="font-size: 14px;"></ion-icon>
-            Import
-          </button>
-          
-          <button (click)="toggleSelectionMode()" style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; color: #fff; padding: 6px 12px; display: flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 700;" class="clickable">
-            <ion-icon [name]="isSelectionMode ? 'close-outline' : 'checkbox-outline'" style="font-size: 14px;"></ion-icon>
-            {{ isSelectionMode ? 'Cancel' : 'Select' }}
-          </button>
-        </div>
+    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+      <div
+        style="font-size: 11px; font-weight: 800; color: var(--ion-color-medium); text-transform: uppercase; letter-spacing: 0.5px;">
+        {{ isSelectionMode ? 'Select Games' : 'All Completed Games' }}
       </div>
 
-      <!-- Inline sync notifications banner -->
-      <div *ngIf="syncStatusMessage" [style.background]="syncStatusType === 'success' ? 'rgba(16, 185, 129, 0.08)' : 'rgba(235, 68, 90, 0.08)'" 
-           [style.border]="syncStatusType === 'success' ? '1px solid rgba(16, 185, 129, 0.2)' : '1px solid rgba(235, 68, 90, 0.2)'" 
-           style="border-radius: 12px; font-size: 12px; padding: 10px; margin-bottom: 16px; display: flex; align-items: center; justify-content: space-between;" class="animate-fade-in">
-        <span [style.color]="syncStatusType === 'success' ? '#10b981' : 'var(--ion-color-danger)'" style="font-weight: 600; line-height: 1.4;">
-          {{ syncStatusMessage }}
-        </span>
-        <button (click)="syncStatusMessage = ''" style="background: transparent; border: none; color: var(--ion-color-medium); display: flex; align-items: center; justify-content: center; padding: 4px;" class="clickable">
-          <ion-icon name="close-outline" style="font-size: 16px;"></ion-icon>
+      <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+        <button *ngIf="!isSelectionMode && unsyncedGamesCount > 0" (click)="uploadUnsynced()"
+          style="background: rgba(245,158,11,0.15); border: 1px solid rgba(245,158,11,0.3); border-radius: 8px; color: #f59e0b; padding: 6px 12px; display: flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 700;"
+          class="clickable">
+          <ion-icon name="cloud-upload-outline" style="font-size: 14px;"></ion-icon>
+          Upload Unsynced ({{ unsyncedGamesCount }})
+        </button>
+
+        <button *ngIf="!isSelectionMode" (click)="triggerFileUpload()"
+          style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; color: var(--player-one-color); padding: 6px 12px; display: flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 700;"
+          class="clickable">
+          <ion-icon name="cloud-upload-outline" style="font-size: 14px;"></ion-icon>
+          Import
+        </button>
+
+        <button (click)="toggleSelectionMode()"
+          style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; color: #fff; padding: 6px 12px; display: flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 700;"
+          class="clickable">
+          <ion-icon [name]="isSelectionMode ? 'close-outline' : 'checkbox-outline'" style="font-size: 14px;"></ion-icon>
+          {{ isSelectionMode ? 'Cancel' : 'Select' }}
         </button>
       </div>
+    </div>
 
-      @if (historyList.length === 0) {
-        <div style="text-align: center; padding: 40px 16px; color: var(--ion-color-medium);">
-          <div style="font-size: 32px; margin-bottom: 8px;">⏳</div>
-          <p>No completed games yet. Finish a match to log it here!</p>
+    <!-- Inline sync notifications banner -->
+    <div *ngIf="syncStatusMessage"
+      [style.background]="syncStatusType === 'success' ? 'rgba(16, 185, 129, 0.08)' : 'rgba(235, 68, 90, 0.08)'"
+      [style.border]="syncStatusType === 'success' ? '1px solid rgba(16, 185, 129, 0.2)' : '1px solid rgba(235, 68, 90, 0.2)'"
+      style="border-radius: 12px; font-size: 12px; padding: 10px; margin-bottom: 16px; display: flex; align-items: center; justify-content: space-between;"
+      class="animate-fade-in">
+      <span [style.color]="syncStatusType === 'success' ? '#10b981' : 'var(--ion-color-danger)'"
+        style="font-weight: 600; line-height: 1.4;">
+        {{ syncStatusMessage }}
+      </span>
+      <button (click)="syncStatusMessage = ''"
+        style="background: transparent; border: none; color: var(--ion-color-medium); display: flex; align-items: center; justify-content: center; padding: 4px;"
+        class="clickable">
+        <ion-icon name="close-outline" style="font-size: 16px;"></ion-icon>
+      </button>
+    </div>
+
+    @if (historyList.length === 0) {
+    <div style="text-align: center; padding: 40px 16px; color: var(--ion-color-medium);">
+      <div style="font-size: 32px; margin-bottom: 8px;">⏳</div>
+      <p>No completed games yet. Finish a match to log it here!</p>
+    </div>
+    }
+
+    @for (game of historyList; track game.id) {
+    <div class="game-history-card" [class.selected]="isSelectionMode && isGameSelected(game.id)">
+      <!-- Accordion Header Clickable -->
+      <div class="game-history-header"
+        (click)="isSelectionMode ? toggleSelectGame(game.id) : toggleExpandGame(game.id)">
+        <div *ngIf="isSelectionMode"
+          style="margin-right: 12px; display: flex; align-items: center; pointer-events: none;">
+          <ion-checkbox [checked]="isGameSelected(game.id)" mode="md"
+            style="--size: 20px; --border-radius: 6px;"></ion-checkbox>
         </div>
-      }
+        <div style="text-align: left; flex: 1; margin-right: 16px;">
+          <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+            <span
+              [style.color]="game.winner === 1 ? 'var(--player-one-color)' : (game.winner === 2 ? 'var(--player-two-color)' : 'var(--player-three-color)')"
+              style="font-weight: 800; font-size: 14px;">
+              @if ((game.mode || 2) === 4) {
+              {{ game.winner === 1 ? (getFirstName(game.player1Name) + ' & ' + getFirstName(game.player3Name)) :
+              (getFirstName(game.player2Name) + ' & ' + getFirstName(game.player4Name)) }}
+              } @else {
+              {{ game.winner === 1 ? getFirstName(game.player1Name) : (game.winner === 2 ?
+              getFirstName(game.player2Name) : getFirstName(game.player3Name)) }}
+              }
+            </span>
+            <span
+              style="font-size: 10px; font-weight: 800; background: rgba(16,185,129,0.15); color: #10b981; padding: 1px 6px; border-radius: 6px; text-transform: uppercase;">Won</span>
 
-      @for (game of historyList; track game.id) {
-        <div class="game-history-card" [class.selected]="isSelectionMode && isGameSelected(game.id)">
-          <!-- Accordion Header Clickable -->
-          <div class="game-history-header" (click)="isSelectionMode ? toggleSelectGame(game.id) : toggleExpandGame(game.id)">
-            <div *ngIf="isSelectionMode" style="margin-right: 12px; display: flex; align-items: center; pointer-events: none;">
-              <ion-checkbox [checked]="isGameSelected(game.id)" mode="md" style="--size: 20px; --border-radius: 6px;"></ion-checkbox>
-            </div>
-            <div style="text-align: left; flex: 1; margin-right: 16px;">
-              <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
-                <span [style.color]="game.winner === 1 ? 'var(--player-one-color)' : (game.winner === 2 ? 'var(--player-two-color)' : 'var(--player-three-color)')" style="font-weight: 800; font-size: 14px;">
-                  @if ((game.mode || 2) === 4) {
-                    {{ game.winner === 1 ? (getFirstName(game.player1Name) + ' & ' + getFirstName(game.player3Name)) : (getFirstName(game.player2Name) + ' & ' + getFirstName(game.player4Name)) }}
-                  } @else {
-                    {{ game.winner === 1 ? getFirstName(game.player1Name) : (game.winner === 2 ? getFirstName(game.player2Name) : getFirstName(game.player3Name)) }}
-                  }
-                </span>
-                <span style="font-size: 10px; font-weight: 800; background: rgba(16,185,129,0.15); color: #10b981; padding: 1px 6px; border-radius: 6px; text-transform: uppercase;">Won</span>
-                
-                <!-- Synced/Local Icon Only -->
-                <ion-icon *ngIf="game.synced" name="cloud-done-outline" style="font-size: 16px; color: #10b981; display: inline-flex; align-items: center;"></ion-icon>
-                <ion-icon *ngIf="!game.synced" name="cloud-offline-outline" style="font-size: 16px; color: #f59e0b; display: inline-flex; align-items: center;"></ion-icon>
+            <!-- Synced/Local Icon Only -->
+            <ion-icon *ngIf="game.synced" name="cloud-done-outline"
+              style="font-size: 16px; color: #10b981; display: inline-flex; align-items: center;"></ion-icon>
+            <ion-icon *ngIf="!game.synced" name="cloud-offline-outline"
+              style="font-size: 16px; color: #f59e0b; display: inline-flex; align-items: center;"></ion-icon>
 
-                <!-- Excluded Badge -->
-                <span *ngIf="game.excluded" style="font-size: 10px; font-weight: 800; background: rgba(239, 68, 68, 0.15); color: #ef4444; padding: 1px 6px; border-radius: 6px; text-transform: uppercase; display: inline-flex; align-items: center; gap: 3px;">
-                  <ion-icon name="eye-off-outline" style="font-size: 11px;"></ion-icon>
-                  Excluded
-                </span>
+            <!-- Excluded Badge -->
+            <span *ngIf="game.excluded"
+              style="font-size: 10px; font-weight: 800; background: rgba(239, 68, 68, 0.15); color: #ef4444; padding: 1px 6px; border-radius: 6px; text-transform: uppercase; display: inline-flex; align-items: center; gap: 3px;">
+              <ion-icon name="eye-off-outline" style="font-size: 11px;"></ion-icon>
+              Excluded
+            </span>
 
-                <span style="font-size: 9px; font-weight: 700; background: rgba(255,255,255,0.06); color: #ccc; padding: 1px 5px; border-radius: 4px; margin-left: auto;">
-                  {{ (game.mode || 2) }}P
-                </span>
-              </div>
-              
-              <div style="font-size: 12px; color: #fff; margin-top: 6px; font-weight: 600;">
-                @if ((game.mode || 2) === 3) {
-                  {{ getFirstName(game.player1Name) }} ({{ game.player1Score }}) vs {{ getFirstName(game.player2Name) }} ({{ game.player2Score }}) vs {{ getFirstName(game.player3Name) }} ({{ game.player3Score }})
-                } @else if ((game.mode || 2) === 4) {
-                  {{ getFirstName(game.player1Name) }} & {{ getFirstName(game.player3Name) }} ({{ game.player1Score }}) vs {{ getFirstName(game.player2Name) }} & {{ getFirstName(game.player4Name) }} ({{ game.player2Score }})
-                } @else {
-                  {{ getFirstName(game.player1Name) }} ({{ game.player1Score }}) vs {{ getFirstName(game.player2Name) }} ({{ game.player2Score }})
-                }
-              </div>
-              <div style="font-size: 10px; color: var(--ion-color-medium); margin-top: 2px;">
-                {{ game.date | date:'mediumDate' }} at {{ game.date | date:'shortTime' }}
-              </div>
-            </div>
-            
-            <div style="display: flex; align-items: center; gap: 12px;">
-              <ng-container *ngIf="!isSelectionMode">
-                <button (click)="openGameSettings(game, $event)" style="background: transparent; border: none; color: var(--player-one-color); display: flex; align-items: center; justify-content: center;" class="clickable">
-                  <ion-icon name="settings-outline" style="font-size: 18px;"></ion-icon>
-                </button>
-                <button (click)="deleteGame(game.id, $event)" style="background: transparent; border: none; color: var(--ion-color-danger); display: flex; align-items: center; justify-content: center;" class="clickable">
-                  <ion-icon name="trash-outline" style="font-size: 18px;"></ion-icon>
-                </button>
-                <ion-icon [name]="isGameExpanded(game.id) ? 'chevron-up-outline' : 'chevron-down-outline'" style="color: var(--ion-color-medium); font-size: 18px;"></ion-icon>
-              </ng-container>
-            </div>
+            <span
+              style="font-size: 9px; font-weight: 700; background: rgba(255,255,255,0.06); color: #ccc; padding: 1px 5px; border-radius: 4px; margin-left: auto;">
+              {{ (game.mode || 2) }}P
+            </span>
           </div>
 
-          <!-- Expanded Game details -->
-          @if (isGameExpanded(game.id)) {
-            <div class="game-history-details">
-              <div style="display: flex; justify-content: space-between; font-size: 11px; color: var(--ion-color-medium); font-weight: 700; text-transform: uppercase; margin-bottom: 8px;">
-                <span>Duration: {{ formatDuration(game.duration) }}</span>
-                <span>Logs count: {{ game.scoreLogs.length }}</span>
-              </div>
+          <div style="font-size: 12px; color: #fff; margin-top: 6px; font-weight: 600;">
+            @if ((game.mode || 2) === 3) {
+            {{ getFirstName(game.player1Name) }} ({{ game.player1Score }}) vs {{ getFirstName(game.player2Name) }} ({{
+            game.player2Score }}) vs {{ getFirstName(game.player3Name) }} ({{ game.player3Score }})
+            } @else if ((game.mode || 2) === 4) {
+            {{ getFirstName(game.player1Name) }} & {{ getFirstName(game.player3Name) }} ({{ game.player1Score }}) vs {{
+            getFirstName(game.player2Name) }} & {{ getFirstName(game.player4Name) }} ({{ game.player2Score }})
+            } @else {
+            {{ getFirstName(game.player1Name) }} ({{ game.player1Score }}) vs {{ getFirstName(game.player2Name) }} ({{
+            game.player2Score }})
+            }
+          </div>
+          <div style="font-size: 10px; color: var(--ion-color-medium); margin-top: 2px;">
+            {{ game.date | date:'mediumDate' }} at {{ game.date | date:'shortTime' }}
+          </div>
+        </div>
 
-              <!-- Game Point Table Breakdown -->
-              <table style="width: 100%; border-collapse: collapse; font-size: 12px; text-align: left;">
-                <thead>
-                  <tr style="border-bottom: 1px solid rgba(255,255,255,0.06); color: var(--ion-color-medium);">
-                    <th style="padding: 4px 0;">Player</th>
-                    <th style="padding: 4px 0; text-align: center; color: var(--player-one-color);">Pegging</th>
-                    <th style="padding: 4px 0; text-align: center; color: var(--player-one-color);">Hand</th>
-                    <th style="padding: 4px 0; text-align: center; color: var(--player-one-color);">Crib</th>
-                    <th style="padding: 4px 0; text-align: right; color: #fff;">Total</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <!-- Row 1: Player 1 -->
-                  <tr style="border-bottom: 1px dashed rgba(255,255,255,0.03);">
-                    <td style="padding: 6px 0; font-weight: 700; color: var(--player-one-color);">{{ getFirstName(game.player1Name) }}</td>
-                    <td style="padding: 6px 0; text-align: center; color: #eee;">{{ getGameBreakdown(game).p1.pegging }}</td>
-                    <td style="padding: 6px 0; text-align: center; color: #eee;">{{ getGameBreakdown(game).p1.hand }}</td>
-                    <td style="padding: 6px 0; text-align: center; color: #eee;">{{ getGameBreakdown(game).p1.crib }}</td>
-                    <td style="padding: 6px 0; text-align: right; font-weight: 800; color: #fff;">{{ game.player1Score }}</td>
-                  </tr>
-                  
-                  <!-- Row 2: Player 2 -->
-                  <tr [style.border-bottom]="(game.mode || 2) >= 3 ? '1px dashed rgba(255,255,255,0.03)' : '1px solid rgba(255,255,255,0.05)'">
-                    <td style="padding: 6px 0; font-weight: 700; color: var(--player-two-color);">{{ getFirstName(game.player2Name) }}</td>
-                    <td style="padding: 6px 0; text-align: center; color: #eee;">{{ getGameBreakdown(game).p2.pegging }}</td>
-                    <td style="padding: 6px 0; text-align: center; color: #eee;">{{ getGameBreakdown(game).p2.hand }}</td>
-                    <td style="padding: 6px 0; text-align: center; color: #eee;">{{ getGameBreakdown(game).p2.crib }}</td>
-                    <td style="padding: 6px 0; text-align: right; font-weight: 800; color: #fff;">{{ game.player2Score }}</td>
-                  </tr>
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <ng-container *ngIf="!isSelectionMode">
+            <button (click)="openGameSettings(game, $event)"
+              style="background: transparent; border: none; color: var(--player-one-color); display: flex; align-items: center; justify-content: center;"
+              class="clickable">
+              <ion-icon name="settings-outline" style="font-size: 18px;"></ion-icon>
+            </button>
+            <button (click)="deleteGame(game.id, $event)"
+              style="background: transparent; border: none; color: var(--ion-color-danger); display: flex; align-items: center; justify-content: center;"
+              class="clickable">
+              <ion-icon name="trash-outline" style="font-size: 18px;"></ion-icon>
+            </button>
+            <ion-icon [name]="isGameExpanded(game.id) ? 'chevron-up-outline' : 'chevron-down-outline'"
+              style="color: var(--ion-color-medium); font-size: 18px;"></ion-icon>
+          </ng-container>
+        </div>
+      </div>
 
-                  <!-- Row 3: Player 3 (if mode >= 3) -->
-                  <tr *ngIf="(game.mode || 2) >= 3" [style.border-bottom]="(game.mode || 2) === 4 ? '1px dashed rgba(255,255,255,0.03)' : '1px solid rgba(255,255,255,0.05)'">
-                    <td style="padding: 6px 0; font-weight: 700; color: var(--player-three-color);">{{ getFirstName(game.player3Name) }}</td>
-                    <td style="padding: 6px 0; text-align: center; color: #eee;">{{ getGameBreakdown(game).p3.pegging }}</td>
-                    <td style="padding: 6px 0; text-align: center; color: #eee;">{{ getGameBreakdown(game).p3.hand }}</td>
-                    <td style="padding: 6px 0; text-align: center; color: #eee;">{{ getGameBreakdown(game).p3.crib }}</td>
-                    <td style="padding: 6px 0; text-align: right; font-weight: 800; color: #fff;">{{ (game.mode || 2) === 4 ? game.player1Score : game.player3Score }}</td>
-                  </tr>
+      <!-- Expanded Game details -->
+      @if (isGameExpanded(game.id)) {
+      <div class="game-history-details">
+        <div
+          style="display: flex; justify-content: space-between; font-size: 11px; color: var(--ion-color-medium); font-weight: 700; text-transform: uppercase; margin-bottom: 8px;">
+          <span>Duration: {{ formatDuration(game.duration) }}</span>
+          <span>Logs count: {{ game.scoreLogs.length }}</span>
+        </div>
 
-                  <!-- Row 4: Player 4 (if mode === 4) -->
-                  <tr *ngIf="(game.mode || 2) === 4" style="border-bottom: 1px solid rgba(255,255,255,0.05);">
-                    <td style="padding: 6px 0; font-weight: 700; color: var(--player-four-color);">{{ getFirstName(game.player4Name) }}</td>
-                    <td style="padding: 6px 0; text-align: center; color: #eee;">{{ getGameBreakdown(game).p4.pegging }}</td>
-                    <td style="padding: 6px 0; text-align: center; color: #eee;">{{ getGameBreakdown(game).p4.hand }}</td>
-                    <td style="padding: 6px 0; text-align: center; color: #eee;">{{ getGameBreakdown(game).p4.crib }}</td>
-                    <td style="padding: 6px 0; text-align: right; font-weight: 800; color: #fff;">{{ game.player2Score }}</td>
-                  </tr>
-                </tbody>
-              </table>
+        <!-- Game Point Table Breakdown -->
+        <table style="width: 100%; border-collapse: collapse; font-size: 12px; text-align: left;">
+          <thead>
+            <tr style="border-bottom: 1px solid rgba(255,255,255,0.06); color: var(--ion-color-medium);">
+              <th style="padding: 4px 0;">Player</th>
+              <th style="padding: 4px 0; text-align: center; color: var(--player-one-color);">Pegging</th>
+              <th style="padding: 4px 0; text-align: center; color: var(--player-one-color);">Hand</th>
+              <th style="padding: 4px 0; text-align: center; color: var(--player-one-color);">Crib</th>
+              <th style="padding: 4px 0; text-align: right; color: #fff;">Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Row 1: Player 1 -->
+            <tr style="border-bottom: 1px dashed rgba(255,255,255,0.03);">
+              <td style="padding: 6px 0; font-weight: 700; color: var(--player-one-color);">{{
+                getFirstName(game.player1Name) }}</td>
+              <td style="padding: 6px 0; text-align: center; color: #eee;">{{ getGameBreakdown(game).p1.pegging }}</td>
+              <td style="padding: 6px 0; text-align: center; color: #eee;">{{ getGameBreakdown(game).p1.hand }}</td>
+              <td style="padding: 6px 0; text-align: center; color: #eee;">{{ getGameBreakdown(game).p1.crib }}</td>
+              <td style="padding: 6px 0; text-align: right; font-weight: 800; color: #fff;">{{ game.player1Score }}</td>
+            </tr>
 
-              <!-- Detailed scoring log timeline -->
-              <div class="log-scroll-area">
-                <div style="font-size: 9px; font-weight: 800; color: var(--ion-color-medium); text-transform: uppercase; margin-bottom: 6px;">Play-by-play Timeline</div>
-                @for (log of game.scoreLogs; track log.id) {
-                  <div style="display: flex; justify-content: space-between; font-size: 11px; padding: 2px 0;">
-                    <div style="color: #bbb; display: flex; align-items: center;">
-                      <span [style.background]="log.player === 1 ? 'var(--player-one-color)' : (log.player === 2 ? 'var(--player-two-color)' : (log.player === 3 ? 'var(--player-three-color)' : 'var(--player-four-color)'))" style="width: 6px; height: 6px; border-radius: 50%; display: inline-block; margin-right: 6px;"></span>
-                      <strong>
-                        @if (log.player === 1) { {{ getFirstName(game.player1Name) }} }
-                        @else if (log.player === 2) { {{ getFirstName(game.player2Name) }} }
-                        @else if (log.player === 3) { {{ getFirstName(game.player3Name) }} }
-                        @else { {{ getFirstName(game.player4Name) }} }
-                      </strong>
-                      <span style="opacity: 0.7; margin-left: 4px;">({{ log.reason }})</span>
-                    </div>
-                    <span style="font-weight: 700; color: #fff;">+{{ log.delta }} pts → {{ log.newScore }}</span>
-                  </div>
-                }
-              </div>
+            <!-- Row 2: Player 2 -->
+            <tr
+              [style.border-bottom]="(game.mode || 2) >= 3 ? '1px dashed rgba(255,255,255,0.03)' : '1px solid rgba(255,255,255,0.05)'">
+              <td style="padding: 6px 0; font-weight: 700; color: var(--player-two-color);">{{
+                getFirstName(game.player2Name) }}</td>
+              <td style="padding: 6px 0; text-align: center; color: #eee;">{{ getGameBreakdown(game).p2.pegging }}</td>
+              <td style="padding: 6px 0; text-align: center; color: #eee;">{{ getGameBreakdown(game).p2.hand }}</td>
+              <td style="padding: 6px 0; text-align: center; color: #eee;">{{ getGameBreakdown(game).p2.crib }}</td>
+              <td style="padding: 6px 0; text-align: right; font-weight: 800; color: #fff;">{{ game.player2Score }}</td>
+            </tr>
+
+            <!-- Row 3: Player 3 (if mode >= 3) -->
+            <tr *ngIf="(game.mode || 2) >= 3"
+              [style.border-bottom]="(game.mode || 2) === 4 ? '1px dashed rgba(255,255,255,0.03)' : '1px solid rgba(255,255,255,0.05)'">
+              <td style="padding: 6px 0; font-weight: 700; color: var(--player-three-color);">{{
+                getFirstName(game.player3Name) }}</td>
+              <td style="padding: 6px 0; text-align: center; color: #eee;">{{ getGameBreakdown(game).p3.pegging }}</td>
+              <td style="padding: 6px 0; text-align: center; color: #eee;">{{ getGameBreakdown(game).p3.hand }}</td>
+              <td style="padding: 6px 0; text-align: center; color: #eee;">{{ getGameBreakdown(game).p3.crib }}</td>
+              <td style="padding: 6px 0; text-align: right; font-weight: 800; color: #fff;">{{ (game.mode || 2) === 4 ?
+                game.player1Score : game.player3Score }}</td>
+            </tr>
+
+            <!-- Row 4: Player 4 (if mode === 4) -->
+            <tr *ngIf="(game.mode || 2) === 4" style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+              <td style="padding: 6px 0; font-weight: 700; color: var(--player-four-color);">{{
+                getFirstName(game.player4Name) }}</td>
+              <td style="padding: 6px 0; text-align: center; color: #eee;">{{ getGameBreakdown(game).p4.pegging }}</td>
+              <td style="padding: 6px 0; text-align: center; color: #eee;">{{ getGameBreakdown(game).p4.hand }}</td>
+              <td style="padding: 6px 0; text-align: center; color: #eee;">{{ getGameBreakdown(game).p4.crib }}</td>
+              <td style="padding: 6px 0; text-align: right; font-weight: 800; color: #fff;">{{ game.player2Score }}</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <!-- Detailed scoring log timeline -->
+        <div class="log-scroll-area">
+          <div
+            style="font-size: 9px; font-weight: 800; color: var(--ion-color-medium); text-transform: uppercase; margin-bottom: 6px;">
+            Play-by-play Timeline</div>
+          @for (log of game.scoreLogs; track log.id) {
+          <div style="display: flex; justify-content: space-between; font-size: 11px; padding: 2px 0;">
+            <div style="color: #bbb; display: flex; align-items: center;">
+              <span
+                [style.background]="log.player === 1 ? 'var(--player-one-color)' : (log.player === 2 ? 'var(--player-two-color)' : (log.player === 3 ? 'var(--player-three-color)' : 'var(--player-four-color)'))"
+                style="width: 6px; height: 6px; border-radius: 50%; display: inline-block; margin-right: 6px;"></span>
+              <strong>
+                @if (log.player === 1) { {{ getFirstName(game.player1Name) }} }
+                @else if (log.player === 2) { {{ getFirstName(game.player2Name) }} }
+                @else if (log.player === 3) { {{ getFirstName(game.player3Name) }} }
+                @else { {{ getFirstName(game.player4Name) }} }
+              </strong>
+              <span style="opacity: 0.7; margin-left: 4px;">({{ log.reason }})</span>
             </div>
+            <span style="font-weight: 700; color: #fff;">+{{ log.delta }} pts → {{ log.newScore }}</span>
+          </div>
           }
         </div>
+      </div>
       }
-
-      <!-- Spacer to prevent bottom navigation bar or floating selection action bar from covering history items -->
-      <div style="pointer-events: none;" [style.height.px]="isSelectionMode ? 180 : 70"></div>
-
     </div>
+    }
+
+    <!-- Spacer to prevent bottom navigation bar or floating selection action bar from covering history items -->
+    <div style="pointer-events: none;" [style.height.px]="isSelectionMode ? 180 : 70"></div>
+
+  </div>
   }
 
   <!-- Floating Selection Action Bar (Direct Child of ion-content) -->
-  <div slot="fixed" *ngIf="activeSegment === 'history' && isSelectionMode" class="selection-footer-bar glass-panel animate-fade-in">
+  <div slot="fixed" *ngIf="activeSegment === 'history' && isSelectionMode"
+    class="selection-footer-bar glass-panel animate-fade-in">
     <div style="display: flex; flex-direction: column; gap: 8px; width: 100%;">
       <div style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
         <div style="font-size: 13px; font-weight: 800; color: #fff; display: flex; align-items: center; gap: 6px;">
-          <span style="background: var(--player-one-color); border-radius: 12px; padding: 2px 8px; font-size: 11px;">{{ selectedGameIds.size }}</span> Selected
+          <span style="background: var(--player-one-color); border-radius: 12px; padding: 2px 8px; font-size: 11px;">{{
+            selectedGameIds.size }}</span> Selected
         </div>
         <div style="display: flex; gap: 6px;">
-          <button (click)="selectedGameIds.size < historyList.length ? selectAllGames() : clearSelectedGames()" style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: #fff; padding: 6px 10px; font-size: 11px; font-weight: 600;" class="clickable">
-            {{ selectedGameIds.size < historyList.length ? 'Select All' : 'Deselect All' }}
-          </button>
+          <button (click)="selectedGameIds.size < historyList.length ? selectAllGames() : clearSelectedGames()"
+            style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: #fff; padding: 6px 10px; font-size: 11px; font-weight: 600;"
+            class="clickable">
+            {{ selectedGameIds.size < historyList.length ? 'Select All' : 'Deselect All' }} </button>
         </div>
       </div>
-      
+
       <div style="display: flex; gap: 6px; flex-wrap: wrap; justify-content: space-between; align-items: center;">
         <div style="display: flex; gap: 6px; flex-wrap: wrap;">
-          <button [disabled]="selectedGameIds.size === 0" (click)="bulkStatsInclusion(false)" style="background: rgba(16,185,129,0.12); border: 1px solid rgba(16,185,129,0.3); border-radius: 8px; color: #10b981; padding: 6px 10px; font-size: 11px; font-weight: 700; display: flex; align-items: center; gap: 4px;" [style.opacity]="selectedGameIds.size === 0 ? '0.4' : '1'" class="clickable">
+          <button [disabled]="selectedGameIds.size === 0" (click)="bulkStatsInclusion(false)"
+            style="background: rgba(16,185,129,0.12); border: 1px solid rgba(16,185,129,0.3); border-radius: 8px; color: #10b981; padding: 6px 10px; font-size: 11px; font-weight: 700; display: flex; align-items: center; gap: 4px;"
+            [style.opacity]="selectedGameIds.size === 0 ? '0.4' : '1'" class="clickable">
             Include Stats
           </button>
-          <button [disabled]="selectedGameIds.size === 0" (click)="bulkStatsInclusion(true)" style="background: rgba(239,68,68,0.12); border: 1px solid rgba(239,68,68,0.3); border-radius: 8px; color: #ef4444; padding: 6px 10px; font-size: 11px; font-weight: 700; display: flex; align-items: center; gap: 4px;" [style.opacity]="selectedGameIds.size === 0 ? '0.4' : '1'" class="clickable">
+          <button [disabled]="selectedGameIds.size === 0" (click)="bulkStatsInclusion(true)"
+            style="background: rgba(239,68,68,0.12); border: 1px solid rgba(239,68,68,0.3); border-radius: 8px; color: #ef4444; padding: 6px 10px; font-size: 11px; font-weight: 700; display: flex; align-items: center; gap: 4px;"
+            [style.opacity]="selectedGameIds.size === 0 ? '0.4' : '1'" class="clickable">
             Exclude Stats
           </button>
-          <button [disabled]="selectedGameIds.size === 0" (click)="downloadSelectedGames()" style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: #fff; padding: 6px 10px; font-size: 11px; font-weight: 600; display: flex; align-items: center; gap: 4px;" [style.opacity]="selectedGameIds.size === 0 ? '0.4' : '1'" class="clickable">
+          <button [disabled]="selectedGameIds.size === 0" (click)="downloadSelectedGames()"
+            style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: #fff; padding: 6px 10px; font-size: 11px; font-weight: 600; display: flex; align-items: center; gap: 4px;"
+            [style.opacity]="selectedGameIds.size === 0 ? '0.4' : '1'" class="clickable">
             <ion-icon name="download-outline" style="font-size: 13px;"></ion-icon>
             Export
           </button>
         </div>
-        <button [disabled]="selectedGameIds.size === 0" (click)="showBulkDeleteConfirm = true" style="background: var(--ion-color-danger); border: none; border-radius: 8px; color: #fff; padding: 6px 12px; font-size: 11px; font-weight: 700; display: flex; align-items: center; gap: 4px;" [style.opacity]="selectedGameIds.size === 0 ? '0.4' : '1'" class="clickable">
+        <button [disabled]="selectedGameIds.size === 0" (click)="showBulkDeleteConfirm = true"
+          style="background: var(--ion-color-danger); border: none; border-radius: 8px; color: #fff; padding: 6px 12px; font-size: 11px; font-weight: 700; display: flex; align-items: center; gap: 4px;"
+          [style.opacity]="selectedGameIds.size === 0 ? '0.4' : '1'" class="clickable">
           <ion-icon name="trash-outline" style="font-size: 13px;"></ion-icon>
           Delete
         </button>
@@ -432,28 +514,37 @@
   </div>
 
   <!-- 6. UPLOAD MAPPING MODAL -->
-  <ion-modal [isOpen]="showUploadMappingModal" (didDismiss)="showUploadMappingModal = false" style="--height: 90%; --max-height: 520px; --border-radius: 20px; --width: 90%; --max-width: 365px; --background: var(--app-bg); border: 1px solid rgba(255,255,255,0.15);">
+  <ion-modal [isOpen]="showUploadMappingModal" (didDismiss)="showUploadMappingModal = false"
+    style="--height: 90%; --max-height: 520px; --border-radius: 20px; --width: 90%; --max-width: 365px; --background: var(--app-bg); border: 1px solid rgba(255,255,255,0.15);">
     <ng-template>
-      <div class="glass-panel" style="padding: 20px; border: none; border-radius: 0; display: flex; flex-direction: column; height: 100%; overflow: hidden;">
-        <h3 style="font-weight: 800; font-size: 18px; margin: 0 0 4px 0; color: #fff; text-align: center;">Map Uploaded Players</h3>
-        <p style="color: var(--ion-color-medium); font-size: 11px; text-align: center; margin: 0 0 16px 0; line-height: 1.4;">
+      <div class="glass-panel"
+        style="padding: 20px; border: none; border-radius: 0; display: flex; flex-direction: column; height: 100%; overflow: hidden;">
+        <h3 style="font-weight: 800; font-size: 18px; margin: 0 0 4px 0; color: #fff; text-align: center;">Map Uploaded
+          Players</h3>
+        <p
+          style="color: var(--ion-color-medium); font-size: 11px; text-align: center; margin: 0 0 16px 0; line-height: 1.4;">
           Map players found in the uploaded games to existing profiles, or choose to create new players in the app.
         </p>
 
         <!-- Error Message Display inside Mapping Modal -->
-        <div *ngIf="mappingErrorMessage" style="background: rgba(235, 68, 90, 0.08); border: 1px solid rgba(235, 68, 90, 0.2); border-radius: 12px; color: var(--ion-color-danger); font-size: 12px; padding: 10px; margin-bottom: 16px; text-align: center; font-weight: 600; line-height: 1.4;">
+        <div *ngIf="mappingErrorMessage"
+          style="background: rgba(235, 68, 90, 0.08); border: 1px solid rgba(235, 68, 90, 0.2); border-radius: 12px; color: var(--ion-color-danger); font-size: 12px; padding: 10px; margin-bottom: 16px; text-align: center; font-weight: 600; line-height: 1.4;">
           {{ mappingErrorMessage }}
         </div>
 
         <!-- Scrollable list of mappings -->
         <div style="flex: 1; overflow-y: auto; padding-right: 4px; margin-bottom: 16px;">
-          <div *ngFor="let mapping of uploadMappings" style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; padding: 12px; margin-bottom: 12px;">
-            <div style="font-size: 10px; font-weight: 800; color: var(--ion-color-medium); text-transform: uppercase; margin-bottom: 8px; letter-spacing: 0.5px;">
-              Uploaded Player: <span style="color: #fff; font-weight: 700; font-size: 12px;">{{ mapping.uploadedName }}</span>
+          <div *ngFor="let mapping of uploadMappings"
+            style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; padding: 12px; margin-bottom: 12px;">
+            <div
+              style="font-size: 10px; font-weight: 800; color: var(--ion-color-medium); text-transform: uppercase; margin-bottom: 8px; letter-spacing: 0.5px;">
+              Uploaded Player: <span style="color: #fff; font-weight: 700; font-size: 12px;">{{ mapping.uploadedName
+                }}</span>
             </div>
 
             <!-- Segment to choose mapping mode -->
-            <ion-segment [(ngModel)]="mapping.mapType" mode="ios" style="--background: rgba(0,0,0,0.2); height: 28px; margin-bottom: 8px;">
+            <ion-segment [(ngModel)]="mapping.mapType" mode="ios"
+              style="--background: rgba(0,0,0,0.2); height: 28px; margin-bottom: 8px;">
               <ion-segment-button value="existing">
                 <ion-label style="font-size: 9px; font-weight: 700;">Use Existing</ion-label>
               </ion-segment-button>
@@ -464,8 +555,10 @@
 
             <!-- Choice 1: Existing Player Select -->
             <div *ngIf="mapping.mapType === 'existing'">
-              <div style="border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; background: rgba(0,0,0,0.15); height: 38px; display: flex; align-items: center; padding: 0 8px;">
-                <ion-select [(ngModel)]="mapping.selectedExistingId" interface="popover" style="width: 100%; color: #fff; font-weight: 600; font-size: 12px; --padding-start: 4px;">
+              <div
+                style="border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; background: rgba(0,0,0,0.15); height: 38px; display: flex; align-items: center; padding: 0 8px;">
+                <ion-select [(ngModel)]="mapping.selectedExistingId" interface="popover"
+                  style="width: 100%; color: #fff; font-weight: 600; font-size: 12px; --padding-start: 4px;">
                   <ion-select-option *ngFor="let p of playersList" [value]="p.id">{{ p.name }}</ion-select-option>
                 </ion-select>
               </div>
@@ -473,8 +566,10 @@
 
             <!-- Choice 2: New Player Name Input -->
             <div *ngIf="mapping.mapType === 'new'">
-              <div style="border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; background: rgba(0,0,0,0.15); padding: 4px 10px; height: 38px; display: flex; align-items: center;">
-                <input type="text" [(ngModel)]="mapping.newPlayerName" placeholder="New player name..." style="width: 100%; background: transparent; border: none; outline: none; color: #fff; font-weight: 600; font-size: 12px;" />
+              <div
+                style="border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; background: rgba(0,0,0,0.15); padding: 4px 10px; height: 38px; display: flex; align-items: center;">
+                <input type="text" [(ngModel)]="mapping.newPlayerName" placeholder="New player name..."
+                  style="width: 100%; background: transparent; border: none; outline: none; color: #fff; font-weight: 600; font-size: 12px;" />
               </div>
             </div>
           </div>
@@ -482,11 +577,15 @@
 
         <!-- Action buttons -->
         <div style="display: flex; flex-direction: column; gap: 8px; margin-top: auto;">
-          <button (click)="confirmImport()" style="background: var(--player-one-color); border: none; border-radius: 12px; color: #fff; height: 44px; font-weight: 700; font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;" class="clickable">
+          <button (click)="confirmImport()"
+            style="background: var(--player-one-color); border: none; border-radius: 12px; color: #fff; height: 44px; font-weight: 700; font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;"
+            class="clickable">
             <ion-icon name="checkmark-outline" style="font-size: 18px;"></ion-icon>
             Import {{ uploadedGames.length }} {{ uploadedGames.length === 1 ? 'Game' : 'Games' }}
           </button>
-          <button (click)="showUploadMappingModal = false" style="background: transparent; border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; color: var(--ion-color-medium); height: 44px; font-weight: 600; font-size: 14px; cursor: pointer;" class="clickable">
+          <button (click)="showUploadMappingModal = false"
+            style="background: transparent; border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; color: var(--ion-color-medium); height: 44px; font-weight: 600; font-size: 14px; cursor: pointer;"
+            class="clickable">
             Cancel
           </button>
         </div>
@@ -495,19 +594,25 @@
   </ion-modal>
 
   <!-- 3. DELETE GAME CONFIRMATION MODAL -->
-  <ion-modal [isOpen]="showDeleteConfirm" (didDismiss)="showDeleteConfirm = false" style="--height: auto; --border-radius: 20px; --width: 90%; --max-width: 340px; --background: var(--app-bg); border: 1px solid rgba(255,255,255,0.15);">
+  <ion-modal [isOpen]="showDeleteConfirm" (didDismiss)="showDeleteConfirm = false"
+    style="--height: auto; --border-radius: 20px; --width: 90%; --max-width: 340px; --background: var(--app-bg); border: 1px solid rgba(255,255,255,0.15);">
     <ng-template>
       <div class="glass-panel" style="padding: 24px; border: none; border-radius: 0; text-align: center;">
         <div style="font-size: 32px; margin-bottom: 8px;">🗑️</div>
         <h3 style="font-weight: 800; font-size: 18px; margin: 0 0 8px 0; color: #fff;">Delete Match?</h3>
         <p style="color: var(--ion-color-medium); font-size: 13px; margin: 0 0 24px 0; line-height: 1.4;">
-          Are you sure you want to permanently delete this match from history? Player statistics will automatically update.
+          Are you sure you want to permanently delete this match from history? Player statistics will automatically
+          update.
         </p>
         <div style="display: flex; flex-direction: column; gap: 8px;">
-          <button (click)="confirmDelete()" style="background: var(--ion-color-danger); border: none; border-radius: 12px; color: #fff; height: 44px; font-weight: 700; font-size: 14px; cursor: pointer;" class="clickable">
+          <button (click)="confirmDelete()"
+            style="background: var(--ion-color-danger); border: none; border-radius: 12px; color: #fff; height: 44px; font-weight: 700; font-size: 14px; cursor: pointer;"
+            class="clickable">
             Delete Game
           </button>
-          <button (click)="showDeleteConfirm = false" style="background: transparent; border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; color: var(--ion-color-medium); height: 44px; font-weight: 600; font-size: 14px; cursor: pointer;" class="clickable">
+          <button (click)="showDeleteConfirm = false"
+            style="background: transparent; border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; color: var(--ion-color-medium); height: 44px; font-weight: 600; font-size: 14px; cursor: pointer;"
+            class="clickable">
             Cancel
           </button>
         </div>
@@ -516,24 +621,33 @@
   </ion-modal>
 
   <!-- 4. EDIT PLAYER PROFILE MODAL -->
-  <ion-modal [isOpen]="showEditPlayerModal" (didDismiss)="showEditPlayerModal = false" style="--height: auto; --border-radius: 20px; --width: 90%; --max-width: 340px; --background: var(--app-bg); border: 1px solid rgba(255,255,255,0.15);">
+  <ion-modal [isOpen]="showEditPlayerModal" (didDismiss)="showEditPlayerModal = false"
+    style="--height: auto; --border-radius: 20px; --width: 90%; --max-width: 340px; --background: var(--app-bg); border: 1px solid rgba(255,255,255,0.15);">
     <ng-template>
       <div class="glass-panel" style="padding: 24px; border: none; border-radius: 0;">
-        <h3 style="font-weight: 800; font-size: 18px; margin: 0 0 16px 0; color: #fff; text-align: center;">Edit Player Name</h3>
-        
+        <h3 style="font-weight: 800; font-size: 18px; margin: 0 0 16px 0; color: #fff; text-align: center;">Edit Player
+          Name</h3>
+
         <!-- Error Message Display inside Edit Player Modal -->
-        <div *ngIf="editPlayerErrorMessage" style="background: rgba(235, 68, 90, 0.08); border: 1px solid rgba(235, 68, 90, 0.2); border-radius: 12px; color: var(--ion-color-danger); font-size: 12px; padding: 10px; margin-bottom: 16px; text-align: center; font-weight: 600; line-height: 1.4;">
+        <div *ngIf="editPlayerErrorMessage"
+          style="background: rgba(235, 68, 90, 0.08); border: 1px solid rgba(235, 68, 90, 0.2); border-radius: 12px; color: var(--ion-color-danger); font-size: 12px; padding: 10px; margin-bottom: 16px; text-align: center; font-weight: 600; line-height: 1.4;">
           {{ editPlayerErrorMessage }}
         </div>
 
-        <div style="border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; background: rgba(255,255,255,0.02); padding: 4px 12px; height: 48px; display: flex; align-items: center; margin-bottom: 20px;">
-          <input type="text" [(ngModel)]="editPlayerName" placeholder="Player name..." style="width: 100%; background: transparent; border: none; outline: none; color: #fff; font-weight: 600; font-size: 14px;" />
+        <div
+          style="border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; background: rgba(255,255,255,0.02); padding: 4px 12px; height: 48px; display: flex; align-items: center; margin-bottom: 20px;">
+          <input type="text" [(ngModel)]="editPlayerName" placeholder="Player name..."
+            style="width: 100%; background: transparent; border: none; outline: none; color: #fff; font-weight: 600; font-size: 14px;" />
         </div>
         <div style="display: flex; flex-direction: column; gap: 8px;">
-          <button (click)="savePlayerName()" [disabled]="!editPlayerName.trim()" style="background: var(--player-one-color); border: none; border-radius: 12px; color: #fff; height: 44px; font-weight: 700; font-size: 14px; cursor: pointer;" class="clickable">
+          <button (click)="savePlayerName()" [disabled]="!editPlayerName.trim()"
+            style="background: var(--player-one-color); border: none; border-radius: 12px; color: #fff; height: 44px; font-weight: 700; font-size: 14px; cursor: pointer;"
+            class="clickable">
             Save Changes
           </button>
-          <button (click)="showEditPlayerModal = false" style="background: transparent; border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; color: var(--ion-color-medium); height: 44px; font-weight: 600; font-size: 14px; cursor: pointer;" class="clickable">
+          <button (click)="showEditPlayerModal = false"
+            style="background: transparent; border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; color: var(--ion-color-medium); height: 44px; font-weight: 600; font-size: 14px; cursor: pointer;"
+            class="clickable">
             Cancel
           </button>
         </div>
@@ -542,19 +656,25 @@
   </ion-modal>
 
   <!-- 5. DELETE PLAYER PROFILE MODAL -->
-  <ion-modal [isOpen]="showDeletePlayerModal" (didDismiss)="showDeletePlayerModal = false" style="--height: auto; --border-radius: 20px; --width: 90%; --max-width: 340px; --background: var(--app-bg); border: 1px solid rgba(255,255,255,0.15);">
+  <ion-modal [isOpen]="showDeletePlayerModal" (didDismiss)="showDeletePlayerModal = false"
+    style="--height: auto; --border-radius: 20px; --width: 90%; --max-width: 340px; --background: var(--app-bg); border: 1px solid rgba(255,255,255,0.15);">
     <ng-template>
       <div class="glass-panel" style="padding: 24px; border: none; border-radius: 0; text-align: center;">
         <div style="font-size: 32px; margin-bottom: 8px;">⚠️</div>
         <h3 style="font-weight: 800; font-size: 18px; margin: 0 0 8px 0; color: #fff;">Delete Player Profile?</h3>
         <p style="color: var(--ion-color-medium); font-size: 13px; margin: 0 0 24px 0; line-height: 1.4;">
-          Are you sure you want to delete the profile for <strong>{{ getFirstName(getSelectedPlayerName()) }}</strong>? Past games in history will remain, but stats will no longer be compiled for this profile name.
+          Are you sure you want to delete the profile for <strong>{{ getFirstName(getSelectedPlayerName()) }}</strong>?
+          Past games in history will remain, but stats will no longer be compiled for this profile name.
         </p>
         <div style="display: flex; flex-direction: column; gap: 8px;">
-          <button (click)="confirmDeletePlayer()" style="background: var(--ion-color-danger); border: none; border-radius: 12px; color: #fff; height: 44px; font-weight: 700; font-size: 14px; cursor: pointer;" class="clickable">
+          <button (click)="confirmDeletePlayer()"
+            style="background: var(--ion-color-danger); border: none; border-radius: 12px; color: #fff; height: 44px; font-weight: 700; font-size: 14px; cursor: pointer;"
+            class="clickable">
             Delete Profile
           </button>
-          <button (click)="showDeletePlayerModal = false" style="background: transparent; border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; color: var(--ion-color-medium); height: 44px; font-weight: 600; font-size: 14px; cursor: pointer;" class="clickable">
+          <button (click)="showDeletePlayerModal = false"
+            style="background: transparent; border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; color: var(--ion-color-medium); height: 44px; font-weight: 600; font-size: 14px; cursor: pointer;"
+            class="clickable">
             Cancel
           </button>
         </div>
@@ -566,15 +686,17 @@
   <!-- ==========================================
        CLOUD SYNC & AUTH MODAL
        ========================================== -->
-  <ion-modal [isOpen]="showCloudModal" (didDismiss)="showCloudModal = false" style="--height: auto; --border-radius: 20px; --width: 95%; --max-width: 360px; --background: var(--app-bg); border: 1px solid rgba(255,255,255,0.15);">
+  <ion-modal [isOpen]="showCloudModal" (didDismiss)="showCloudModal = false"
+    style="--height: auto; --border-radius: 20px; --width: 95%; --max-width: 360px; --background: var(--app-bg); border: 1px solid rgba(255,255,255,0.15);">
     <ng-template>
-      <div class="glass-panel" style="padding: 24px; border: none; border-radius: 0; display: flex; flex-direction: column;">
-        
+      <div class="glass-panel"
+        style="padding: 24px; border: none; border-radius: 0; display: flex; flex-direction: column;">
+
         <!-- Header -->
         <div style="text-align: center; margin-bottom: 20px;">
-          <ion-icon [name]="currentUser && !currentUser.is_anonymous ? 'cloud-done-outline' : 'cloud-offline-outline'" 
-                    [style.color]="currentUser && !currentUser.is_anonymous ? '#10b981' : 'var(--ion-color-warning)'" 
-                    style="font-size: 48px; margin-bottom: 8px;"></ion-icon>
+          <ion-icon [name]="currentUser && !currentUser.is_anonymous ? 'cloud-done-outline' : 'cloud-offline-outline'"
+            [style.color]="currentUser && !currentUser.is_anonymous ? '#10b981' : 'var(--ion-color-warning)'"
+            style="font-size: 48px; margin-bottom: 8px;"></ion-icon>
           <h3 style="font-weight: 800; font-size: 20px; margin: 0 0 6px 0; color: #fff;">Cloud Sync & Backup</h3>
           <p style="color: var(--ion-color-medium); font-size: 12px; margin: 0; line-height: 1.4;">
             Keep your games, players, and stats backed up and synced across all your devices.
@@ -582,19 +704,23 @@
         </div>
 
         <!-- Error Message Display -->
-        <div *ngIf="cloudErrorMessage" style="background: rgba(235, 68, 90, 0.08); border: 1px solid rgba(235, 68, 90, 0.2); border-radius: 12px; color: var(--ion-color-danger); font-size: 12px; padding: 10px; margin-bottom: 16px; text-align: center; font-weight: 600; line-height: 1.4;">
+        <div *ngIf="cloudErrorMessage"
+          style="background: rgba(235, 68, 90, 0.08); border: 1px solid rgba(235, 68, 90, 0.2); border-radius: 12px; color: var(--ion-color-danger); font-size: 12px; padding: 10px; margin-bottom: 16px; text-align: center; font-weight: 600; line-height: 1.4;">
           {{ cloudErrorMessage }}
         </div>
 
         <!-- Success Message Display -->
-        <div *ngIf="cloudSuccessMessage" style="background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.2); border-radius: 12px; color: #10b981; font-size: 12px; padding: 10px; margin-bottom: 16px; text-align: center; font-weight: 600; line-height: 1.4;">
+        <div *ngIf="cloudSuccessMessage"
+          style="background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.2); border-radius: 12px; color: #10b981; font-size: 12px; padding: 10px; margin-bottom: 16px; text-align: center; font-weight: 600; line-height: 1.4;">
           {{ cloudSuccessMessage }}
         </div>
 
         <!-- LOGGED IN STATE (Permanent Account) -->
         <div *ngIf="currentUser && !currentUser.is_anonymous && cloudMode !== 'reset'" style="text-align: center;">
-          <div style="background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.2); border-radius: 12px; padding: 14px; margin-bottom: 20px;">
-            <div style="font-size: 11px; font-weight: 800; color: #10b981; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;">
+          <div
+            style="background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.2); border-radius: 12px; padding: 14px; margin-bottom: 20px;">
+            <div
+              style="font-size: 11px; font-weight: 800; color: #10b981; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;">
               Backup Active
             </div>
             <div style="font-size: 13px; font-weight: 700; color: #fff; word-break: break-all;">
@@ -603,12 +729,16 @@
           </div>
 
           <div style="display: flex; flex-direction: column; gap: 8px;">
-            <button (click)="triggerManualSync()" style="background: var(--player-one-color); border: none; border-radius: 12px; color: #fff; height: 44px; font-weight: 700; font-size: 14px; display: flex; align-items: center; justify-content: center; gap: 6px;" class="clickable">
+            <button (click)="triggerManualSync()"
+              style="background: var(--player-one-color); border: none; border-radius: 12px; color: #fff; height: 44px; font-weight: 700; font-size: 14px; display: flex; align-items: center; justify-content: center; gap: 6px;"
+              class="clickable">
               <ion-icon name="cloud-upload-outline" style="font-size: 18px;"></ion-icon>
               Sync Local Storage Data
             </button>
-            
-            <button (click)="onSignOut()" style="background: transparent; border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; color: var(--ion-color-danger); height: 44px; font-weight: 700; font-size: 14px;" class="clickable">
+
+            <button (click)="onSignOut()"
+              style="background: transparent; border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; color: var(--ion-color-danger); height: 44px; font-weight: 700; font-size: 14px;"
+              class="clickable">
               Sign Out
             </button>
           </div>
@@ -619,31 +749,37 @@
           <div style="font-size: 40px; margin-bottom: 12px;">✉️</div>
           <h4 style="font-weight: 800; font-size: 18px; margin: 0 0 10px 0; color: #fff;">Verify Your Email</h4>
           <p style="color: var(--ion-color-medium); font-size: 13px; line-height: 1.5; margin: 0 0 24px 0;">
-            We have sent a verification link to <strong>{{ cloudEmail }}</strong>. 
+            We have sent a verification link to <strong>{{ cloudEmail }}</strong>.
             Please open the email, verify your account, and then click below to sign in.
           </p>
 
-          <button (click)="switchToSignIn()" style="background: var(--player-one-color); border: none; border-radius: 12px; color: #fff; height: 44px; font-weight: 700; font-size: 14px; width: 100%;" class="clickable">
+          <button (click)="switchToSignIn()"
+            style="background: var(--player-one-color); border: none; border-radius: 12px; color: #fff; height: 44px; font-weight: 700; font-size: 14px; width: 100%;"
+            class="clickable">
             Got it, Go to Sign In
           </button>
         </div>
 
         <!-- ANONYMOUS OR NOT LOGGED IN STATE -->
         <div *ngIf="(!currentUser || currentUser.is_anonymous) && !showEmailVerifyNotice && cloudMode !== 'reset'">
-          
+
           <!-- Normal Sign In / Sign Up Form -->
           <div *ngIf="cloudMode === 'signup' || cloudMode === 'signin'">
-            <div style="background: rgba(255, 196, 9, 0.08); border: 1px solid rgba(255, 196, 9, 0.2); border-radius: 12px; padding: 12px; margin-bottom: 20px; text-align: center;">
-              <div style="font-size: 10px; font-weight: 800; color: var(--ion-color-warning); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;">
+            <div
+              style="background: rgba(255, 196, 9, 0.08); border: 1px solid rgba(255, 196, 9, 0.2); border-radius: 12px; padding: 12px; margin-bottom: 20px; text-align: center;">
+              <div
+                style="font-size: 10px; font-weight: 800; color: var(--ion-color-warning); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;">
                 Local Session Only
               </div>
               <div style="font-size: 12px; color: #eee; line-height: 1.4;">
-                Your history is currently anonymous. Register a cloud account to back up and sync across multiple devices.
+                Your history is currently anonymous. Register a cloud account to back up and sync across multiple
+                devices.
               </div>
             </div>
 
             <!-- Segment Selector -->
-            <ion-segment [(ngModel)]="cloudMode" mode="ios" style="--background: rgba(255,255,255,0.03); height: 36px; margin-bottom: 16px;">
+            <ion-segment [(ngModel)]="cloudMode" mode="ios"
+              style="--background: rgba(255,255,255,0.03); height: 36px; margin-bottom: 16px;">
               <ion-segment-button value="signup">
                 <ion-label style="font-size: 11px; font-weight: 700;">Create Account</ion-label>
               </ion-segment-button>
@@ -653,34 +789,47 @@
             </ion-segment>
 
             <!-- Email Input -->
-            <div style="border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; background: rgba(255,255,255,0.02); padding: 0 12px; height: 48px; display: flex; align-items: center; margin-bottom: 12px;">
-              <ion-icon name="mail-outline" style="color: var(--ion-color-medium); font-size: 18px; margin-right: 10px;"></ion-icon>
-              <input type="email" [(ngModel)]="cloudEmail" placeholder="Email address..." style="width: 100%; background: transparent; border: none; outline: none; color: #fff; font-weight: 600; font-size: 14px;" />
+            <div
+              style="border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; background: rgba(255,255,255,0.02); padding: 0 12px; height: 48px; display: flex; align-items: center; margin-bottom: 12px;">
+              <ion-icon name="mail-outline"
+                style="color: var(--ion-color-medium); font-size: 18px; margin-right: 10px;"></ion-icon>
+              <input type="email" [(ngModel)]="cloudEmail" placeholder="Email address..."
+                style="width: 100%; background: transparent; border: none; outline: none; color: #fff; font-weight: 600; font-size: 14px;" />
             </div>
 
             <!-- Password Input -->
-            <div style="border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; background: rgba(255,255,255,0.02); padding: 0 12px; height: 48px; display: flex; align-items: center; margin-bottom: 8px;">
-              <ion-icon name="lock-closed-outline" style="color: var(--ion-color-medium); font-size: 18px; margin-right: 10px;"></ion-icon>
-              <input type="password" [(ngModel)]="cloudPassword" placeholder="Password..." style="width: 100%; background: transparent; border: none; outline: none; color: #fff; font-weight: 600; font-size: 14px;" />
+            <div
+              style="border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; background: rgba(255,255,255,0.02); padding: 0 12px; height: 48px; display: flex; align-items: center; margin-bottom: 8px;">
+              <ion-icon name="lock-closed-outline"
+                style="color: var(--ion-color-medium); font-size: 18px; margin-right: 10px;"></ion-icon>
+              <input type="password" [(ngModel)]="cloudPassword" placeholder="Password..."
+                style="width: 100%; background: transparent; border: none; outline: none; color: #fff; font-weight: 600; font-size: 14px;" />
             </div>
 
             <!-- Forgot Password link inside Sign In view -->
-            <div *ngIf="cloudMode === 'signin'" style="display: flex; justify-content: flex-end; margin-bottom: 20px; padding: 0 4px;">
-              <button (click)="switchToForgot()" style="background: transparent; border: none; color: var(--player-one-color); font-size: 12px; font-weight: 700; cursor: pointer; padding: 4px;" class="clickable">
+            <div *ngIf="cloudMode === 'signin'"
+              style="display: flex; justify-content: flex-end; margin-bottom: 20px; padding: 0 4px;">
+              <button (click)="switchToForgot()"
+                style="background: transparent; border: none; color: var(--player-one-color); font-size: 12px; font-weight: 700; cursor: pointer; padding: 4px;"
+                class="clickable">
                 Forgot Password?
               </button>
             </div>
-            
+
             <div *ngIf="cloudMode === 'signup'" style="margin-bottom: 20px;"></div>
 
             <!-- Submit Actions -->
             <div style="display: flex; flex-direction: column; gap: 8px;">
-              <button (click)="onCloudAction()" [disabled]="!cloudEmail.trim() || !cloudPassword.trim()" style="background: var(--player-one-color); border: none; border-radius: 12px; color: #fff; height: 44px; font-weight: 700; font-size: 14px; cursor: pointer;" class="clickable">
-                {{ cloudMode === 'signup' ? 'Secure My Data' : 'Sign In & Sync' }}
+              <button (click)="onCloudAction()" [disabled]="!cloudEmail.trim() || !cloudPassword.trim()"
+                style="background: var(--player-one-color); border: none; border-radius: 12px; color: #fff; height: 44px; font-weight: 700; font-size: 14px; cursor: pointer;"
+                class="clickable">
+                {{ cloudMode === 'signup' ? 'Verify My Email' : 'Sign In & Sync' }}
               </button>
-              
+
               <!-- Manual Sync for Anonymous Users -->
-              <button *ngIf="currentUser && currentUser.is_anonymous" (click)="triggerManualSync()" style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; color: #fff; height: 44px; font-weight: 600; font-size: 13px;" class="clickable">
+              <button *ngIf="currentUser && currentUser.is_anonymous" (click)="triggerManualSync()"
+                style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; color: #fff; height: 44px; font-weight: 600; font-size: 13px;"
+                class="clickable">
                 Force Upload Local Data
               </button>
             </div>
@@ -696,17 +845,24 @@
             </div>
 
             <!-- Email Input -->
-            <div style="border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; background: rgba(255,255,255,0.02); padding: 0 12px; height: 48px; display: flex; align-items: center; margin-bottom: 20px;">
-              <ion-icon name="mail-outline" style="color: var(--ion-color-medium); font-size: 18px; margin-right: 10px;"></ion-icon>
-              <input type="email" [(ngModel)]="cloudEmail" placeholder="Email address..." style="width: 100%; background: transparent; border: none; outline: none; color: #fff; font-weight: 600; font-size: 14px;" />
+            <div
+              style="border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; background: rgba(255,255,255,0.02); padding: 0 12px; height: 48px; display: flex; align-items: center; margin-bottom: 20px;">
+              <ion-icon name="mail-outline"
+                style="color: var(--ion-color-medium); font-size: 18px; margin-right: 10px;"></ion-icon>
+              <input type="email" [(ngModel)]="cloudEmail" placeholder="Email address..."
+                style="width: 100%; background: transparent; border: none; outline: none; color: #fff; font-weight: 600; font-size: 14px;" />
             </div>
 
             <!-- Actions -->
             <div style="display: flex; flex-direction: column; gap: 8px;">
-              <button (click)="sendResetEmail()" [disabled]="!cloudEmail.trim()" style="background: var(--player-one-color); border: none; border-radius: 12px; color: #fff; height: 44px; font-weight: 700; font-size: 14px; cursor: pointer;" class="clickable">
+              <button (click)="sendResetEmail()" [disabled]="!cloudEmail.trim()"
+                style="background: var(--player-one-color); border: none; border-radius: 12px; color: #fff; height: 44px; font-weight: 700; font-size: 14px; cursor: pointer;"
+                class="clickable">
                 Send Reset Link
               </button>
-              <button (click)="switchToSignIn()" style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; color: #fff; height: 44px; font-weight: 600; font-size: 13px;" class="clickable">
+              <button (click)="switchToSignIn()"
+                style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; color: #fff; height: 44px; font-weight: 600; font-size: 13px;"
+                class="clickable">
                 Back to Log In
               </button>
             </div>
@@ -723,29 +879,41 @@
           </div>
 
           <!-- New Password Input -->
-          <div style="border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; background: rgba(255,255,255,0.02); padding: 0 12px; height: 48px; display: flex; align-items: center; margin-bottom: 12px;">
-            <ion-icon name="lock-closed-outline" style="color: var(--ion-color-medium); font-size: 18px; margin-right: 10px;"></ion-icon>
-            <input type="password" [(ngModel)]="cloudPassword" placeholder="New password..." style="width: 100%; background: transparent; border: none; outline: none; color: #fff; font-weight: 600; font-size: 14px;" />
+          <div
+            style="border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; background: rgba(255,255,255,0.02); padding: 0 12px; height: 48px; display: flex; align-items: center; margin-bottom: 12px;">
+            <ion-icon name="lock-closed-outline"
+              style="color: var(--ion-color-medium); font-size: 18px; margin-right: 10px;"></ion-icon>
+            <input type="password" [(ngModel)]="cloudPassword" placeholder="New password..."
+              style="width: 100%; background: transparent; border: none; outline: none; color: #fff; font-weight: 600; font-size: 14px;" />
           </div>
 
           <!-- Confirm Password Input -->
-          <div style="border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; background: rgba(255,255,255,0.02); padding: 0 12px; height: 48px; display: flex; align-items: center; margin-bottom: 20px;">
-            <ion-icon name="checkbox-outline" style="color: var(--ion-color-medium); font-size: 18px; margin-right: 10px;"></ion-icon>
-            <input type="password" [(ngModel)]="cloudConfirmPassword" placeholder="Confirm password..." style="width: 100%; background: transparent; border: none; outline: none; color: #fff; font-weight: 600; font-size: 14px;" />
+          <div
+            style="border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; background: rgba(255,255,255,0.02); padding: 0 12px; height: 48px; display: flex; align-items: center; margin-bottom: 20px;">
+            <ion-icon name="checkbox-outline"
+              style="color: var(--ion-color-medium); font-size: 18px; margin-right: 10px;"></ion-icon>
+            <input type="password" [(ngModel)]="cloudConfirmPassword" placeholder="Confirm password..."
+              style="width: 100%; background: transparent; border: none; outline: none; color: #fff; font-weight: 600; font-size: 14px;" />
           </div>
 
           <!-- Actions -->
           <div style="display: flex; flex-direction: column; gap: 8px;">
-            <button (click)="resetPassword()" [disabled]="!cloudPassword.trim() || !cloudConfirmPassword.trim()" style="background: var(--player-one-color); border: none; border-radius: 12px; color: #fff; height: 44px; font-weight: 700; font-size: 14px; cursor: pointer;" class="clickable">
+            <button (click)="resetPassword()" [disabled]="!cloudPassword.trim() || !cloudConfirmPassword.trim()"
+              style="background: var(--player-one-color); border: none; border-radius: 12px; color: #fff; height: 44px; font-weight: 700; font-size: 14px; cursor: pointer;"
+              class="clickable">
               Update Password
             </button>
-            <button (click)="supabaseService.passwordRecovery$.next(false); switchToSignIn();" style="background: transparent; border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; color: var(--ion-color-danger); height: 44px; font-weight: 600; font-size: 13px;" class="clickable">
+            <button (click)="supabaseService.passwordRecovery$.next(false); switchToSignIn();"
+              style="background: transparent; border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; color: var(--ion-color-danger); height: 44px; font-weight: 600; font-size: 13px;"
+              class="clickable">
               Cancel Recovery
             </button>
           </div>
         </div>
 
-        <button (click)="showCloudModal = false" style="background: transparent; border: none; color: var(--ion-color-medium); height: 36px; font-weight: 600; font-size: 13px; margin-top: 12px;" class="clickable">
+        <button (click)="showCloudModal = false"
+          style="background: transparent; border: none; color: var(--ion-color-medium); height: 36px; font-weight: 600; font-size: 13px; margin-top: 12px;"
+          class="clickable">
           Close
         </button>
 
@@ -754,18 +922,21 @@
   </ion-modal>
 
   <!-- GAME SETTINGS MODAL -->
-  <ion-modal [isOpen]="showGameSettingsModal" (didDismiss)="showGameSettingsModal = false" style="--height: auto; --border-radius: 20px; --width: 90%; --max-width: 340px; --background: var(--app-bg); border: 1px solid rgba(255,255,255,0.15);">
+  <ion-modal [isOpen]="showGameSettingsModal" (didDismiss)="showGameSettingsModal = false"
+    style="--height: auto; --border-radius: 20px; --width: 90%; --max-width: 340px; --background: var(--app-bg); border: 1px solid rgba(255,255,255,0.15);">
     <ng-template>
       <div class="glass-panel" style="padding: 24px; border: none; border-radius: 0;" *ngIf="selectedGameForSettings">
         <div style="text-align: center; margin-bottom: 20px;">
-          <ion-icon name="settings-outline" style="font-size: 40px; color: var(--player-one-color); margin-bottom: 8px;"></ion-icon>
+          <ion-icon name="settings-outline"
+            style="font-size: 40px; color: var(--player-one-color); margin-bottom: 8px;"></ion-icon>
           <h3 style="font-weight: 800; font-size: 18px; margin: 0 0 4px 0; color: #fff;">Game Settings</h3>
           <p style="color: var(--ion-color-medium); font-size: 11px; margin: 0; line-height: 1.4;">
             Configure statistics inclusion and export options for this match.
           </p>
         </div>
 
-        <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; padding: 14px; margin-bottom: 20px;">
+        <div
+          style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; padding: 14px; margin-bottom: 20px;">
           <!-- Stats Toggle Item -->
           <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
             <div style="text-align: left; margin-right: 12px;">
@@ -774,10 +945,13 @@
                 Controls whether this game affects win rates, average scores, and records.
               </div>
             </div>
-            <ion-checkbox [checked]="!selectedGameForSettings.excluded" (ionChange)="toggleGameStatsInclusion(selectedGameForSettings)" mode="md" style="--size: 20px; --border-radius: 6px;"></ion-checkbox>
+            <ion-checkbox [checked]="!selectedGameForSettings.excluded"
+              (ionChange)="toggleGameStatsInclusion(selectedGameForSettings)" mode="md"
+              style="--size: 20px; --border-radius: 6px;"></ion-checkbox>
           </div>
-          
-          <div style="border-top: 1px solid rgba(255,255,255,0.05); padding-top: 12px; display: flex; align-items: center; justify-content: space-between;">
+
+          <div
+            style="border-top: 1px solid rgba(255,255,255,0.05); padding-top: 12px; display: flex; align-items: center; justify-content: space-between;">
             <div style="font-size: 12px; color: var(--ion-color-medium);">
               Game Date: {{ selectedGameForSettings.date | date:'shortDate' }}
             </div>
@@ -788,12 +962,16 @@
         </div>
 
         <div style="display: flex; flex-direction: column; gap: 8px;">
-          <button (click)="downloadSingleGame(selectedGameForSettings, $event); showGameSettingsModal = false;" style="background: var(--player-one-color); border: none; border-radius: 12px; color: #fff; height: 44px; font-weight: 700; font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;" class="clickable">
+          <button (click)="downloadSingleGame(selectedGameForSettings, $event); showGameSettingsModal = false;"
+            style="background: var(--player-one-color); border: none; border-radius: 12px; color: #fff; height: 44px; font-weight: 700; font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;"
+            class="clickable">
             <ion-icon name="download-outline" style="font-size: 18px;"></ion-icon>
             Download Game JSON
           </button>
-          
-          <button (click)="showGameSettingsModal = false" style="background: transparent; border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; color: var(--ion-color-medium); height: 44px; font-weight: 600; font-size: 14px; cursor: pointer;" class="clickable">
+
+          <button (click)="showGameSettingsModal = false"
+            style="background: transparent; border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; color: var(--ion-color-medium); height: 44px; font-weight: 600; font-size: 14px; cursor: pointer;"
+            class="clickable">
             Close
           </button>
         </div>
@@ -802,19 +980,26 @@
   </ion-modal>
 
   <!-- BULK DELETE CONFIRMATION MODAL -->
-  <ion-modal [isOpen]="showBulkDeleteConfirm" (didDismiss)="showBulkDeleteConfirm = false" style="--height: auto; --border-radius: 20px; --width: 90%; --max-width: 340px; --background: var(--app-bg); border: 1px solid rgba(255,255,255,0.15);">
+  <ion-modal [isOpen]="showBulkDeleteConfirm" (didDismiss)="showBulkDeleteConfirm = false"
+    style="--height: auto; --border-radius: 20px; --width: 90%; --max-width: 340px; --background: var(--app-bg); border: 1px solid rgba(255,255,255,0.15);">
     <ng-template>
       <div class="glass-panel" style="padding: 24px; border: none; border-radius: 0; text-align: center;">
         <div style="font-size: 32px; margin-bottom: 8px;">🗑️</div>
-        <h3 style="font-weight: 800; font-size: 18px; margin: 0 0 8px 0; color: #fff;">Delete {{ selectedGameIds.size }} Matches?</h3>
+        <h3 style="font-weight: 800; font-size: 18px; margin: 0 0 8px 0; color: #fff;">Delete {{ selectedGameIds.size }}
+          Matches?</h3>
         <p style="color: var(--ion-color-medium); font-size: 13px; margin: 0 0 24px 0; line-height: 1.4;">
-          Are you sure you want to permanently delete all selected matches from history? Player statistics will update automatically.
+          Are you sure you want to permanently delete all selected matches from history? Player statistics will update
+          automatically.
         </p>
         <div style="display: flex; flex-direction: column; gap: 8px;">
-          <button (click)="deleteSelectedGames()" style="background: var(--ion-color-danger); border: none; border-radius: 12px; color: #fff; height: 44px; font-weight: 700; font-size: 14px; cursor: pointer;" class="clickable">
+          <button (click)="deleteSelectedGames()"
+            style="background: var(--ion-color-danger); border: none; border-radius: 12px; color: #fff; height: 44px; font-weight: 700; font-size: 14px; cursor: pointer;"
+            class="clickable">
             Delete Games
           </button>
-          <button (click)="showBulkDeleteConfirm = false" style="background: transparent; border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; color: var(--ion-color-medium); height: 44px; font-weight: 600; font-size: 14px; cursor: pointer;" class="clickable">
+          <button (click)="showBulkDeleteConfirm = false"
+            style="background: transparent; border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; color: var(--ion-color-medium); height: 44px; font-weight: 600; font-size: 14px; cursor: pointer;"
+            class="clickable">
             Cancel
           </button>
         </div>
@@ -823,28 +1008,38 @@
   </ion-modal>
 
   <!-- MERGE LOCAL PLAYERS MODAL (ON AUTH SYNC) -->
-  <ion-modal [isOpen]="showMergeModal" style="--height: 90%; --max-height: 520px; --border-radius: 20px; --width: 90%; --max-width: 365px; --background: var(--app-bg); border: 1px solid rgba(255,255,255,0.15);">
+  <ion-modal [isOpen]="showMergeModal"
+    style="--height: 90%; --max-height: 520px; --border-radius: 20px; --width: 90%; --max-width: 365px; --background: var(--app-bg); border: 1px solid rgba(255,255,255,0.15);">
     <ng-template>
-      <div class="glass-panel" style="padding: 20px; border: none; border-radius: 0; display: flex; flex-direction: column; height: 100%; overflow: hidden;">
-        <h3 style="font-weight: 800; font-size: 18px; margin: 0 0 4px 0; color: #fff; text-align: center;">Merge Local Players</h3>
-        <p style="color: var(--ion-color-medium); font-size: 11px; text-align: center; margin: 0 0 16px 0; line-height: 1.4;">
-          Your local profiles don't match your cloud account profiles. Map each local player to an existing profile in your cloud account or create it as a new profile.
+      <div class="glass-panel"
+        style="padding: 20px; border: none; border-radius: 0; display: flex; flex-direction: column; height: 100%; overflow: hidden;">
+        <h3 style="font-weight: 800; font-size: 18px; margin: 0 0 4px 0; color: #fff; text-align: center;">Merge Local
+          Players</h3>
+        <p
+          style="color: var(--ion-color-medium); font-size: 11px; text-align: center; margin: 0 0 16px 0; line-height: 1.4;">
+          Your local profiles don't match your cloud account profiles. Map each local player to an existing profile in
+          your cloud account or create it as a new profile.
         </p>
 
         <!-- Error Message Display inside Merge Modal -->
-        <div *ngIf="mergeErrorMessage" style="background: rgba(235, 68, 90, 0.08); border: 1px solid rgba(235, 68, 90, 0.2); border-radius: 12px; color: var(--ion-color-danger); font-size: 12px; padding: 10px; margin-bottom: 16px; text-align: center; font-weight: 600; line-height: 1.4;">
+        <div *ngIf="mergeErrorMessage"
+          style="background: rgba(235, 68, 90, 0.08); border: 1px solid rgba(235, 68, 90, 0.2); border-radius: 12px; color: var(--ion-color-danger); font-size: 12px; padding: 10px; margin-bottom: 16px; text-align: center; font-weight: 600; line-height: 1.4;">
           {{ mergeErrorMessage }}
         </div>
 
         <!-- Scrollable list of mappings -->
         <div style="flex: 1; overflow-y: auto; padding-right: 4px; margin-bottom: 16px;">
-          <div *ngFor="let mapping of mergeMappings" style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; padding: 12px; margin-bottom: 12px;">
-            <div style="font-size: 10px; font-weight: 800; color: var(--ion-color-medium); text-transform: uppercase; margin-bottom: 8px; letter-spacing: 0.5px;">
-              Local Profile: <span style="color: #fff; font-weight: 700; font-size: 12px;">{{ mapping.localName }}</span>
+          <div *ngFor="let mapping of mergeMappings"
+            style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; padding: 12px; margin-bottom: 12px;">
+            <div
+              style="font-size: 10px; font-weight: 800; color: var(--ion-color-medium); text-transform: uppercase; margin-bottom: 8px; letter-spacing: 0.5px;">
+              Local Profile: <span style="color: #fff; font-weight: 700; font-size: 12px;">{{ mapping.localName
+                }}</span>
             </div>
 
             <!-- Segment to choose mapping mode -->
-            <ion-segment [(ngModel)]="mapping.mapType" mode="ios" style="--background: rgba(0,0,0,0.2); height: 28px; margin-bottom: 8px;">
+            <ion-segment [(ngModel)]="mapping.mapType" mode="ios"
+              style="--background: rgba(0,0,0,0.2); height: 28px; margin-bottom: 8px;">
               <ion-segment-button value="existing">
                 <ion-label style="font-size: 9px; font-weight: 700;">Merge with Cloud</ion-label>
               </ion-segment-button>
@@ -855,8 +1050,10 @@
 
             <!-- Choice 1: Existing Player Select -->
             <div *ngIf="mapping.mapType === 'existing'">
-              <div style="border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; background: rgba(0,0,0,0.15); height: 38px; display: flex; align-items: center; padding: 0 8px;">
-                <ion-select [(ngModel)]="mapping.selectedExistingId" interface="popover" style="width: 100%; color: #fff; font-weight: 600; font-size: 12px; --padding-start: 4px;">
+              <div
+                style="border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; background: rgba(0,0,0,0.15); height: 38px; display: flex; align-items: center; padding: 0 8px;">
+                <ion-select [(ngModel)]="mapping.selectedExistingId" interface="popover"
+                  style="width: 100%; color: #fff; font-weight: 600; font-size: 12px; --padding-start: 4px;">
                   <ion-select-option *ngFor="let p of cloudMergePlayers" [value]="p.id">{{ p.name }}</ion-select-option>
                 </ion-select>
               </div>
@@ -864,8 +1061,10 @@
 
             <!-- Choice 2: New Player Name Input -->
             <div *ngIf="mapping.mapType === 'new'">
-              <div style="border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; background: rgba(0,0,0,0.15); padding: 4px 10px; height: 38px; display: flex; align-items: center;">
-                <input type="text" [(ngModel)]="mapping.newName" placeholder="New player name..." style="width: 100%; background: transparent; border: none; outline: none; color: #fff; font-weight: 600; font-size: 12px;" />
+              <div
+                style="border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; background: rgba(0,0,0,0.15); padding: 4px 10px; height: 38px; display: flex; align-items: center;">
+                <input type="text" [(ngModel)]="mapping.newName" placeholder="New player name..."
+                  style="width: 100%; background: transparent; border: none; outline: none; color: #fff; font-weight: 600; font-size: 12px;" />
               </div>
             </div>
           </div>
@@ -873,7 +1072,9 @@
 
         <!-- Action button -->
         <div style="display: flex; flex-direction: column; gap: 8px; margin-top: auto;">
-          <button (click)="confirmPlayerMerge()" style="background: var(--player-one-color); border: none; border-radius: 12px; color: #fff; height: 44px; font-weight: 700; font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;" class="clickable">
+          <button (click)="confirmPlayerMerge()"
+            style="background: var(--player-one-color); border: none; border-radius: 12px; color: #fff; height: 44px; font-weight: 700; font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;"
+            class="clickable">
             <ion-icon name="checkmark-outline" style="font-size: 18px;"></ion-icon>
             Confirm Sync & Merge
           </button>

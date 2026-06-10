@@ -79,7 +79,10 @@ export class SupabaseService {
   async signUp(email: string, password: string): Promise<User | null> {
     const { data, error } = await this.supabase.auth.signUp({
       email,
-      password
+      password,
+      options: {
+        emailRedirectTo: window.location.origin + '/tabs/tab3'
+      }
     });
     if (error) throw error;
     return data.user;
