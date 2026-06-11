@@ -78,4 +78,5 @@ Thumbs.db
 
 # Android release keystore
 /android/app/release.keystore
+/android/keystore.properties
 
