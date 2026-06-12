@@ -13,8 +13,9 @@ android {
         applicationId "cribbage_score.myapp"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 11
-        versionName "0.0.11"
+        def runNumber = System.getenv("GITHUB_RUN_NUMBER") ? System.getenv("GITHUB_RUN_NUMBER").toInteger() : 0
+        versionCode 11 + runNumber
+        versionName "0.0.11" + (runNumber > 0 ? ".${runNumber}" : "")
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {
              // Files and dirs to omit from the packaged assets dir, modified to accommodate modern web apps.
