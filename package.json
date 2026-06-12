@@ -12,6 +12,10 @@
     "lint": "ng lint",
     "build:android": "node .agents/skills/build/scripts/build.js"
   },
+  "overrides": {
+    "chokidar": "5.0.0",
+    "readdirp": "5.0.0"
+  },
   "private": true,
   "dependencies": {
     "@angular/animations": "^21.2.14",
