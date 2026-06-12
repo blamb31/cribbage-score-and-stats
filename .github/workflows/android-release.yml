@@ -50,9 +50,8 @@ jobs:
       - name: Sign App Bundle
         env:
           KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
-          KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
         run: |
-          jarsigner -verbose -sigalg SHA256withRSA -digestalg SHA-256 -keystore android/app/release.keystore -storepass "$KEYSTORE_PASSWORD" android/app/build/outputs/bundle/release/app-release.aab "$KEY_ALIAS"
+          jarsigner -verbose -sigalg SHA256withRSA -digestalg SHA-256 -keystore android/app/release.keystore -storepass "$KEYSTORE_PASSWORD" android/app/build/outputs/bundle/release/app-release.aab "cribbage-key"
 
       - name: Upload to Google Play Console
         uses: r0adkll/upload-google-play@v1
