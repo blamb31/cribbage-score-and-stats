@@ -31,6 +31,9 @@ jobs:
         run: npm ci
 
       - name: Build Web Application
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
         run: npm run build
 
       - name: Sync Capacitor to Android

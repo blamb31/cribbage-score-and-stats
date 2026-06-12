@@ -9,7 +9,8 @@ import { PlayerProfile, CompletedGame, ScoreLog, GameState } from './game.interf
   providedIn: 'root'
 })
 export class SupabaseService {
-  private supabase: SupabaseClient;
+  private supabase!: SupabaseClient;
+  public isConfigured = false;
   
   // Track the logged in user state
   private userSub = new BehaviorSubject<User | null>(null);
@@ -22,15 +23,40 @@ export class SupabaseService {
     // Initialize the Supabase Client
     const supabaseUrl = (environment as any).supabaseUrl || 'YOUR_SUPABASE_URL';
     const supabaseKey = (environment as any).supabaseKey || 'YOUR_SUPABASE_ANON_KEY';
-    this.supabase = createClient(supabaseUrl, supabaseKey, {
+    
+    this.isConfigured = !!supabaseUrl && 
+                        supabaseUrl.startsWith('http') && 
+                        supabaseUrl !== 'YOUR_SUPABASE_URL' && 
+                        supabaseKey !== 'YOUR_SUPABASE_ANON_KEY';
+
+    if (this.isConfigured) {
+      try {
+        this.supabase = createClient(supabaseUrl, supabaseKey, {
+          auth: {
+            persistSession: true, // Persists the session in local storage / preferences
+            autoRefreshToken: true
+          }
+        });
+        // Initialize Auth Listener & Auto-login
+        this.initAuth();
+      } catch (err) {
+        console.error('Failed to initialize Supabase client:', err);
+        this.isConfigured = false;
+        this.setupPlaceholderClient();
+      }
+    } else {
+      console.warn('Supabase is not configured or uses placeholder credentials. Running in local-only offline mode.');
+      this.setupPlaceholderClient();
+    }
+  }
+
+  private setupPlaceholderClient() {
+    this.supabase = createClient('https://placeholder.supabase.co', 'placeholder', {
       auth: {
-        persistSession: true, // Persists the session in local storage / preferences
-        autoRefreshToken: true
+        persistSession: false,
+        autoRefreshToken: false
       }
     });
-
-    // Initialize Auth Listener & Auto-login
-    this.initAuth();
   }
 
   // ==========================================

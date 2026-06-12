@@ -50,15 +50,21 @@ export class GameService {
   constructor(private supabaseService: SupabaseService) {
     this.restoreGameState();
     
-    // Listen to user auth changes to reload data
-    this.supabaseService.user$.subscribe(user => {
-      if (user) {
-        this.initializeCloudSync();
-      } else {
-        this.playersSub.next([]);
-        this.historySub.next([]);
-      }
-    });
+    if (this.supabaseService.isConfigured) {
+      // Listen to user auth changes to reload data
+      this.supabaseService.user$.subscribe(user => {
+        if (user) {
+          this.initializeCloudSync();
+        } else {
+          this.playersSub.next([]);
+          this.historySub.next([]);
+        }
+      });
+    } else {
+      // Offline/Local-only fallback: ensure BehaviorSubjects are populated from local storage
+      this.playersSub.next(this.loadPlayersFromStorage());
+      this.historySub.next(this.loadHistoryFromStorage());
+    }
   }
 
   private async initializeCloudSync() {
@@ -197,6 +203,9 @@ export class GameService {
   }
 
   public async uploadUnsyncedGames(): Promise<number> {
+    if (!this.supabaseService.isConfigured) {
+      return 0;
+    }
     const currentHistory = [...this.historySub.value];
     let uploadedCount = 0;
     let updated = false;
@@ -263,7 +272,9 @@ export class GameService {
     this.triggerHaptic(ImpactStyle.Light);
 
     // Sync to Supabase
-    this.supabaseService.savePlayer(newPlayer).catch(e => console.error('Supabase sync failed:', e));
+    if (this.supabaseService.isConfigured) {
+      this.supabaseService.savePlayer(newPlayer).catch(e => console.error('Supabase sync failed:', e));
+    }
 
     return newPlayer;
   }
@@ -276,7 +287,9 @@ export class GameService {
     this.triggerHaptic(ImpactStyle.Medium);
 
     // Sync to Supabase
-    this.supabaseService.deletePlayer(id).catch(e => console.error('Supabase sync failed:', e));
+    if (this.supabaseService.isConfigured) {
+      this.supabaseService.deletePlayer(id).catch(e => console.error('Supabase sync failed:', e));
+    }
   }
 
   public updatePlayerName(id: string, newName: string) {
@@ -328,8 +341,10 @@ export class GameService {
         this.historySub.next(updatedHistory);
         localStorage.setItem(this.STORAGE_KEY, JSON.stringify(updatedHistory));
         // Sync modified history games to Supabase
-        for (const game of updatedHistory) {
-          this.supabaseService.saveGame(game).catch(e => console.error('Supabase history sync failed:', e));
+        if (this.supabaseService.isConfigured) {
+          for (const game of updatedHistory) {
+            this.supabaseService.saveGame(game).catch(e => console.error('Supabase history sync failed:', e));
+          }
         }
       }
     }
@@ -340,9 +355,11 @@ export class GameService {
     this.triggerHaptic(ImpactStyle.Medium);
 
     // Sync updated player to Supabase
-    const updatedPlayer = updated.find(p => p.id === id);
-    if (updatedPlayer) {
-      this.supabaseService.savePlayer(updatedPlayer).catch(e => console.error('Supabase sync failed:', e));
+    if (this.supabaseService.isConfigured) {
+      const updatedPlayer = updated.find(p => p.id === id);
+      if (updatedPlayer) {
+        this.supabaseService.savePlayer(updatedPlayer).catch(e => console.error('Supabase sync failed:', e));
+      }
     }
   }
 
@@ -644,7 +661,7 @@ export class GameService {
     localStorage.setItem(this.STATE_STORAGE_KEY, JSON.stringify(state));
 
     // Sync active state in background
-    if (state.isActive) {
+    if (state.isActive && this.supabaseService.isConfigured) {
       this.supabaseService.saveActiveGameState(state).catch(e => console.error('Supabase active state sync failed:', e));
     }
   }
@@ -792,23 +809,25 @@ export class GameService {
     localStorage.setItem(this.STORAGE_KEY, JSON.stringify(updatedHistory));
 
     // Sync to Supabase
-    this.supabaseService.saveGame(newGame)
-      .then(() => {
-        // If successful, update the status to synced: true
-        const history = [...this.historySub.value];
-        const idx = history.findIndex(g => g.id === newGame.id);
-        if (idx !== -1) {
-          history[idx] = { ...newGame, synced: true };
-          this.historySub.next(history);
-          localStorage.setItem(this.STORAGE_KEY, JSON.stringify(history));
-        }
-        
-        // Auto-upload any other unsynced games
-        this.uploadUnsyncedGames().catch(err => console.error('Auto-upload error after game completed:', err));
-      })
-      .catch(e => {
-        console.warn('Supabase game save failed (cached locally):', e);
-      });
+    if (this.supabaseService.isConfigured) {
+      this.supabaseService.saveGame(newGame)
+        .then(() => {
+          // If successful, update the status to synced: true
+          const history = [...this.historySub.value];
+          const idx = history.findIndex(g => g.id === newGame.id);
+          if (idx !== -1) {
+            history[idx] = { ...newGame, synced: true };
+            this.historySub.next(history);
+            localStorage.setItem(this.STORAGE_KEY, JSON.stringify(history));
+          }
+          
+          // Auto-upload any other unsynced games
+          this.uploadUnsyncedGames().catch(err => console.error('Auto-upload error after game completed:', err));
+        })
+        .catch(e => {
+          console.warn('Supabase game save failed (cached locally):', e);
+        });
+    }
   }
 
   public deleteGameFromHistory(id: string) {
@@ -818,7 +837,9 @@ export class GameService {
     this.triggerHaptic(ImpactStyle.Medium);
 
     // Sync to Supabase
-    this.supabaseService.deleteGame(id).catch(e => console.error('Supabase game delete failed:', e));
+    if (this.supabaseService.isConfigured) {
+      this.supabaseService.deleteGame(id).catch(e => console.error('Supabase game delete failed:', e));
+    }
   }
 
   public deleteGamesFromHistory(ids: string[]) {
@@ -829,8 +850,10 @@ export class GameService {
     this.triggerHaptic(ImpactStyle.Medium);
 
     // Sync to Supabase
-    for (const id of ids) {
-      this.supabaseService.deleteGame(id).catch(e => console.error('Supabase game bulk delete failed:', e));
+    if (this.supabaseService.isConfigured) {
+      for (const id of ids) {
+        this.supabaseService.deleteGame(id).catch(e => console.error('Supabase game bulk delete failed:', e));
+      }
     }
   }
 
@@ -843,17 +866,19 @@ export class GameService {
       localStorage.setItem(this.STORAGE_KEY, JSON.stringify(current));
       
       // Upload update to Supabase
-      this.supabaseService.saveGame(current[idx])
-        .then(() => {
-          const history = [...this.historySub.value];
-          const innerIdx = history.findIndex(g => g.id === id);
-          if (innerIdx !== -1) {
-            history[innerIdx] = { ...history[innerIdx], synced: true };
-            this.historySub.next(history);
-            localStorage.setItem(this.STORAGE_KEY, JSON.stringify(history));
-          }
-        })
-        .catch(err => console.warn('Supabase game exclusion update failed:', err));
+      if (this.supabaseService.isConfigured) {
+        this.supabaseService.saveGame(current[idx])
+          .then(() => {
+            const history = [...this.historySub.value];
+            const innerIdx = history.findIndex(g => g.id === id);
+            if (innerIdx !== -1) {
+              history[innerIdx] = { ...history[innerIdx], synced: true };
+              this.historySub.next(history);
+              localStorage.setItem(this.STORAGE_KEY, JSON.stringify(history));
+            }
+          })
+          .catch(err => console.warn('Supabase game exclusion update failed:', err));
+      }
     }
   }
 

@@ -142,6 +142,10 @@ export class Tab3Page implements OnInit, OnDestroy {
     });
   }
 
+  public get isSupabaseConfigured(): boolean {
+    return this.supabaseService.isConfigured;
+  }
+
   public ionViewDidEnter() {
     setTimeout(() => {
       this.triggerStatsOnboarding();

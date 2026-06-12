@@ -763,8 +763,20 @@
         <!-- ANONYMOUS OR NOT LOGGED IN STATE -->
         <div *ngIf="(!currentUser || currentUser.is_anonymous) && !showEmailVerifyNotice && cloudMode !== 'reset'">
 
+          <!-- SUPABASE NOT CONFIGURED STATE -->
+          <div *ngIf="!isSupabaseConfigured" style="text-align: center; padding: 12px 0;">
+            <ion-icon name="cloud-offline-outline" style="font-size: 48px; color: var(--ion-color-medium); margin-bottom: 12px;"></ion-icon>
+            <h4 style="font-weight: 800; font-size: 18px; margin: 0 0 10px 0; color: #fff;">Cloud Sync Offline</h4>
+            <p style="color: var(--ion-color-medium); font-size: 13px; line-height: 1.5; margin: 0 0 20px 0;">
+              This build of the app is running in offline, local-only mode. Cloud sync requires Supabase configuration.
+            </p>
+            <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 12px; padding: 12px; text-align: left; font-size: 12px; color: var(--ion-color-medium); line-height: 1.4;">
+              <strong style="color: #fff;">Developers:</strong> To enable cloud features, make sure <code style="color: var(--player-one-color);">SUPABASE_URL</code> and <code style="color: var(--player-one-color);">SUPABASE_KEY</code> are set in your local <code style="color: #fff;">.env</code> file or GitHub Secrets.
+            </div>
+          </div>
+
           <!-- Normal Sign In / Sign Up Form -->
-          <div *ngIf="cloudMode === 'signup' || cloudMode === 'signin'">
+          <div *ngIf="isSupabaseConfigured && (cloudMode === 'signup' || cloudMode === 'signin')">
             <div
               style="background: rgba(255, 196, 9, 0.08); border: 1px solid rgba(255, 196, 9, 0.2); border-radius: 12px; padding: 12px; margin-bottom: 20px; text-align: center;">
               <div
@@ -836,7 +848,7 @@
           </div>
 
           <!-- Forgot Password View -->
-          <div *ngIf="cloudMode === 'forgot'">
+          <div *ngIf="isSupabaseConfigured && cloudMode === 'forgot'">
             <div style="text-align: center; margin-bottom: 20px;">
               <h4 style="font-weight: 800; font-size: 18px; margin: 0 0 6px 0; color: #fff;">Reset Password</h4>
               <p style="color: var(--ion-color-medium); font-size: 12px; margin: 0; line-height: 1.4;">
