@@ -5,10 +5,8 @@ import { GameService, GameState, ScoreLog, PlayerProfile } from '../services/gam
 import { OnboardingService } from '../services/onboarding.service';
 import { Subscription } from 'rxjs';
 import { 
-  IonHeader, IonToolbar, IonTitle, IonContent, IonGrid, IonRow, IonCol, 
-  IonButton, IonIcon, IonCard, IonCardContent, IonCardHeader, IonCardTitle,
-  IonItem, IonLabel, IonInput, IonModal, IonList, IonNote, IonSegment, IonSegmentButton, IonListHeader,
-  IonButtons, IonSelect, IonSelectOption, IonPopover, IonAlert
+  IonContent, IonIcon, IonLabel, IonModal, IonSegment, IonSegmentButton,
+  IonSelect, IonSelectOption
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import { 
@@ -25,33 +23,14 @@ import {
     imports: [
     CommonModule,
     FormsModule,
-    IonHeader,
-    IonToolbar,
-    IonTitle,
     IonContent,
-    IonGrid,
-    IonRow,
-    IonCol,
-    IonButton,
     IonIcon,
-    IonCard,
-    IonCardContent,
-    IonCardHeader,
-    IonCardTitle,
-    IonItem,
     IonLabel,
-    IonInput,
     IonModal,
-    IonList,
-    IonNote,
     IonSegment,
     IonSegmentButton,
-    IonListHeader,
-    IonButtons,
     IonSelect,
-    IonSelectOption,
-    IonPopover,
-    IonAlert
+    IonSelectOption
 ]
 })
 export class Tab1Page implements OnInit, AfterViewInit, OnDestroy {

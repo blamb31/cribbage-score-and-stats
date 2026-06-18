@@ -5,9 +5,8 @@ import { GameService, GameState } from '../services/game.service';
 import { OnboardingService } from '../services/onboarding.service';
 import { Subscription } from 'rxjs';
 import { 
-  IonHeader, IonToolbar, IonTitle, IonContent, IonGrid, IonRow, IonCol, 
-  IonButton, IonIcon, IonCard, IonCardContent, IonCardHeader, IonCardTitle,
-  IonItem, IonLabel, IonSegment, IonSegmentButton, IonList, IonNote, IonButtons,
+  IonHeader, IonToolbar, IonTitle, IonContent, IonRow, IonCol, 
+  IonButton, IonIcon, IonLabel, IonSegment, IonSegmentButton, IonButtons,
   IonModal
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
@@ -38,21 +37,13 @@ export interface ScoreBreakdown {
     IonToolbar,
     IonTitle,
     IonContent,
-    IonGrid,
     IonRow,
     IonCol,
     IonButton,
     IonIcon,
-    IonCard,
-    IonCardContent,
-    IonCardHeader,
-    IonCardTitle,
-    IonItem,
     IonLabel,
     IonSegment,
     IonSegmentButton,
-    IonList,
-    IonNote,
     IonButtons,
     IonModal
 ]

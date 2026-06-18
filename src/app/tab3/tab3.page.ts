@@ -3,9 +3,8 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { 
   IonHeader, IonToolbar, IonTitle, IonContent, IonSegment, IonSegmentButton, 
-  IonSelect, IonSelectOption, IonList, IonItem, IonLabel, IonNote, IonIcon, 
-  IonButton, IonCard, IonCardContent, IonCardHeader, IonCardTitle, IonRow, IonCol,
-  IonModal, IonCheckbox, IonButtons, IonPopover, IonAlert
+  IonSelect, IonSelectOption, IonLabel, IonIcon, 
+  IonModal, IonCheckbox, IonButtons
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import { 
@@ -68,9 +67,8 @@ export interface PlayerMergeMapping {
     CommonModule,
     FormsModule,
     IonHeader, IonToolbar, IonTitle, IonContent, IonSegment, IonSegmentButton, 
-    IonSelect, IonSelectOption, IonList, IonItem, IonLabel, IonNote, IonIcon, 
-    IonButton, IonCard, IonCardContent, IonCardHeader, IonCardTitle, IonRow, IonCol,
-    IonModal, IonCheckbox, IonButtons, IonPopover, IonAlert
+    IonSelect, IonSelectOption, IonLabel, IonIcon, 
+    IonModal, IonCheckbox, IonButtons
 ]
 })
 export class Tab3Page implements OnInit, OnDestroy {
