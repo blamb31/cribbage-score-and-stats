@@ -797,12 +797,19 @@
                     <td *ngIf="gameState.mode >= 3" style="padding: 8px 0; text-align: center; color: var(--player-three-color); font-weight: 700;">{{ getGameCategoryPoints(3, 'Hand') }}</td>
                     <td *ngIf="gameState.mode === 4" style="padding: 8px 0; text-align: center; color: var(--player-four-color); font-weight: 700;">{{ getGameCategoryPoints(4, 'Hand') }}</td>
                   </tr>
-                  <tr style="border-bottom: 1px dashed rgba(255,255,255,0.03);">
+                  <tr>
                     <td style="padding: 8px 0; color: #fff; font-weight: 500;">Crib</td>
                     <td style="padding: 8px 0; text-align: center; color: var(--player-one-color); font-weight: 700;">{{ getGameCategoryPoints(1, 'Crib') }}</td>
                     <td style="padding: 8px 0; text-align: center; color: var(--player-two-color); font-weight: 700;">{{ getGameCategoryPoints(2, 'Crib') }}</td>
                     <td *ngIf="gameState.mode >= 3" style="padding: 8px 0; text-align: center; color: var(--player-three-color); font-weight: 700;">{{ getGameCategoryPoints(3, 'Crib') }}</td>
                     <td *ngIf="gameState.mode === 4" style="padding: 8px 0; text-align: center; color: var(--player-four-color); font-weight: 700;">{{ getGameCategoryPoints(4, 'Crib') }}</td>
+                  </tr>
+                  <tr style="border-top: 1px solid rgba(255,255,255,0.15); font-weight: 800;">
+                    <td style="padding: 10px 0; color: #fff; font-weight: 800;">Final Score</td>
+                    <td style="padding: 10px 0; text-align: center; color: var(--player-one-color); font-weight: 900; font-size: 13px;">{{ getPlayerScore(1) }}</td>
+                    <td style="padding: 10px 0; text-align: center; color: var(--player-two-color); font-weight: 900; font-size: 13px;">{{ getPlayerScore(2) }}</td>
+                    <td *ngIf="gameState.mode >= 3" style="padding: 10px 0; text-align: center; color: var(--player-three-color); font-weight: 900; font-size: 13px;">{{ getPlayerScore(3) }}</td>
+                    <td *ngIf="gameState.mode === 4" style="padding: 10px 0; text-align: center; color: var(--player-four-color); font-weight: 900; font-size: 13px;">{{ getPlayerScore(4) }}</td>
                   </tr>
                 </tbody>
               </table>
@@ -811,7 +818,7 @@
           </div>
           
           <button (click)="resetGame()" style="width: 100%; border: none; border-radius: 20px; height: 48px; background: linear-gradient(135deg, var(--player-one-color), var(--player-two-color)); color: #fff; font-weight: 800; font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px; cursor: pointer; margin-top: 16px;" class="clickable">
-            Play Again
+            End Game
           </button>
         </div>
       </div>
