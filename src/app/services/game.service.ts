@@ -28,6 +28,9 @@ export class GameService {
   private playersSub = new BehaviorSubject<PlayerProfile[]>(this.loadPlayersFromStorage());
   public players$: Observable<PlayerProfile[]> = this.playersSub.asObservable();
 
+  private readonly PENDING_GAME_DELETES_KEY = 'cribbage_pending_game_deletions';
+  private readonly PENDING_PLAYER_DELETES_KEY = 'cribbage_pending_player_deletions';
+
   public pendingMergePlayers$ = new BehaviorSubject<{ local: PlayerProfile[], cloud: PlayerProfile[] } | null>(null);
 
   public showTabBar = true;
@@ -49,21 +52,31 @@ export class GameService {
 
   constructor(private supabaseService: SupabaseService) {
     this.restoreGameState();
+
+    // Ensure BehaviorSubjects are populated from local storage immediately
+    this.playersSub.next(this.loadPlayersFromStorage());
+    this.historySub.next(this.loadHistoryFromStorage());
+
+    // Listen for online events to automatically sync queued changes
+    if (typeof window !== 'undefined') {
+      window.addEventListener('online', () => {
+        console.log('Online detected: syncing local changes to Supabase...');
+        this.syncWhenOnline();
+      });
+      window.addEventListener('focus', () => {
+        if (navigator.onLine) {
+          this.syncWhenOnline();
+        }
+      });
+    }
     
     if (this.supabaseService.isConfigured) {
-      // Listen to user auth changes to reload data
+      // Listen to user auth changes to sync data
       this.supabaseService.user$.subscribe(user => {
         if (user) {
           this.initializeCloudSync();
-        } else {
-          this.playersSub.next([]);
-          this.historySub.next([]);
         }
       });
-    } else {
-      // Offline/Local-only fallback: ensure BehaviorSubjects are populated from local storage
-      this.playersSub.next(this.loadPlayersFromStorage());
-      this.historySub.next(this.loadHistoryFromStorage());
     }
   }
 
@@ -126,8 +139,15 @@ export class GameService {
         this.gameStateSub.next(activeState);
         localStorage.setItem(this.STATE_STORAGE_KEY, JSON.stringify(activeState));
       }
-    } catch (e) {
+      } catch (e) {
       console.warn('Could not sync on startup (offline or not authenticated yet):', e);
+      // Fallback safely to local storage so UI keeps full offline data
+      if (this.playersSub.value.length === 0) {
+        this.playersSub.next(this.loadPlayersFromStorage());
+      }
+      if (this.historySub.value.length === 0) {
+        this.historySub.next(this.loadHistoryFromStorage());
+      }
     }
   }
 
@@ -200,6 +220,118 @@ export class GameService {
 
     // Trigger upload of all unsynced games (with new mappings applied)
     await this.uploadUnsyncedGames();
+  }
+
+  // --- Offline & Sync Management ---
+
+  private getPendingGameDeletes(): string[] {
+    try {
+      const stored = localStorage.getItem(this.PENDING_GAME_DELETES_KEY);
+      return stored ? JSON.parse(stored) : [];
+    } catch {
+      return [];
+    }
+  }
+
+  private addPendingGameDelete(id: string) {
+    const list = this.getPendingGameDeletes();
+    if (!list.includes(id)) {
+      list.push(id);
+      localStorage.setItem(this.PENDING_GAME_DELETES_KEY, JSON.stringify(list));
+    }
+  }
+
+  private removePendingGameDelete(id: string) {
+    const list = this.getPendingGameDeletes().filter(item => item !== id);
+    localStorage.setItem(this.PENDING_GAME_DELETES_KEY, JSON.stringify(list));
+  }
+
+  private getPendingPlayerDeletes(): string[] {
+    try {
+      const stored = localStorage.getItem(this.PENDING_PLAYER_DELETES_KEY);
+      return stored ? JSON.parse(stored) : [];
+    } catch {
+      return [];
+    }
+  }
+
+  private addPendingPlayerDelete(id: string) {
+    const list = this.getPendingPlayerDeletes();
+    if (!list.includes(id)) {
+      list.push(id);
+      localStorage.setItem(this.PENDING_PLAYER_DELETES_KEY, JSON.stringify(list));
+    }
+  }
+
+  private removePendingPlayerDelete(id: string) {
+    const list = this.getPendingPlayerDeletes().filter(item => item !== id);
+    localStorage.setItem(this.PENDING_PLAYER_DELETES_KEY, JSON.stringify(list));
+  }
+
+  /**
+   * Called when online connectivity is restored or cloud sync runs.
+   * Flushes pending deletions and unsynced data to Supabase.
+   */
+  public async syncWhenOnline() {
+    if (!this.supabaseService.isConfigured) return;
+
+    // Ensure user session exists
+    let user = this.supabaseService.getCurrentUser();
+    if (!user) {
+      try {
+        user = await this.supabaseService.signInAnonymously();
+      } catch (e) {
+        console.warn('Could not authenticate during online sync:', e);
+        return;
+      }
+    }
+    if (!user) return;
+
+    // 1. Process pending game deletions
+    const pendingGameDeletes = this.getPendingGameDeletes();
+    for (const id of pendingGameDeletes) {
+      try {
+        await this.supabaseService.deleteGame(id);
+        this.removePendingGameDelete(id);
+      } catch (err) {
+        console.warn(`Retry failed deleting game ${id}:`, err);
+      }
+    }
+
+    // 2. Process pending player deletions
+    const pendingPlayerDeletes = this.getPendingPlayerDeletes();
+    for (const id of pendingPlayerDeletes) {
+      try {
+        await this.supabaseService.deletePlayer(id);
+        this.removePendingPlayerDelete(id);
+      } catch (err) {
+        console.warn(`Retry failed deleting player ${id}:`, err);
+      }
+    }
+
+    // 3. Sync local players to cloud
+    try {
+      const cloudPlayers = await this.supabaseService.getPlayers();
+      const localPlayers = this.loadPlayersFromStorage();
+      for (const lp of localPlayers) {
+        const inCloud = cloudPlayers.some(cp => cp.id === lp.id);
+        if (!inCloud) {
+          try {
+            await this.supabaseService.savePlayer(lp);
+          } catch (e) {
+            console.warn(`Failed syncing player ${lp.name} to cloud:`, e);
+          }
+        }
+      }
+    } catch (e) {
+      console.warn('Failed checking cloud players during sync:', e);
+    }
+
+    // 4. Upload unsynced games
+    await this.uploadUnsyncedGames();
+
+    // 5. Run full cloud merge/sync to pull any new data
+    await this.initializeCloudSync();
   }
 
   public async uploadUnsyncedGames(): Promise<number> {
@@ -286,9 +418,12 @@ export class GameService {
     localStorage.setItem(this.PLAYERS_STORAGE_KEY, JSON.stringify(updated));
     this.triggerHaptic(ImpactStyle.Medium);
 
-    // Sync to Supabase
+    // Sync to Supabase or queue offline deletion
     if (this.supabaseService.isConfigured) {
-      this.supabaseService.deletePlayer(id).catch(e => console.error('Supabase sync failed:', e));
+      this.supabaseService.deletePlayer(id).catch(e => {
+        console.warn('Supabase deletePlayer failed (queued for sync):', e);
+        this.addPendingPlayerDelete(id);
+      });
     }
   }
 
@@ -836,9 +971,12 @@ export class GameService {
     localStorage.setItem(this.STORAGE_KEY, JSON.stringify(updatedHistory));
     this.triggerHaptic(ImpactStyle.Medium);
 
-    // Sync to Supabase
+    // Sync to Supabase or queue offline deletion
     if (this.supabaseService.isConfigured) {
-      this.supabaseService.deleteGame(id).catch(e => console.error('Supabase game delete failed:', e));
+      this.supabaseService.deleteGame(id).catch(e => {
+        console.warn('Supabase game delete failed (queued for sync):', e);
+        this.addPendingGameDelete(id);
+      });
     }
   }
 
@@ -849,10 +987,13 @@ export class GameService {
     localStorage.setItem(this.STORAGE_KEY, JSON.stringify(updatedHistory));
     this.triggerHaptic(ImpactStyle.Medium);
 
-    // Sync to Supabase
+    // Sync to Supabase or queue offline deletion
     if (this.supabaseService.isConfigured) {
       for (const id of ids) {
-        this.supabaseService.deleteGame(id).catch(e => console.error('Supabase game bulk delete failed:', e));
+        this.supabaseService.deleteGame(id).catch(e => {
+          console.warn('Supabase game delete failed (queued for sync):', e);
+          this.addPendingGameDelete(id);
+        });
       }
     }
   }
@@ -909,10 +1050,15 @@ export class GameService {
     localStorage.removeItem(this.STORAGE_KEY);
     this.triggerHaptic(ImpactStyle.Heavy);
 
-    // Sync to Supabase
+    // Sync to Supabase or queue deletions
     for (const g of current) {
       if (g.synced) {
-        this.supabaseService.deleteGame(g.id).catch(e => console.error('Supabase game clear failed:', e));
+        if (this.supabaseService.isConfigured) {
+          this.supabaseService.deleteGame(g.id).catch(e => {
+            console.warn('Supabase game clear failed (queued for sync):', e);
+            this.addPendingGameDelete(g.id);
+          });
+        }
       }
     }
   }

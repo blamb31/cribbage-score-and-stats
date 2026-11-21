@@ -64,28 +64,36 @@ export class SupabaseService {
   // ==========================================
 
   private async initAuth() {
-    // 1. Get initial session
-    const { data: { session } } = await this.supabase.auth.getSession();
-    this.userSub.next(session?.user || null);
-
-    // 2. Set up auth state change listener
-    this.supabase.auth.onAuthStateChange((event, session) => {
-      console.log(`Supabase Auth Event: ${event}`);
-      this.userSub.next(session?.user || null);
-      if (event === 'PASSWORD_RECOVERY') {
-        this.passwordRecovery$.next(true);
-        this.router.navigateByUrl('/tabs/tab3');
+    try {
+      // 1. Get initial session
+      const { data: { session } } = await this.supabase.auth.getSession();
+      if (session?.user) {
+        this.userSub.next(session.user);
       }
-    });
 
-    // 3. Auto-login: If no user is logged in, log them in anonymously so they are "logged in always"
-    if (!session) {
-      try {
-        console.log('No session found. Logging in anonymously...');
-        await this.signInAnonymously();
-      } catch (err) {
-        console.error('Failed to auto-login anonymously:', err);
+      // 2. Set up auth state change listener
+      this.supabase.auth.onAuthStateChange((event, session) => {
+        console.log(`Supabase Auth Event: ${event}`);
+        this.userSub.next(session?.user || null);
+        if (event === 'PASSWORD_RECOVERY') {
+          this.passwordRecovery$.next(true);
+          this.router.navigateByUrl('/tabs/tab3');
+        }
+      });
+
+      // 3. Auto-login: If no user is logged in and online, log them in anonymously so they are "logged in always"
+      if (!session) {
+        if (typeof navigator === 'undefined' || navigator.onLine !== false) {
+          try {
+            console.log('No session found. Logging in anonymously...');
+            await this.signInAnonymously();
+          } catch (err) {
+            console.warn('Failed to auto-login anonymously (likely offline):', err);
+          }
+        }
       }
+    } catch (err) {
+      console.warn('Supabase initAuth encountered error (device likely offline):', err);
     }
   }
 
